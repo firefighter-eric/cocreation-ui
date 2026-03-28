@@ -20,10 +20,6 @@ export function MessageList({
   onDismissError,
 }: MessageListProps) {
   const partnerLabel = conversationMode === 'human_like' ? '对方' : 'AI'
-  const openingCopy =
-    conversationMode === 'human_like'
-      ? '从这一句开始，你和对方轮流把故事继续下去。'
-      : '从这一句开始，你和 AI 轮流往下接。'
   const emptyCopy =
     conversationMode === 'human_like'
       ? '你发送一句，对方会接着把故事继续写下去。'
@@ -35,7 +31,6 @@ export function MessageList({
         <div className="opening-card">
           <p className="eyebrow">故事开场</p>
           <h1>{openingLine}</h1>
-          <p>{openingCopy}</p>
         </div>
 
         {messages.length === 0 ? (

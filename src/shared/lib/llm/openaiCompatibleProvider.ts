@@ -27,6 +27,10 @@ export class OpenAICompatibleProvider implements LLMProvider {
             role: 'system',
             content: buildStoryPrompt(input),
           },
+          {
+            role: 'user',
+            content: input.seed.openingLine,
+          },
           ...input.history.map((message) => ({
             role: message.role,
             content: message.content,

@@ -4,11 +4,11 @@ import {
   getStyleSystemPrompt,
   storySeeds,
 } from '../../config/story'
-import { buildStoryPrompt } from './prompt'
+import { buildDefaultSystemPrompt, buildStoryPrompt } from './prompt'
 
 describe('buildStoryPrompt', () => {
   const baseSettings = {
-    temperature: 1.1,
+    temperature: 1.0,
     topP: 1,
   }
 
@@ -21,11 +21,15 @@ describe('buildStoryPrompt', () => {
       seed: storySeeds[0],
       speaker: 'assistant',
       style: 'creative',
-      systemPrompt: getStyleSystemPrompt('creative'),
+      systemPrompt: buildDefaultSystemPrompt({
+        conversationMode: 'manual',
+        rules: defaultStoryRules,
+        style: 'creative',
+      }),
     })
 
     expect(prompt).toContain(getStyleSystemPrompt('creative'))
-    expect(prompt).toContain(storySeeds[0].openingLine)
+    expect(prompt).not.toContain(storySeeds[0].openingLine)
   })
 
   it('contains coherent guidance', () => {
@@ -37,7 +41,11 @@ describe('buildStoryPrompt', () => {
       seed: storySeeds[1],
       speaker: 'assistant',
       style: 'coherent',
-      systemPrompt: getStyleSystemPrompt('coherent'),
+      systemPrompt: buildDefaultSystemPrompt({
+        conversationMode: 'manual',
+        rules: defaultStoryRules,
+        style: 'coherent',
+      }),
     })
 
     expect(prompt).toContain(getStyleSystemPrompt('coherent'))
@@ -67,7 +75,11 @@ describe('buildStoryPrompt', () => {
       seed: storySeeds[0],
       speaker: 'assistant',
       style: 'creative',
-      systemPrompt: getStyleSystemPrompt('creative'),
+      systemPrompt: buildDefaultSystemPrompt({
+        conversationMode: 'human_like',
+        rules: defaultStoryRules,
+        style: 'creative',
+      }),
     })
 
     expect(prompt).toContain('人类对话者')

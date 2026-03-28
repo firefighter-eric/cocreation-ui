@@ -69,9 +69,7 @@ export function StorySidebar({
               type="button"
               onClick={() => onSeedChange(seed)}
             >
-              <strong>{seed.title}</strong>
               <p>{seed.openingLine}</p>
-              <span>{seed.summary}</span>
             </button>
           ))}
         </div>

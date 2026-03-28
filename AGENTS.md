@@ -78,6 +78,7 @@
 - 新增模式或规则优先改配置、状态和纯逻辑层
 - 用户填写的 system prompt 必须通过状态和 provider 接口传递，不要写死在组件里
 - 用户修改的模型参数必须通过状态和 provider 接口传递，并进入导出 JSON
+- 开场句放在请求中的第一条 user message，不放在 system prompt 里
 
 ## 5. 修改原则
 

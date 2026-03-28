@@ -49,14 +49,16 @@ export function buildStoryJson(input: ExportStoryCsvInput, exportedAt = new Date
       seed: input.seed,
       conversation: [
         {
-          role: 'opening',
+          role: 'user',
           content: input.seed.openingLine,
+          is_opening: true,
         },
         ...input.messages.map((message) => ({
           id: message.id,
           role: message.role,
           content: message.content,
           created_at: message.createdAt,
+          is_opening: false,
           interaction: message.interaction
             ? {
                 ai_ended_at: message.interaction.aiEndedAt,

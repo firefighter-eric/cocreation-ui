@@ -80,7 +80,7 @@ describe('App', () => {
     render(<App />)
 
     await user.click(screen.getByRole('button', { name: /AI自动对话/ }))
-    const turnInput = screen.getByRole('spinbutton')
+    const turnInput = screen.getByRole('textbox')
     fireEvent.change(turnInput, { target: { value: '2' } })
     await user.click(screen.getByRole('button', { name: '自动生成 1 例对话' }))
 
@@ -210,6 +210,11 @@ describe('App', () => {
     const payload = JSON.parse(String(request.body))
 
     expect(payload.messages[0].content).toContain('让场景更贴近日常')
+    expect(payload.messages[0].content).not.toContain('故事开场')
+    expect(payload.messages[1]).toEqual({
+      role: 'user',
+      content: '图书馆的角落里有个读书的人',
+    })
     expect(payload.temperature).toBe(0.7)
     expect(payload.top_p).toBe(0.85)
   })
@@ -220,7 +225,6 @@ describe('App', () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: /与人对话/ }))
-    expect(screen.getByText('从这一句开始，你和对方轮流把故事继续下去。')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: '开始' }))
     const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')

@@ -1,23 +1,43 @@
 import type { GenerateNextLineInput } from './types'
 
-export function buildStoryPrompt(input: GenerateNextLineInput) {
-  const customSystemPrompt = input.systemPrompt.trim()
+export function buildDefaultSystemPrompt(
+  input: Pick<
+    GenerateNextLineInput,
+    'conversationMode' | 'rules' | 'style'
+  >,
+) {
   const speakerInstruction =
-    input.speaker === 'assistant'
-      ? input.conversationMode === 'human_like'
-        ? '你当前扮演故事共创中的人类对话者。'
-        : '你当前扮演故事共创中的AI搭档。'
-      : '你当前扮演故事共创中的人类玩家。'
+    input.conversationMode === 'human_like'
+      ? '你当前扮演故事共创中的人类对话者。'
+      : '你当前扮演故事共创中的AI搭档。'
+  const styleInstruction =
+    input.style === 'creative'
+      ? '请给出一个意想不到、跳跃感强、但仍然延续当前故事的短句。'
+      : '请给出一个自然连贯、符合日常叙事逻辑的短句。'
+
   return [
     speakerInstruction,
     '你在和对方共创故事，需要轮流接龙。',
-    `故事开场：${input.seed.openingLine}`,
-    customSystemPrompt || null,
+    styleInstruction,
     `输出必须少于等于 ${input.rules.maxChars} 个汉字。`,
     '只能输出一句故事内容。',
     '绝对不要使用任何标点符号、引号、括号、项目符号或解释。',
     '不要重复上一句，直接推动故事前进。',
-  ]
-    .filter(Boolean)
-    .join('')
+  ].join('')
+}
+
+export function buildStoryPrompt(input: GenerateNextLineInput) {
+  if (input.speaker === 'assistant') {
+    return input.systemPrompt.trim()
+  }
+
+  return [
+    '你当前扮演故事共创中的人类玩家。',
+    '你在和对方共创故事，需要轮流接龙。',
+    input.systemPrompt.trim(),
+    `输出必须少于等于 ${input.rules.maxChars} 个汉字。`,
+    '只能输出一句故事内容。',
+    '绝对不要使用任何标点符号、引号、括号、项目符号或解释。',
+    '不要重复上一句，直接推动故事前进。',
+  ].join('')
 }

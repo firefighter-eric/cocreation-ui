@@ -9,9 +9,9 @@ import type {
 import {
   defaultStoryRules,
   defaultStoryStyle,
-  getStyleSystemPrompt,
 } from '../../../shared/config/story'
 import type { StoryMode } from '../../../shared/config/story'
+import { buildDefaultSystemPrompt } from '../../../shared/lib/llm/prompt'
 import type { LLMProvider } from '../../../shared/lib/llm/types'
 import type { SessionStore } from '../../../shared/lib/storage/sessionStore'
 import {
@@ -42,11 +42,15 @@ export function useStorySession({
 
     const session = createStorySession({
       modelSettings: {
-        temperature: 1.1,
+        temperature: 1.0,
         topP: 1,
       },
       seed: initialSeed,
-      systemPrompt: getStyleSystemPrompt(defaultStoryStyle),
+      systemPrompt: buildDefaultSystemPrompt({
+        conversationMode,
+        rules: defaultStoryRules,
+        style: defaultStoryStyle,
+      }),
       style: defaultStoryStyle,
       rules: defaultStoryRules,
     })
@@ -260,24 +264,31 @@ export function useStorySession({
   }
 
   function updateStyle(style: StoryStyle) {
-    restartSession(state.seed, style, getStyleSystemPrompt(style))
+    restartSession(
+      state.seed,
+      style,
+      buildDefaultSystemPrompt({
+        conversationMode,
+        rules: state.rules,
+        style,
+      }),
+    )
   }
 
   function updateSeed(seed: StorySeed) {
-    restartSession(seed, state.style)
+    restartSession(
+      seed,
+      state.style,
+      buildDefaultSystemPrompt({
+        conversationMode,
+        rules: state.rules,
+        style: state.style,
+      }),
+    )
   }
 
   function clearError() {
     setState((current) => advanceStorySession(current, { type: 'CLEAR_ERROR' }))
-  }
-
-  function updateSystemPrompt(systemPrompt: string) {
-    setState((current) =>
-      advanceStorySession(current, {
-        type: 'SET_SYSTEM_PROMPT',
-        systemPrompt: systemPrompt.trim(),
-      }),
-    )
   }
 
   function updatePromptSettings(
@@ -310,13 +321,12 @@ export function useStorySession({
     setDraft: setValidatedDraft,
     submitDraft,
     generateAutoConversation,
-    restartSession: () => restartSession(),
+    restartSession,
     updateStyle,
     updateSeed,
     clearError,
     incrementBackspaceCount,
     startSession,
-    updateSystemPrompt,
     updatePromptSettings,
   }
 }

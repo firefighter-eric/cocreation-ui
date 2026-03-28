@@ -183,6 +183,7 @@ JSON 用于保存完整上下文和元信息，至少包含：
 - `role`
 - `content`
 - `created_at`
+- `is_opening`
 
 其中手动模式消息还需按角色补充交互记录：
 
@@ -196,6 +197,16 @@ JSON 用于保存完整上下文和元信息，至少包含：
 - 如果这不是用户首轮输入，则从上一条 AI 的 `ai_ended_at` 计算到 `input_started_at`
 
 JSON 导出字段统一使用 snake_case 命名，不使用 camelCase。
+
+开场句在导出中使用：
+
+- `role = user`
+- `is_opening = true`
+
+后续普通消息使用：
+
+- `role = user | assistant`
+- `is_opening = false`
 
 ### 6.3 Prompt 设置
 
@@ -211,9 +222,11 @@ JSON 导出字段统一使用 snake_case 命名，不使用 camelCase。
 
 当前产品约束：
 
-- 用户填写的内容作为附加 system prompt 使用
+- 设置里的文本就是完整最终 system prompt
 - 风格切换会直接改写可见的 system prompt 文本
+- 开场句不写入 system prompt，而是作为请求中的第一条 user message
 - 默认规则仍然保留，不允许被 UI 层删除
+- 默认模型参数为 `temperature = 1.0`、`top_p = 1.0`
 - 保存后影响后续回复
 - 导出 JSON 时需要写入 `system_prompt`
 - 导出 JSON 时需要写入当前模型参数

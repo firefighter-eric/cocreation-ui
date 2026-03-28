@@ -1,14 +1,11 @@
 import type {
   StoryRules,
   StorySessionStatus,
-  StoryStyle,
 } from '../../../entities/story-session/types'
 import type { StoryMode } from '../../../shared/config/story'
-import { styleOptions } from '../../../shared/config/story'
 
 interface StoryHeaderProps {
   conversationMode: StoryMode
-  currentStyle: StoryStyle
   hasMessages: boolean
   openingLine: string
   onExport: () => void
@@ -20,7 +17,6 @@ interface StoryHeaderProps {
 
 export function StoryHeader({
   conversationMode,
-  currentStyle,
   hasMessages,
   openingLine,
   onExport,
@@ -29,10 +25,6 @@ export function StoryHeader({
   sessionStatus,
   title,
 }: StoryHeaderProps) {
-  const styleLabel =
-    styleOptions.find((option) => option.value === currentStyle)?.label ??
-    currentStyle
-
   const statusCopy =
     sessionStatus === 'waiting_for_ai' || sessionStatus === 'submitting_user_line'
       ? conversationMode === 'human_like'
@@ -50,7 +42,6 @@ export function StoryHeader({
 
       <div className="header-side">
         <div className="header-pills">
-          <span className="header-pill">{styleLabel}</span>
           {statusCopy ? (
             <span className="header-pill header-pill--muted">{statusCopy}</span>
           ) : null}

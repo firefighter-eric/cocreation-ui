@@ -68,13 +68,15 @@ describe('storyCsv', () => {
     expect(parsed.mode).toBe('manual')
     expect(parsed.seed.openingLine).toBe('第一片雪落在门把手上')
     expect(parsed.conversation[0]).toEqual({
-      role: 'opening',
+      role: 'user',
       content: '第一片雪落在门把手上',
+      is_opening: true,
     })
     expect(parsed.conversation[1]).toMatchObject({
       id: 'm-1',
       role: 'user',
       content: '他踩进会发光的积雪',
+      is_opening: false,
       interaction: {
         backspace_count: 2,
         input_ended_at: '2026-03-28T09:59:59.000Z',

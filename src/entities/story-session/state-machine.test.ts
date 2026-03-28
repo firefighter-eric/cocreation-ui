@@ -6,7 +6,7 @@ describe('story session state machine', () => {
   it('boots into ready state', () => {
     const session = createStorySession({
       modelSettings: {
-        temperature: 1.1,
+        temperature: 1.0,
         topP: 1,
       },
       seed: storySeeds[0],
@@ -24,7 +24,7 @@ describe('story session state machine', () => {
     const session = advanceStorySession(
       createStorySession({
         modelSettings: {
-          temperature: 1.1,
+          temperature: 1.0,
           topP: 1,
         },
         seed: storySeeds[0],
@@ -53,7 +53,7 @@ describe('story session state machine', () => {
     const session = advanceStorySession(
       createStorySession({
         modelSettings: {
-          temperature: 1.1,
+          temperature: 1.0,
           topP: 1,
         },
         seed: storySeeds[0],
@@ -74,7 +74,7 @@ describe('story session state machine', () => {
     expect(reset.style).toBe('coherent')
     expect(reset.systemPrompt).toBe('保持安静语气')
     expect(reset.modelSettings).toEqual({
-      temperature: 1.1,
+      temperature: 1.0,
       topP: 1,
     })
     expect(reset.messages).toHaveLength(0)

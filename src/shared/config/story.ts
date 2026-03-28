@@ -22,17 +22,17 @@ export const storyModeOptions: Array<{
   {
     value: 'manual',
     label: '与AI对话',
-    description: '保持当前模式，由你输入，AI 续写。',
+    description: '由你输入，AI 接着续写。',
   },
   {
     value: 'human_like',
     label: '与人对话',
-    description: '与你的对话搭档轮流接龙，一起把故事继续写下去。',
+    description: '与对话搭档轮流接龙。',
   },
   {
     value: 'auto',
     label: 'AI自动对话',
-    description: '自动生成一组用户与 AI 的示例对话，用来测试 prompt 和启动语句。',
+    description: '自动生成一组示例对话。',
   },
 ]
 

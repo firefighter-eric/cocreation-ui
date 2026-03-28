@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import type { StoryStyle } from '../../entities/story-session/types'
-import {
-  getStyleSystemPrompt,
-  styleOptions,
-} from '../../shared/config/story'
+import type { StoryRules, StoryStyle } from '../../entities/story-session/types'
+import type { StoryMode } from '../../shared/config/story'
+import { styleOptions } from '../../shared/config/story'
+import { buildDefaultSystemPrompt } from '../../shared/lib/llm/prompt'
 
 interface SettingsDrawerProps {
+  conversationMode: StoryMode
   currentStyle: StoryStyle
   initialModelSettings: {
     temperature: number
@@ -23,9 +23,11 @@ interface SettingsDrawerProps {
     }
   }) => void
   providerLabel: string
+  rules: StoryRules
 }
 
 export function SettingsDrawer({
+  conversationMode,
   currentStyle,
   initialModelSettings,
   initialPrompt,
@@ -33,6 +35,7 @@ export function SettingsDrawer({
   onClose,
   onSave,
   providerLabel,
+  rules,
 }: SettingsDrawerProps) {
   const [draft, setDraft] = useState(initialPrompt)
   const [selectedStyle, setSelectedStyle] = useState(currentStyle)
@@ -87,7 +90,13 @@ export function SettingsDrawer({
                 type="button"
                 onClick={() => {
                   setSelectedStyle(option.value)
-                  setDraft(getStyleSystemPrompt(option.value))
+                  setDraft(
+                    buildDefaultSystemPrompt({
+                      conversationMode,
+                      rules,
+                      style: option.value,
+                    }),
+                  )
                 }}
               >
                 <strong>{option.label}</strong>

@@ -13,6 +13,7 @@ import {
   storySeeds,
   type StoryMode,
 } from '../shared/config/story'
+import { buildDefaultSystemPrompt } from '../shared/lib/llm/prompt'
 import { createSessionStore } from '../shared/lib/storage/sessionStore'
 import { createStoryProvider } from '../shared/lib/llm/createStoryProvider'
 import { exportStoryCsv } from '../shared/lib/export/storyCsv'
@@ -85,7 +86,16 @@ export function App() {
           selectedSeedId={state.seed.id}
           onModeChange={(mode) => {
             setConversationMode(mode)
-            restartSession()
+            restartSession(
+              state.seed,
+              state.style,
+              buildDefaultSystemPrompt({
+                conversationMode: mode,
+                rules: state.rules,
+                style: state.style,
+              }),
+              state.modelSettings,
+            )
           }}
           onRestart={restartSession}
           onSeedChange={updateSeed}
@@ -95,7 +105,6 @@ export function App() {
       <main className="workspace">
         <StoryHeader
           conversationMode={conversationMode}
-          currentStyle={state.style}
           hasMessages={state.messages.length > 0}
           openingLine={state.seed.openingLine}
           onExport={handleExportCsv}
@@ -134,13 +143,14 @@ export function App() {
             autoTurnCount={autoTurnCount}
             isBusy={state.status === 'waiting_for_ai'}
             onAutoTurnChange={handleAutoTurnChange}
-            onGenerate={() => generateAutoConversation(autoTurnCount)}
+            onGenerate={generateAutoConversation}
           />
         )}
       </main>
 
       <SettingsDrawer
-        key={`${isSettingsOpen ? 'open' : 'closed'}-${state.systemPrompt}`}
+        key={`${isSettingsOpen ? 'open' : 'closed'}-${state.systemPrompt}-${state.style}-${state.modelSettings.temperature}-${state.modelSettings.topP}`}
+        conversationMode={conversationMode}
         currentStyle={state.style}
         initialModelSettings={state.modelSettings}
         initialPrompt={state.systemPrompt}
@@ -150,6 +160,7 @@ export function App() {
           updatePromptSettings(style, systemPrompt, modelSettings)
         }
         providerLabel={providerLabel}
+        rules={state.rules}
       />
     </div>
   )
