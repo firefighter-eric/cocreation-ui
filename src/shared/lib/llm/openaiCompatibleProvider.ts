@@ -7,37 +7,54 @@ import type {
   LLMProvider,
 } from './types'
 
+const REQUEST_TIMEOUT_MS = 20000
+
 export class OpenAICompatibleProvider implements LLMProvider {
   label = 'OpenAI Compatible'
 
   async generateNextLine(input: GenerateNextLineInput) {
-    const response = await fetch(`${appEnv.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${appEnv.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: appEnv.model,
-        temperature: input.temperature,
-        top_p: input.topP,
-        max_tokens: 80,
-        messages: [
-          {
-            role: 'system',
-            content: buildStoryPrompt(input),
-          },
-          {
-            role: 'user',
-            content: input.seed.openingLine,
-          },
-          ...input.history.map((message) => ({
-            role: message.role,
-            content: message.content,
-          })),
-        ],
-      }),
-    })
+    const controller = new AbortController()
+    const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+    let response: Response
+
+    try {
+      response = await fetch(`${appEnv.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${appEnv.apiKey}`,
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: appEnv.model,
+          temperature: input.temperature,
+          top_p: input.topP,
+          max_tokens: 80,
+          messages: [
+            {
+              role: 'system',
+              content: buildStoryPrompt(input),
+            },
+            {
+              role: 'user',
+              content: input.seed.openingLine,
+            },
+            ...input.history.map((message) => ({
+              role: message.role,
+              content: message.content,
+            })),
+          ],
+        }),
+      })
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw new Error('请求超时，请重试。')
+      }
+
+      throw error
+    } finally {
+      window.clearTimeout(timeoutId)
+    }
 
     if (!response.ok) {
       const errorText = await response.text()

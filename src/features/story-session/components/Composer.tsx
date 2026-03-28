@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 interface ComposerProps {
   draft: string
   draftError: string | null
@@ -21,14 +23,19 @@ export function Composer({
   onStartSession,
   onSubmit,
 }: ComposerProps) {
+  const [isComposing, setIsComposing] = useState(false)
   const remaining = maxLength - Array.from(draft).length
+  const canSubmit =
+    hasStarted && !isBusy && draft.trim().length > 0 && draftError === null
 
   return (
     <form
       className="composer"
       onSubmit={(event) => {
         event.preventDefault()
-        onSubmit()
+        if (canSubmit) {
+          onSubmit()
+        }
       }}
     >
       {!hasStarted ? (
@@ -44,34 +51,47 @@ export function Composer({
         </div>
       ) : null}
 
-      <label className="composer-panel">
+      <label
+        className={draftError ? 'composer-panel composer-panel--error' : 'composer-panel'}
+      >
         <span className="sr-only">输入你的下一句故事</span>
         <textarea
           className="composer-input"
+          aria-invalid={draftError ? 'true' : 'false'}
           disabled={isBusy || !hasStarted}
           maxLength={maxLength}
           placeholder="输入下一句故事，20字内，不使用标点"
           rows={1}
           value={draft}
           onChange={(event) => onChange(event.target.value)}
+          onCompositionStart={() => setIsComposing(true)}
+          onCompositionEnd={() => setIsComposing(false)}
           onKeyDown={(event) => {
+            if (isComposing || event.nativeEvent.isComposing) {
+              return
+            }
+
             if (event.key === 'Backspace') {
               onBackspace()
             }
 
             if (event.key === 'Enter' && !event.shiftKey) {
               event.preventDefault()
-              onSubmit()
+              if (canSubmit) {
+                onSubmit()
+              }
             }
           }}
         />
-        <button className="composer-send" disabled={isBusy || !hasStarted} type="submit">
+        <button className="composer-send" disabled={!canSubmit} type="submit">
           {isBusy ? '生成中' : '发送'}
         </button>
       </label>
 
       <div className="composer-meta">
-        <p>{draftError ?? '和 AI 一起一问一答接龙，故事会一直延续下去。'}</p>
+        <p className={draftError ? 'composer-error' : undefined}>
+          {draftError ?? '和 AI 一起一问一答接龙，故事会一直延续下去。'}
+        </p>
         <span aria-live="polite">{remaining} / {maxLength}</span>
       </div>
     </form>

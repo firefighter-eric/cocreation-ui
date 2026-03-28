@@ -72,6 +72,7 @@ describe('App', () => {
     )
 
     expect(screen.getByText('这条规则不允许使用标点。')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '发送' })).toBeDisabled()
   })
 
   it('generates an automatic conversation sample', async () => {
@@ -240,5 +241,24 @@ describe('App', () => {
 
     expect(screen.getByText('窗外的雨开始倒着落下')).toBeInTheDocument()
     vi.useRealTimers()
+  })
+
+  it('does not submit while IME composition is active', async () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
+
+    fireEvent.compositionStart(input)
+    fireEvent.change(input, { target: { value: '他看见风停在门口' } })
+    fireEvent.keyDown(input, {
+      key: 'Enter',
+      nativeEvent: { isComposing: true },
+    })
+
+    expect(window.fetch).not.toHaveBeenCalled()
+    expect(screen.queryByRole('button', { name: '生成中' })).not.toBeInTheDocument()
+
+    fireEvent.compositionEnd(input)
   })
 })

@@ -654,6 +654,11 @@ button {
   box-shadow: var(--shadow);
 }
 
+.composer-panel--error {
+  border-color: #f0b6b6;
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.06);
+}
+
 .composer-input {
   flex: 1;
   resize: none;
@@ -664,6 +669,10 @@ button {
   padding: 8px 10px;
   outline: none;
   font-size: 14px;
+}
+
+.composer-input[aria-invalid='true'] {
+  color: #7f1d1d;
 }
 
 .composer-input::placeholder {
@@ -698,6 +707,11 @@ button {
 .composer-meta p,
 .composer-meta span {
   margin: 0;
+}
+
+.composer-error {
+  color: var(--danger) !important;
+  font-weight: 600;
 }
 
 .auto-mode-panel {
