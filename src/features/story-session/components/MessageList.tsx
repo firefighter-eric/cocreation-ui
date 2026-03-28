@@ -20,6 +20,7 @@ export function MessageList({
   onDismissError,
 }: MessageListProps) {
   const partnerLabel = conversationMode === 'human_like' ? '对方' : 'AI'
+  const selfLabel = '我'
   const emptyCopy =
     conversationMode === 'human_like'
       ? '你发送一句，对方会接着把故事继续写下去。'
@@ -47,7 +48,7 @@ export function MessageList({
               className={`message-row message-row--${message.role}`}
             >
               <div className="message-avatar" aria-hidden="true">
-                {message.role === 'user' ? '你' : partnerLabel}
+                {message.role === 'user' ? selfLabel : partnerLabel}
               </div>
               <div className="message-bubble">
                 <p>{message.content}</p>
