@@ -4,7 +4,7 @@ import type {
   StoryStyle,
 } from '../../entities/story-session/types'
 
-export type StoryMode = 'manual' | 'auto'
+export type StoryMode = 'manual' | 'human_like' | 'auto'
 
 export const defaultStoryStyle: StoryStyle = 'creative'
 export const defaultStoryMode: StoryMode = 'manual'
@@ -21,12 +21,17 @@ export const storyModeOptions: Array<{
 }> = [
   {
     value: 'manual',
-    label: '人机对话',
+    label: '与AI对话',
     description: '保持当前模式，由你输入，AI 续写。',
   },
   {
+    value: 'human_like',
+    label: '与人对话',
+    description: '与你的对话搭档轮流接龙，一起把故事继续写下去。',
+  },
+  {
     value: 'auto',
-    label: '机器自动对话',
+    label: 'AI自动对话',
     description: '自动生成一组用户与 AI 的示例对话，用来测试 prompt 和启动语句。',
   },
 ]
@@ -79,3 +84,9 @@ export const styleOptions: Array<{
     description: '保持逻辑顺滑，像共同写一个完整故事。',
   },
 ]
+
+export function getStyleSystemPrompt(style: StoryStyle) {
+  return style === 'creative'
+    ? '请给出一个意想不到、跳跃感强、但仍然延续当前故事的短句。'
+    : '请给出一个自然连贯、符合日常叙事逻辑的短句。'
+}

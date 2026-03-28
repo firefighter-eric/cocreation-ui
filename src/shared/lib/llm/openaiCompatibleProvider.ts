@@ -19,7 +19,8 @@ export class OpenAICompatibleProvider implements LLMProvider {
       },
       body: JSON.stringify({
         model: appEnv.model,
-        temperature: input.style === 'creative' ? 1.1 : 0.6,
+        temperature: input.temperature,
+        top_p: input.topP,
         max_tokens: 80,
         messages: [
           {

@@ -1,34 +1,24 @@
 import type {
-  StoryRules,
   StorySeed,
-  StoryStyle,
 } from '../../entities/story-session/types'
-import { storyModeOptions, type StoryMode, styleOptions } from '../../shared/config/story'
+import { storyModeOptions, type StoryMode } from '../../shared/config/story'
 
 interface StorySidebarProps {
-  providerLabel: string
-  rules: StoryRules
   seeds: StorySeed[]
   selectedMode: StoryMode
   selectedSeedId: string
-  selectedStyle: StoryStyle
   onModeChange: (mode: StoryMode) => void
   onRestart: () => void
   onSeedChange: (seed: StorySeed) => void
-  onStyleChange: (style: StoryStyle) => void
 }
 
 export function StorySidebar({
-  providerLabel,
-  rules,
   seeds,
   selectedMode,
   selectedSeedId,
-  selectedStyle,
   onModeChange,
   onRestart,
   onSeedChange,
-  onStyleChange,
 }: StorySidebarProps) {
   return (
     <div className="sidebar-panel">
@@ -41,7 +31,7 @@ export function StorySidebar({
       <section className="sidebar-section">
         <div className="section-heading">
           <h2>功能选取</h2>
-          <span>2 种</span>
+          <span>{storyModeOptions.length} 种</span>
         </div>
         <div className="option-grid">
           {storyModeOptions.map((option) => (
@@ -54,30 +44,6 @@ export function StorySidebar({
               }
               type="button"
               onClick={() => onModeChange(option.value)}
-            >
-              <strong>{option.label}</strong>
-              <span>{option.description}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="sidebar-section">
-        <div className="section-heading">
-          <h2>创作风格</h2>
-          <span>{providerLabel}</span>
-        </div>
-        <div className="option-grid">
-          {styleOptions.map((option) => (
-            <button
-              key={option.value}
-              className={
-                option.value === selectedStyle
-                  ? 'option-card option-card--active'
-                  : 'option-card'
-              }
-              type="button"
-              onClick={() => onStyleChange(option.value)}
             >
               <strong>{option.label}</strong>
               <span>{option.description}</span>
@@ -112,13 +78,6 @@ export function StorySidebar({
       </section>
 
       <section className="sidebar-section sidebar-section--compact">
-        <div className="rule-card">
-          <h2>当前规则</h2>
-          <p>{rules.maxChars} 字内</p>
-          <p>不允许标点</p>
-          <p>一来一回接龙</p>
-        </div>
-
         <button className="restart-button" type="button" onClick={onRestart}>
           重新开始当前故事
         </button>

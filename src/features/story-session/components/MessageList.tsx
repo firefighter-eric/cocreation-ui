@@ -1,7 +1,9 @@
 import type { Message } from '../../../entities/message/types'
 import type { StorySessionStatus } from '../../../entities/story-session/types'
+import type { StoryMode } from '../../../shared/config/story'
 
 interface MessageListProps {
+  conversationMode: StoryMode
   error: string | null
   messages: Message[]
   openingLine: string
@@ -10,27 +12,36 @@ interface MessageListProps {
 }
 
 export function MessageList({
+  conversationMode,
   error,
   messages,
   openingLine,
   status,
   onDismissError,
 }: MessageListProps) {
+  const partnerLabel = conversationMode === 'human_like' ? '对方' : 'AI'
+  const openingCopy =
+    conversationMode === 'human_like'
+      ? '从这一句开始，你和对方轮流把故事继续下去。'
+      : '从这一句开始，你和 AI 轮流往下接。'
+  const emptyCopy =
+    conversationMode === 'human_like'
+      ? '你发送一句，对方会接着把故事继续写下去。'
+      : '你发送一句，AI 会继续接龙。'
+
   return (
     <section className="chat-panel">
       <div className="chat-scroll">
         <div className="opening-card">
           <p className="eyebrow">故事开场</p>
           <h1>{openingLine}</h1>
-          <p>从这一句开始，你和 AI 轮流往下接。</p>
+          <p>{openingCopy}</p>
         </div>
 
         {messages.length === 0 ? (
           <div className="empty-state">
             <p className="empty-title">先写一句，把故事推向下一步。</p>
-            <p className="empty-copy">
-              你发送一句，AI 会按当前风格继续接龙。
-            </p>
+            <p className="empty-copy">{emptyCopy}</p>
           </div>
         ) : null}
 
@@ -41,7 +52,7 @@ export function MessageList({
               className={`message-row message-row--${message.role}`}
             >
               <div className="message-avatar" aria-hidden="true">
-                {message.role === 'user' ? '你' : 'AI'}
+                {message.role === 'user' ? '你' : partnerLabel}
               </div>
               <div className="message-bubble">
                 <p>{message.content}</p>
@@ -52,7 +63,7 @@ export function MessageList({
           {status === 'submitting_user_line' || status === 'waiting_for_ai' ? (
             <article className="message-row message-row--assistant">
               <div className="message-avatar" aria-hidden="true">
-                AI
+                {partnerLabel}
               </div>
               <div className="message-bubble message-bubble--typing">
                 <span className="typing-dot" />

@@ -1,5 +1,6 @@
 import type { Message } from '../../../entities/message/types'
 import type {
+  ModelSettings,
   StoryRules,
   StorySeed,
   StorySessionStatus,
@@ -14,8 +15,11 @@ interface ExportStoryCsvInput {
   rules: StoryRules
   seed: StorySeed
   sessionId: string
+  sessionStartedAt: string | null
   status: StorySessionStatus
   style: StoryStyle
+  systemPrompt: string
+  modelSettings: ModelSettings
 }
 
 export function exportStoryCsv(input: ExportStoryCsvInput) {
@@ -29,8 +33,14 @@ export function exportStoryCsv(input: ExportStoryCsvInput) {
 export function buildStoryJson(input: ExportStoryCsvInput, exportedAt = new Date()) {
   return JSON.stringify(
     {
-      sessionId: input.sessionId,
-      exportedAt: exportedAt.toISOString(),
+      session_id: input.sessionId,
+      session_started_at: input.sessionStartedAt,
+      system_prompt: input.systemPrompt,
+      model_settings: {
+        temperature: input.modelSettings.temperature,
+        top_p: input.modelSettings.topP,
+      },
+      exported_at: exportedAt.toISOString(),
       mode: input.mode,
       style: input.style,
       status: input.status,
@@ -46,8 +56,18 @@ export function buildStoryJson(input: ExportStoryCsvInput, exportedAt = new Date
           id: message.id,
           role: message.role,
           content: message.content,
-          createdAt: message.createdAt,
-          interaction: message.interaction ?? null,
+          created_at: message.createdAt,
+          interaction: message.interaction
+            ? {
+                ai_ended_at: message.interaction.aiEndedAt,
+                ai_started_at: message.interaction.aiStartedAt,
+                backspace_count: message.interaction.backspaceCount,
+                input_ended_at: message.interaction.inputEndedAt,
+                input_started_at: message.interaction.inputStartedAt,
+                reaction_reference_at: message.interaction.reactionReferenceAt,
+                reaction_time_ms: message.interaction.reactionTimeMs,
+              }
+            : null,
         })),
       ],
     },

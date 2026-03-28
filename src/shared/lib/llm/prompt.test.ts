@@ -1,42 +1,91 @@
 import { describe, expect, it } from 'vitest'
-import { defaultStoryRules, storySeeds } from '../../config/story'
+import {
+  defaultStoryRules,
+  getStyleSystemPrompt,
+  storySeeds,
+} from '../../config/story'
 import { buildStoryPrompt } from './prompt'
 
 describe('buildStoryPrompt', () => {
+  const baseSettings = {
+    temperature: 1.1,
+    topP: 1,
+  }
+
   it('contains creative guidance', () => {
     const prompt = buildStoryPrompt({
+      ...baseSettings,
+      conversationMode: 'manual',
       history: [],
       rules: defaultStoryRules,
       seed: storySeeds[0],
       speaker: 'assistant',
       style: 'creative',
+      systemPrompt: getStyleSystemPrompt('creative'),
     })
 
-    expect(prompt).toContain('意想不到')
+    expect(prompt).toContain(getStyleSystemPrompt('creative'))
     expect(prompt).toContain(storySeeds[0].openingLine)
   })
 
   it('contains coherent guidance', () => {
     const prompt = buildStoryPrompt({
+      ...baseSettings,
+      conversationMode: 'manual',
       history: [],
       rules: defaultStoryRules,
       seed: storySeeds[1],
       speaker: 'assistant',
       style: 'coherent',
+      systemPrompt: getStyleSystemPrompt('coherent'),
     })
 
-    expect(prompt).toContain('自然连贯')
+    expect(prompt).toContain(getStyleSystemPrompt('coherent'))
   })
 
   it('contains user speaker guidance', () => {
     const prompt = buildStoryPrompt({
+      ...baseSettings,
+      conversationMode: 'auto',
       history: [],
       rules: defaultStoryRules,
       seed: storySeeds[0],
       speaker: 'user',
       style: 'creative',
+      systemPrompt: getStyleSystemPrompt('creative'),
     })
 
     expect(prompt).toContain('人类玩家')
+  })
+
+  it('contains human-like partner guidance', () => {
+    const prompt = buildStoryPrompt({
+      ...baseSettings,
+      conversationMode: 'human_like',
+      history: [],
+      rules: defaultStoryRules,
+      seed: storySeeds[0],
+      speaker: 'assistant',
+      style: 'creative',
+      systemPrompt: getStyleSystemPrompt('creative'),
+    })
+
+    expect(prompt).toContain('人类对话者')
+    expect(prompt).not.toContain('AI搭档')
+  })
+
+  it('includes custom system prompt', () => {
+    const prompt = buildStoryPrompt({
+      ...baseSettings,
+      conversationMode: 'manual',
+      history: [],
+      rules: defaultStoryRules,
+      seed: storySeeds[0],
+      speaker: 'assistant',
+      style: 'creative',
+      systemPrompt: '让氛围更冷静',
+    })
+
+    expect(prompt).toContain('让氛围更冷静')
   })
 })

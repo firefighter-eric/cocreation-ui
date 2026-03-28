@@ -8,7 +8,9 @@ import type {
 } from './types'
 
 interface CreateStorySessionInput {
+  modelSettings: StorySessionState['modelSettings']
   seed: StorySeed
+  systemPrompt: string
   style: StoryStyle
   rules: StoryRules
 }
@@ -18,6 +20,9 @@ export function createStorySession(
 ): StorySessionState {
   return {
     sessionId: createSessionId(),
+    sessionStartedAt: null,
+    systemPrompt: input.systemPrompt,
+    modelSettings: input.modelSettings,
     seed: input.seed,
     style: input.style,
     rules: input.rules,
@@ -42,6 +47,12 @@ export function advanceStorySession(
         ...state,
         status: 'submitting_user_line',
         messages: [...state.messages, event.message],
+        error: null,
+      }
+    case 'START_SESSION':
+      return {
+        ...state,
+        sessionStartedAt: state.sessionStartedAt ?? event.startedAt,
         error: null,
       }
     case 'APPEND_MESSAGE':
@@ -69,6 +80,16 @@ export function advanceStorySession(
         status: 'failed',
         error: event.error,
       }
+    case 'SET_SYSTEM_PROMPT':
+      return {
+        ...state,
+        systemPrompt: event.systemPrompt,
+      }
+    case 'SET_MODEL_SETTINGS':
+      return {
+        ...state,
+        modelSettings: event.modelSettings,
+      }
     case 'CLEAR_ERROR':
       return {
         ...state,
@@ -78,6 +99,9 @@ export function advanceStorySession(
     case 'RESET':
       return {
         sessionId: createSessionId(),
+        sessionStartedAt: null,
+        systemPrompt: event.systemPrompt ?? state.systemPrompt,
+        modelSettings: event.modelSettings ?? state.modelSettings,
         seed: event.seed ?? state.seed,
         style: event.style ?? state.style,
         rules: event.rules ?? state.rules,

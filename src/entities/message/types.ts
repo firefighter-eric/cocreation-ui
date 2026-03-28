@@ -6,6 +6,8 @@ export interface MessageInteractionMeta {
   backspaceCount?: number
   inputEndedAt?: string
   inputStartedAt?: string
+  reactionReferenceAt?: string
+  reactionTimeMs?: number
 }
 
 export interface Message {

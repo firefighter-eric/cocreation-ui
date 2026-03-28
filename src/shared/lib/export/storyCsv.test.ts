@@ -16,6 +16,8 @@ const exportInput = {
         backspaceCount: 2,
         inputEndedAt: '2026-03-28T09:59:59.000Z',
         inputStartedAt: '2026-03-28T09:59:30.000Z',
+        reactionReferenceAt: '2026-03-28T09:59:00.000Z',
+        reactionTimeMs: 30000,
       },
     },
     {
@@ -41,8 +43,14 @@ const exportInput = {
     summary: 'summary',
   },
   sessionId: 'session-1',
+  sessionStartedAt: '2026-03-28T09:59:00.000Z',
   status: 'ready' as const,
   style: 'creative' as const,
+  systemPrompt: '保持雪地般的安静',
+  modelSettings: {
+    temperature: 0.9,
+    topP: 0.8,
+  },
 }
 
 describe('storyCsv', () => {
@@ -50,7 +58,13 @@ describe('storyCsv', () => {
     const json = buildStoryJson(exportInput, new Date('2026-03-28T08:25:30.000Z'))
     const parsed = JSON.parse(json)
 
-    expect(parsed.sessionId).toBe('session-1')
+    expect(parsed.session_id).toBe('session-1')
+    expect(parsed.session_started_at).toBe('2026-03-28T09:59:00.000Z')
+    expect(parsed.system_prompt).toBe('保持雪地般的安静')
+    expect(parsed.model_settings).toEqual({
+      temperature: 0.9,
+      top_p: 0.8,
+    })
     expect(parsed.mode).toBe('manual')
     expect(parsed.seed.openingLine).toBe('第一片雪落在门把手上')
     expect(parsed.conversation[0]).toEqual({
@@ -62,15 +76,17 @@ describe('storyCsv', () => {
       role: 'user',
       content: '他踩进会发光的积雪',
       interaction: {
-        backspaceCount: 2,
-        inputEndedAt: '2026-03-28T09:59:59.000Z',
-        inputStartedAt: '2026-03-28T09:59:30.000Z',
+        backspace_count: 2,
+        input_ended_at: '2026-03-28T09:59:59.000Z',
+        input_started_at: '2026-03-28T09:59:30.000Z',
+        reaction_reference_at: '2026-03-28T09:59:00.000Z',
+        reaction_time_ms: 30000,
       },
     })
     expect(parsed.conversation[2]).toMatchObject({
       interaction: {
-        aiEndedAt: '2026-03-28T10:00:02.000Z',
-        aiStartedAt: '2026-03-28T10:00:01.000Z',
+        ai_ended_at: '2026-03-28T10:00:02.000Z',
+        ai_started_at: '2026-03-28T10:00:01.000Z',
       },
     })
   })
@@ -79,5 +95,18 @@ describe('storyCsv', () => {
     const fileStem = createExportFileStem(new Date(2026, 2, 28, 16, 25, 30))
 
     expect(fileStem).toBe('cocreation-260328-162530')
+  })
+
+  it('serializes human-like mode at top level', () => {
+    const json = buildStoryJson(
+      {
+        ...exportInput,
+        mode: 'human_like',
+      },
+      new Date('2026-03-28T08:25:30.000Z'),
+    )
+    const parsed = JSON.parse(json)
+
+    expect(parsed.mode).toBe('human_like')
   })
 })

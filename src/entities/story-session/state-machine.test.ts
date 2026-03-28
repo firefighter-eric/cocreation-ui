@@ -5,7 +5,12 @@ import { advanceStorySession, createMessage, createStorySession } from './state-
 describe('story session state machine', () => {
   it('boots into ready state', () => {
     const session = createStorySession({
+      modelSettings: {
+        temperature: 1.1,
+        topP: 1,
+      },
       seed: storySeeds[0],
+      systemPrompt: '',
       style: 'creative',
       rules: defaultStoryRules,
     })
@@ -18,7 +23,12 @@ describe('story session state machine', () => {
   it('moves through user submit and ai success', () => {
     const session = advanceStorySession(
       createStorySession({
+        modelSettings: {
+          temperature: 1.1,
+          topP: 1,
+        },
         seed: storySeeds[0],
+        systemPrompt: '',
         style: 'creative',
         rules: defaultStoryRules,
       }),
@@ -42,7 +52,12 @@ describe('story session state machine', () => {
   it('resets with a new seed', () => {
     const session = advanceStorySession(
       createStorySession({
+        modelSettings: {
+          temperature: 1.1,
+          topP: 1,
+        },
         seed: storySeeds[0],
+        systemPrompt: '保持安静语气',
         style: 'creative',
         rules: defaultStoryRules,
       }),
@@ -57,6 +72,11 @@ describe('story session state machine', () => {
 
     expect(reset.seed.id).toBe(storySeeds[1].id)
     expect(reset.style).toBe('coherent')
+    expect(reset.systemPrompt).toBe('保持安静语气')
+    expect(reset.modelSettings).toEqual({
+      temperature: 1.1,
+      topP: 1,
+    })
     expect(reset.messages).toHaveLength(0)
   })
 })
