@@ -2,11 +2,14 @@
 
 一个基于 `React + Vite + TypeScript` 的前端应用，用 ChatGPT 风格界面实现“人与 AI 轮流接龙写故事”。
 
+产品设计说明见 [docs/product-design.md](/Users/eric/projects/cocreation-ui/docs/product-design.md)。
+
 ## 功能
 
 - 左侧设置栏切换开场句和创作风格
 - 右侧聊天式故事流展示共创过程
 - 严格短句规则：默认 `20` 字内、禁止标点
+- 支持导出完整会话 JSON
 - 支持 OpenAI-compatible 接口
 - 没有配置远程模型时自动降级到本地 mock
 

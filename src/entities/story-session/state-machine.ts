@@ -44,6 +44,13 @@ export function advanceStorySession(
         messages: [...state.messages, event.message],
         error: null,
       }
+    case 'APPEND_MESSAGE':
+      return {
+        ...state,
+        status: event.status ?? state.status,
+        messages: [...state.messages, event.message],
+        error: null,
+      }
     case 'AI_REQUEST_START':
       return {
         ...state,
@@ -84,12 +91,14 @@ export function advanceStorySession(
 export function createMessage(
   role: Message['role'],
   content: string,
+  interaction?: Message['interaction'],
 ): Message {
   return {
     id: globalThis.crypto?.randomUUID?.() ?? `${role}-${Date.now()}`,
     role,
     content,
     createdAt: new Date().toISOString(),
+    interaction,
   }
 }
 

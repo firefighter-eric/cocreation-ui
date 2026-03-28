@@ -39,12 +39,23 @@ export function useStorySession({
   })
   const [draft, setDraft] = useState('')
   const [draftError, setDraftError] = useState<string | null>(null)
+  const [manualInputStartedAt, setManualInputStartedAt] = useState<string | null>(null)
+  const [manualBackspaceCount, setManualBackspaceCount] = useState(0)
 
   useEffect(() => {
     store.save(state)
   }, [state, store])
 
   function setValidatedDraft(value: string) {
+    if (value.length > 0 && manualInputStartedAt === null) {
+      setManualInputStartedAt(new Date().toISOString())
+    }
+
+    if (value.length === 0 && draft.length > 0) {
+      setManualInputStartedAt(null)
+      setManualBackspaceCount(0)
+    }
+
     setDraft(value)
 
     const validation = validateStoryLine(value, state.rules)
@@ -55,16 +66,24 @@ export function useStorySession({
     const trimmedDraft = draft.trim()
     const validation = validateStoryLine(trimmedDraft, state.rules)
     const activeSessionId = state.sessionId
+    const inputEndedAt = new Date().toISOString()
 
     if (!validation.valid) {
       setDraftError(validation.error)
       return
     }
 
-    const userMessage = createMessage('user', trimmedDraft)
+    const userMessage = createMessage('user', trimmedDraft, {
+      backspaceCount: manualBackspaceCount,
+      inputEndedAt,
+      inputStartedAt: manualInputStartedAt ?? inputEndedAt,
+    })
+    const aiStartedAt = new Date().toISOString()
 
     setDraft('')
     setDraftError(null)
+    setManualInputStartedAt(null)
+    setManualBackspaceCount(0)
     setState((current) =>
       advanceStorySession(current, {
         type: 'USER_SUBMIT',
@@ -79,10 +98,14 @@ export function useStorySession({
         history: [...state.messages, userMessage],
         rules: state.rules,
         seed: state.seed,
+        speaker: 'assistant',
         style: state.style,
       })
 
-      const assistantMessage = createMessage('assistant', assistantContent)
+      const assistantMessage = createMessage('assistant', assistantContent, {
+        aiEndedAt: new Date().toISOString(),
+        aiStartedAt,
+      })
 
       startTransition(() => {
         setState((current) =>
@@ -109,10 +132,59 @@ export function useStorySession({
     }
   }
 
+  async function generateAutoConversation(roundCount: number) {
+    const activeSessionId = state.sessionId
+    let history = [...state.messages]
+    const totalMessages = roundCount * 2
+
+    setDraft('')
+    setDraftError(null)
+    setState((current) => advanceStorySession(current, { type: 'AI_REQUEST_START' }))
+
+    try {
+      for (let index = 0; index < totalMessages; index += 1) {
+        const speaker = index % 2 === 0 ? 'user' : 'assistant'
+        const content = await provider.generateNextLine({
+          history,
+          rules: state.rules,
+          seed: state.seed,
+          speaker,
+          style: state.style,
+        })
+        const message = createMessage(speaker, content)
+        history = [...history, message]
+
+        setState((current) =>
+          current.sessionId !== activeSessionId
+            ? current
+            : advanceStorySession(current, {
+                type: 'APPEND_MESSAGE',
+                message,
+                status: index === totalMessages - 1 ? 'ready' : 'waiting_for_ai',
+              }),
+        )
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : '自动对话生成失败，请稍后再试。'
+
+      setState((current) =>
+        current.sessionId !== activeSessionId
+          ? current
+          : advanceStorySession(current, {
+              type: 'AI_FAILURE',
+              error: message,
+            }),
+      )
+    }
+  }
+
   function restartSession(nextSeed = state.seed, nextStyle = state.style) {
     startTransition(() => {
       setDraft('')
       setDraftError(null)
+      setManualInputStartedAt(null)
+      setManualBackspaceCount(0)
       setState((current) =>
         advanceStorySession(current, {
           type: 'RESET',
@@ -135,6 +207,10 @@ export function useStorySession({
     setState((current) => advanceStorySession(current, { type: 'CLEAR_ERROR' }))
   }
 
+  function incrementBackspaceCount() {
+    setManualBackspaceCount((current) => current + 1)
+  }
+
   return {
     state,
     draft,
@@ -142,9 +218,11 @@ export function useStorySession({
     providerLabel: provider.label,
     setDraft: setValidatedDraft,
     submitDraft,
+    generateAutoConversation,
     restartSession: () => restartSession(),
     updateStyle,
     updateSeed,
     clearError,
+    incrementBackspaceCount,
   }
 }

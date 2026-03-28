@@ -15,6 +15,13 @@ const mockCoherentReplies = [
   '他像在等谁走进来',
 ]
 
+const mockUserReplies = [
+  '我把手按在泛黄纸页上',
+  '我听见脚步停在门外',
+  '我顺着灰尘看向楼梯口',
+  '我想起昨天没人借走这本书',
+]
+
 export class MockProvider implements LLMProvider {
   label = 'Mock Provider'
 
@@ -22,7 +29,11 @@ export class MockProvider implements LLMProvider {
     await sleep(600)
 
     const pool =
-      input.style === 'creative' ? mockCreativeReplies : mockCoherentReplies
+      input.speaker === 'user'
+        ? mockUserReplies
+        : input.style === 'creative'
+          ? mockCreativeReplies
+          : mockCoherentReplies
     const pick = pool[input.history.length % pool.length]
 
     return sanitizeAssistantLine(pick, input.rules)

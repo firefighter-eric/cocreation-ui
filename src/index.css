@@ -109,7 +109,7 @@ button {
 .eyebrow {
   margin: 0 0 8px;
   color: var(--accent);
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
@@ -122,14 +122,14 @@ button {
 }
 
 .sidebar-brand h1 {
-  font-size: 24px;
+  font-size: 21px;
   margin-bottom: 6px;
 }
 
 .sidebar-brand p:last-child {
   margin: 0;
   line-height: 1.45;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .sidebar-section {
@@ -150,11 +150,11 @@ button {
 }
 
 .section-heading h2 {
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .section-heading span {
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .option-grid,
@@ -187,14 +187,15 @@ button {
 
 .option-card--active,
 .seed-card--active {
-  border-color: #bfdbfe;
-  background: linear-gradient(180deg, #eff6ff, #ffffff);
+  border-color: #d1d5db;
+  background: #f3f4f6;
 }
 
 .option-card strong,
 .seed-card strong {
   display: block;
   margin-bottom: 6px;
+  font-size: 14px;
 }
 
 .seed-card p,
@@ -203,7 +204,7 @@ button {
 .rule-card p {
   margin: 0;
   line-height: 1.35;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .rule-card {
@@ -215,12 +216,18 @@ button {
 
 .rule-card h2 {
   margin: 0 0 10px;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .restart-button {
   background: transparent;
   text-align: center;
+}
+
+.restart-button--primary {
+  background: var(--accent-strong);
+  color: #ffffff;
+  border-color: var(--accent-strong);
 }
 
 .workspace {
@@ -242,19 +249,21 @@ button {
 }
 
 .workspace-header h2 {
-  font-size: 18px;
+  font-size: 16px;
   margin-bottom: 4px;
 }
 
 .workspace-subtitle {
   margin: 0;
   max-width: 680px;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .header-pills {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 10px;
 }
 
@@ -267,10 +276,25 @@ button {
   background: var(--bg-panel);
   color: var(--text-primary);
   white-space: nowrap;
+  font-size: 12px;
 }
 
 .header-pill--muted {
   color: var(--text-secondary);
+}
+
+.header-export {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--text-primary);
+  padding: 7px 12px;
+  font-size: 11px;
+}
+
+.header-export:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .chat-panel {
@@ -296,13 +320,13 @@ button {
 }
 
 .opening-card h1 {
-  font-size: 24px;
+  font-size: 20px;
   margin-bottom: 6px;
 }
 
 .opening-card p,
 .empty-copy {
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.45;
 }
 
@@ -313,7 +337,7 @@ button {
 .empty-title {
   margin: 0 0 8px;
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .message-list {
@@ -361,7 +385,7 @@ button {
 
 .message-bubble p {
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.55;
 }
 
@@ -457,6 +481,7 @@ button {
   min-height: 44px;
   padding: 8px 10px;
   outline: none;
+  font-size: 14px;
 }
 
 .composer-input::placeholder {
@@ -485,12 +510,44 @@ button {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .composer-meta p,
 .composer-meta span {
   margin: 0;
+}
+
+.auto-mode-panel {
+  padding: 10px 20px 18px;
+  border-top: 1px solid var(--border);
+  background: #ffffff;
+}
+
+.auto-mode-panel__inner {
+  max-width: 860px;
+  margin: 0 auto;
+  display: grid;
+  gap: 12px;
+}
+
+.auto-turn-input {
+  display: grid;
+  gap: 8px;
+  max-width: 220px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.auto-turn-input input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: #ffffff;
 }
 
 @media (max-width: 960px) {

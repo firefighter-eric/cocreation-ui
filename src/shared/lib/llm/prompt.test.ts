@@ -8,6 +8,7 @@ describe('buildStoryPrompt', () => {
       history: [],
       rules: defaultStoryRules,
       seed: storySeeds[0],
+      speaker: 'assistant',
       style: 'creative',
     })
 
@@ -20,9 +21,22 @@ describe('buildStoryPrompt', () => {
       history: [],
       rules: defaultStoryRules,
       seed: storySeeds[1],
+      speaker: 'assistant',
       style: 'coherent',
     })
 
     expect(prompt).toContain('自然连贯')
+  })
+
+  it('contains user speaker guidance', () => {
+    const prompt = buildStoryPrompt({
+      history: [],
+      rules: defaultStoryRules,
+      seed: storySeeds[0],
+      speaker: 'user',
+      style: 'creative',
+    })
+
+    expect(prompt).toContain('人类玩家')
   })
 })

@@ -3,14 +3,16 @@ import type {
   StorySeed,
   StoryStyle,
 } from '../../entities/story-session/types'
-import { styleOptions } from '../../shared/config/story'
+import { storyModeOptions, type StoryMode, styleOptions } from '../../shared/config/story'
 
 interface StorySidebarProps {
   providerLabel: string
   rules: StoryRules
   seeds: StorySeed[]
+  selectedMode: StoryMode
   selectedSeedId: string
   selectedStyle: StoryStyle
+  onModeChange: (mode: StoryMode) => void
   onRestart: () => void
   onSeedChange: (seed: StorySeed) => void
   onStyleChange: (style: StoryStyle) => void
@@ -20,8 +22,10 @@ export function StorySidebar({
   providerLabel,
   rules,
   seeds,
+  selectedMode,
   selectedSeedId,
   selectedStyle,
+  onModeChange,
   onRestart,
   onSeedChange,
   onStyleChange,
@@ -33,6 +37,30 @@ export function StorySidebar({
         <h1>共创故事</h1>
         <p>像 ChatGPT 一样对话，但每一句都在推进同一个故事世界。</p>
       </div>
+
+      <section className="sidebar-section">
+        <div className="section-heading">
+          <h2>功能选取</h2>
+          <span>2 种</span>
+        </div>
+        <div className="option-grid">
+          {storyModeOptions.map((option) => (
+            <button
+              key={option.value}
+              className={
+                option.value === selectedMode
+                  ? 'option-card option-card--active'
+                  : 'option-card'
+              }
+              type="button"
+              onClick={() => onModeChange(option.value)}
+            >
+              <strong>{option.label}</strong>
+              <span>{option.description}</span>
+            </button>
+          ))}
+        </div>
+      </section>
 
       <section className="sidebar-section">
         <div className="section-heading">

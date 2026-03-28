@@ -35,6 +35,11 @@ export interface StorySessionState {
 export type StorySessionEvent =
   | { type: 'BOOT' }
   | { type: 'USER_SUBMIT'; message: Message }
+  | {
+      type: 'APPEND_MESSAGE'
+      message: Message
+      status?: StorySessionStatus
+    }
   | { type: 'AI_REQUEST_START' }
   | { type: 'AI_SUCCESS'; message: Message }
   | { type: 'AI_FAILURE'; error: string }

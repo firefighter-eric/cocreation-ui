@@ -4,7 +4,32 @@ import type {
   StoryStyle,
 } from '../../entities/story-session/types'
 
+export type StoryMode = 'manual' | 'auto'
+
 export const defaultStoryStyle: StoryStyle = 'creative'
+export const defaultStoryMode: StoryMode = 'manual'
+export const defaultAutoTurnCount = 1
+export const autoTurnCountRange = {
+  min: 1,
+  max: 10,
+}
+
+export const storyModeOptions: Array<{
+  value: StoryMode
+  label: string
+  description: string
+}> = [
+  {
+    value: 'manual',
+    label: '人机对话',
+    description: '保持当前模式，由你输入，AI 续写。',
+  },
+  {
+    value: 'auto',
+    label: '机器自动对话',
+    description: '自动生成一组用户与 AI 的示例对话，用来测试 prompt 和启动语句。',
+  },
+]
 
 export const defaultStoryRules: StoryRules = {
   maxChars: 20,

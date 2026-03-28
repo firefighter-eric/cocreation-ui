@@ -1,4 +1,5 @@
 import type { Message } from '../../../entities/message/types'
+import type { MessageRole } from '../../../entities/message/types'
 import type {
   StoryRules,
   StorySeed,
@@ -9,6 +10,7 @@ export interface GenerateNextLineInput {
   history: Message[]
   rules: StoryRules
   seed: StorySeed
+  speaker: MessageRole
   style: StoryStyle
 }
 

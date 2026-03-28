@@ -4,6 +4,7 @@ interface ComposerProps {
   isBusy: boolean
   maxLength: number
   onChange: (value: string) => void
+  onBackspace: () => void
   onSubmit: () => void
 }
 
@@ -13,6 +14,7 @@ export function Composer({
   isBusy,
   maxLength,
   onChange,
+  onBackspace,
   onSubmit,
 }: ComposerProps) {
   const remaining = maxLength - Array.from(draft).length
@@ -36,6 +38,10 @@ export function Composer({
           value={draft}
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={(event) => {
+            if (event.key === 'Backspace') {
+              onBackspace()
+            }
+
             if (event.key === 'Enter' && !event.shiftKey) {
               event.preventDefault()
               onSubmit()
