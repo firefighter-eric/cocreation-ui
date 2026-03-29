@@ -34,7 +34,12 @@ export function hasCompleteRuntimeLLMConfig(
   }
 
   const normalized = normalizeRuntimeLLMConfig(config)
-  return normalized.apiKey.length > 0 && normalized.baseUrl.length > 0
+  return (
+    normalized.apiKey.length > 0 &&
+    normalized.baseUrl.length > 0 &&
+    normalized.model.length > 0 &&
+    normalized.model !== 'none'
+  )
 }
 
 export function resolveLLMConfig(
@@ -50,7 +55,6 @@ export function resolveLLMConfig(
 
     return {
       ...normalized,
-      model: defaultConfig.model,
       source: 'custom',
     }
   }
@@ -67,7 +71,6 @@ export function resolveLLMConfig(
 
   return {
     ...envConfig,
-    model: defaultConfig.model,
     source: 'env',
   }
 }

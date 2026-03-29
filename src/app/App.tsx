@@ -97,7 +97,7 @@ export function App() {
     provider,
     store,
     initialModelSettings: {
-      model: runtimeConfig?.model || appEnv.model,
+      model: runtimeConfig?.model || appEnv.model || 'none',
       temperature: 1.0,
       topP: 1,
     },

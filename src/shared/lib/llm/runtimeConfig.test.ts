@@ -37,7 +37,7 @@ describe('runtimeConfig', () => {
     expect(resolved).toEqual({
       apiKey: 'custom-key',
       baseUrl: 'https://custom.example/v1',
-      model: 'gpt-test',
+      model: 'custom-model',
       source: 'custom',
     })
   })
@@ -94,6 +94,13 @@ describe('runtimeConfig', () => {
         apiKey: '',
         baseUrl: 'https://example.com/v1',
         model: 'gpt-test',
+      }),
+    ).toBe(false)
+    expect(
+      hasCompleteRuntimeLLMConfig({
+        apiKey: 'key',
+        baseUrl: 'https://example.com/v1',
+        model: 'none',
       }),
     ).toBe(false)
   })

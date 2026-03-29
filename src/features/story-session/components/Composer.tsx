@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface ComposerProps {
   draft: string
@@ -24,10 +24,19 @@ export function Composer({
   onSubmit,
 }: ComposerProps) {
   const [isComposing, setIsComposing] = useState(false)
+  const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const remaining = maxLength - Array.from(draft).length
   const canSubmit =
     hasStarted && !isBusy && draft.trim().length > 0 && draftError === null
   const buttonLabel = !hasStarted ? '开始' : isBusy ? '生成中' : '发送'
+
+  useEffect(() => {
+    if (!hasStarted || isBusy) {
+      return
+    }
+
+    inputRef.current?.focus()
+  }, [hasStarted, isBusy])
 
   return (
     <form
@@ -49,6 +58,7 @@ export function Composer({
       >
         <span className="sr-only">输入你的下一句故事</span>
         <textarea
+          ref={inputRef}
           className="composer-input"
           aria-invalid={draftError ? 'true' : 'false'}
           disabled={isBusy || !hasStarted}

@@ -92,7 +92,22 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: '开始' }))
 
     expect(input).not.toBeDisabled()
+    expect(input).toHaveFocus()
     expect(screen.getByRole('button', { name: '发送' })).toBeDisabled()
+  })
+
+  it('refocuses the composer input after each reply so the next line can be typed immediately', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '开始' }))
+    const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
+
+    await user.type(input, '他忽然听见楼上传来脚步{enter}')
+
+    expect(await screen.findByText('窗外的雨开始倒着落下')).toBeInTheDocument()
+    await waitFor(() => expect(input).toHaveFocus())
   })
 
   it('generates an automatic conversation sample', async () => {
