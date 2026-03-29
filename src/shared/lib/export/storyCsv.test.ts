@@ -48,6 +48,7 @@ const exportInput = {
   style: 'creative' as const,
   systemPrompt: '保持雪地般的安静',
   modelSettings: {
+    model: 'story-model',
     temperature: 0.9,
     topP: 0.8,
   },
@@ -62,6 +63,7 @@ describe('storyCsv', () => {
     expect(parsed.session_started_at).toBe('2026-03-28T09:59:00.000Z')
     expect(parsed.system_prompt).toBe('保持雪地般的安静')
     expect(parsed.model_settings).toEqual({
+      model: 'story-model',
       temperature: 0.9,
       top_p: 0.8,
     })

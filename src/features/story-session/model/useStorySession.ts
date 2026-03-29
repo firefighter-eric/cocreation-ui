@@ -22,6 +22,7 @@ import { validateStoryLine } from '../../../shared/lib/validation/storyLine'
 
 interface UseStorySessionInput {
   conversationMode: StoryMode
+  initialModelSettings: StorySessionState['modelSettings']
   initialSeed: StorySeed
   provider: LLMProvider
   store: SessionStore
@@ -29,6 +30,7 @@ interface UseStorySessionInput {
 
 export function useStorySession({
   conversationMode,
+  initialModelSettings,
   initialSeed,
   provider,
   store,
@@ -41,10 +43,7 @@ export function useStorySession({
     }
 
     const session = createStorySession({
-      modelSettings: {
-        temperature: 1.0,
-        topP: 1,
-      },
+      modelSettings: initialModelSettings,
       seed: initialSeed,
       systemPrompt: buildDefaultSystemPrompt({
         conversationMode,
@@ -139,6 +138,7 @@ export function useStorySession({
       const assistantContent = await provider.generateNextLine({
         conversationMode,
         history: [...state.messages, userMessage],
+        model: state.modelSettings.model,
         rules: state.rules,
         seed: state.seed,
         speaker: 'assistant',
@@ -204,6 +204,7 @@ export function useStorySession({
         const content = await provider.generateNextLine({
           conversationMode,
           history,
+          model: state.modelSettings.model,
           rules: state.rules,
           seed: state.seed,
           speaker,

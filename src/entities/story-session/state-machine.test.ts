@@ -6,6 +6,7 @@ describe('story session state machine', () => {
   it('boots into ready state', () => {
     const session = createStorySession({
       modelSettings: {
+        model: 'gpt-test',
         temperature: 1.0,
         topP: 1,
       },
@@ -24,6 +25,7 @@ describe('story session state machine', () => {
     const session = advanceStorySession(
       createStorySession({
         modelSettings: {
+          model: 'gpt-test',
           temperature: 1.0,
           topP: 1,
         },
@@ -53,6 +55,7 @@ describe('story session state machine', () => {
     const session = advanceStorySession(
       createStorySession({
         modelSettings: {
+          model: 'gpt-test',
           temperature: 1.0,
           topP: 1,
         },
@@ -74,6 +77,7 @@ describe('story session state machine', () => {
     expect(reset.style).toBe('coherent')
     expect(reset.systemPrompt).toBe('保持安静语气')
     expect(reset.modelSettings).toEqual({
+      model: 'gpt-test',
       temperature: 1.0,
       topP: 1,
     })

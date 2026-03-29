@@ -2,10 +2,12 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
+import { appEnv } from '../shared/config/env'
 
 describe('App', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+    window.localStorage.clear()
     Object.defineProperty(URL, 'createObjectURL', {
       configurable: true,
       value: vi.fn(() => 'blob:story'),
@@ -160,6 +162,9 @@ describe('App', () => {
     const exported = JSON.parse(blobContents[0])
     expect(exported.session_started_at).toEqual(expect.any(String))
     expect(exported.system_prompt).toContain('让画面更安静')
+    expect(exported.model_settings.model).toBe(appEnv.model)
+    expect(exported).not.toHaveProperty('base_url')
+    expect(exported).not.toHaveProperty('api_key')
     expect(exported.conversation[1].interaction.input_started_at).toEqual(
       expect.any(String),
     )
@@ -194,6 +199,8 @@ describe('App', () => {
       screen.getByLabelText('给 AI 的 System Prompt'),
       '让场景更贴近日常',
     )
+    await user.clear(screen.getByLabelText('Model'))
+    await user.type(screen.getByLabelText('Model'), 'story-model')
     await user.clear(screen.getByLabelText('Temperature'))
     await user.type(screen.getByLabelText('Temperature'), '0.7')
     await user.clear(screen.getByLabelText('Top P'))
@@ -216,8 +223,166 @@ describe('App', () => {
       role: 'user',
       content: '图书馆的角落里有个读书的人',
     })
+    expect(payload.model).toBe('story-model')
     expect(payload.temperature).toBe(0.7)
     expect(payload.top_p).toBe(0.85)
+  })
+
+  it('uses saved custom api config from settings and persists it in localStorage', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    await user.type(screen.getByLabelText('Base URL'), 'https://custom.example/v1/')
+    await user.type(screen.getByLabelText('API Key'), 'custom-key')
+    await user.clear(screen.getByLabelText('Model'))
+    await user.type(screen.getByLabelText('Model'), 'custom-model')
+    await user.click(screen.getByRole('button', { name: '保存' }))
+
+    expect(
+      window.localStorage.getItem('cocreation.runtime_llm_config'),
+    ).toContain('custom-model')
+
+    await user.click(screen.getByRole('button', { name: '开始' }))
+    await user.type(
+      screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点'),
+      '他把影子折进衣袋{enter}',
+    )
+
+    await waitFor(() => expect(window.fetch).toHaveBeenCalled())
+    const [url, request] = vi.mocked(window.fetch).mock.calls[0] as [
+      string,
+      RequestInit,
+    ]
+
+    expect(url).toBe('https://custom.example/v1/chat/completions')
+    expect(request.headers).toEqual(
+      expect.objectContaining({
+        Authorization: 'Bearer custom-key',
+      }),
+    )
+    expect(String(request.body)).toContain('"model":"custom-model"')
+  })
+
+  it('hydrates saved api config into settings drawer on reopen', async () => {
+    window.localStorage.setItem(
+      'cocreation.runtime_llm_config',
+      JSON.stringify({
+        apiKey: 'saved-key',
+        baseUrl: 'https://saved.example/v1/',
+        model: 'saved-model',
+      }),
+    )
+
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '设置' }))
+
+    expect(screen.getByLabelText('Base URL')).toHaveValue('https://saved.example/v1')
+    expect(screen.getByLabelText('API Key')).toHaveValue('saved-key')
+    expect(screen.getByLabelText('Model')).toHaveValue('saved-model')
+  })
+
+  it('clears saved custom api config and stops using the previous custom url', async () => {
+    const user = userEvent.setup()
+
+    window.localStorage.setItem(
+      'cocreation.runtime_llm_config',
+      JSON.stringify({
+        apiKey: 'saved-key',
+        baseUrl: 'https://saved.example/v1',
+        model: 'saved-model',
+      }),
+    )
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    await user.click(screen.getByRole('button', { name: '清空 API 配置' }))
+    await user.click(screen.getByRole('button', { name: '保存' }))
+
+    expect(window.localStorage.getItem('cocreation.runtime_llm_config')).toContain(
+      '"model":"saved-model"',
+    )
+    
+
+    await user.click(screen.getByRole('button', { name: '开始' }))
+    await user.type(
+      screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点'),
+      '他把窗上的雾抹开{enter}',
+    )
+
+    await waitFor(() => expect(window.fetch).toHaveBeenCalled())
+    const [url] = vi.mocked(window.fetch).mock.calls[0] as [string, RequestInit]
+
+    expect(url).not.toBe('https://saved.example/v1/chat/completions')
+    if (appEnv.baseUrl) {
+      expect(url).toBe(`${appEnv.baseUrl}/chat/completions`)
+    }
+  })
+
+  it('fetches candidate models and allows selecting one from dropdown', async () => {
+    const user = userEvent.setup()
+
+    vi.mocked(window.fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [{ id: 'model-a' }, { id: 'model-b' }, { id: 'model-a' }],
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: '窗外的雨开始倒着落下',
+              },
+            },
+          ],
+        }),
+      } as Response)
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    await user.type(screen.getByLabelText('Base URL'), 'https://custom.example/v1')
+    await user.type(screen.getByLabelText('API Key'), 'custom-key')
+    await user.click(screen.getByRole('button', { name: '获取候选模型' }))
+
+    expect(await screen.findByRole('option', { name: 'model-a' })).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText('候选模型'), 'model-b')
+    await user.click(screen.getByRole('button', { name: '保存' }))
+    await user.click(screen.getByRole('button', { name: '开始' }))
+    await user.type(
+      screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点'),
+      '他在门后听见潮声{enter}',
+    )
+
+    await waitFor(() => expect(window.fetch).toHaveBeenCalledTimes(2))
+    const request = vi.mocked(window.fetch).mock.calls[1]?.[1] as RequestInit
+
+    expect(String(request.body)).toContain('"model":"model-b"')
+  })
+
+  it('toggles api key visibility in settings drawer', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    const apiKeyInput = screen.getByLabelText('API Key')
+
+    expect(apiKeyInput).toHaveAttribute('type', 'password')
+
+    await user.click(screen.getByRole('button', { name: '显示 API Key' }))
+    expect(apiKeyInput).toHaveAttribute('type', 'text')
+
+    await user.click(screen.getByRole('button', { name: '隐藏 API Key' }))
+    expect(apiKeyInput).toHaveAttribute('type', 'password')
   })
 
   it('supports human-like conversation mode with delayed reply presentation', async () => {

@@ -237,6 +237,9 @@ JSON 导出字段统一使用 snake_case 命名，不使用 camelCase。
 - 创作风格选择
 - 一个可编辑的 system prompt 文本框
 - `temperature`、`top_p` 等模型参数输入
+- `model` 输入与候选模型选择
+- `base URL`
+- `API key`
 - 保存按钮
 - 清空按钮
 
@@ -247,9 +250,20 @@ JSON 导出字段统一使用 snake_case 命名，不使用 camelCase。
 - 开场句不写入 system prompt，而是作为请求中的第一条 user message
 - 默认规则仍然保留，不允许被 UI 层删除
 - 默认模型参数为 `temperature = 1.0`、`top_p = 1.0`
+- 默认模型名取环境变量中的 `VITE_LLM_MODEL`，未配置时使用默认值
+- 用户可在设置抽屉里填写自己的 `base URL` 和 `API key`
+- 这份 API 配置保存在浏览器本地 `localStorage`，用于避免反复填写
+- 设置抽屉中的 `model` 也保存在浏览器本地，避免重复填写
+- 若用户配置完整，则优先覆盖环境变量
+- 若用户配置不完整，则忽略该配置并回退到环境变量
+- 若用户配置和环境变量都不完整，则回退到 Mock provider
+- 用户可点击“获取候选模型”从当前 `base URL` 拉取模型列表
+- 候选模型拉取失败时，不阻塞手动填写 `model`
+- `API key` 输入框支持点击眼睛按钮切换显示与隐藏
 - 保存后影响后续回复
 - 导出 JSON 时需要写入 `system_prompt`
 - 导出 JSON 时需要写入当前模型参数
+- 导出 JSON 时不写入 `base URL` 和 `API key`
 
 ### 6.4 请求消息组织
 
@@ -286,6 +300,12 @@ JSON 导出字段统一使用 snake_case 命名，不使用 camelCase。
 
 - OpenAI-compatible provider
 - Mock provider
+
+运行时 provider 配置来源优先级为：
+
+1. 设置抽屉中用户保存的完整 API 配置
+2. 环境变量中的默认 API 配置
+3. Mock provider
 
 ### 7.3 状态约束
 
@@ -325,5 +345,7 @@ JSON 导出字段统一使用 snake_case 命名，不使用 camelCase。
 - JSON 包含完整元信息和消息明细
 - 与AI对话模式的 JSON 包含用户输入与 AI 生成的时间记录
 - 设置抽屉可以直接修改完整 system prompt、创作风格和模型参数
+- 设置抽屉可以填写并持久化 `base URL` 与 `API key`
+- 设置抽屉可以拉取候选模型，并保存最后选择的 `model`
 - 请求中的开场句作为第一条 `user` message
 - 文件名统一为 `cocreation-yymmdd-hhmmss.json`

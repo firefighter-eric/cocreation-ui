@@ -21,7 +21,12 @@ describe('OpenAICompatibleProvider', () => {
       }),
     )
 
-    const provider = new OpenAICompatibleProvider()
+    const provider = new OpenAICompatibleProvider({
+      apiKey: 'test-key',
+      baseUrl: 'https://example.com/v1',
+      model: 'gpt-test',
+      source: 'env',
+    })
     const promise = provider.generateNextLine(createInput())
     const expectation = expect(promise).rejects.toThrow('请求超时，请重试。')
 
@@ -30,12 +35,50 @@ describe('OpenAICompatibleProvider', () => {
     await expectation
     vi.useRealTimers()
   })
+
+  it('uses resolved runtime config for request url and auth header', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: '窗外的雨开始倒着落下',
+              },
+            },
+          ],
+        }),
+      }),
+    )
+
+    const provider = new OpenAICompatibleProvider({
+      apiKey: 'custom-key',
+      baseUrl: 'https://custom.example/v1',
+      model: 'ignored-config-model',
+      source: 'custom',
+    })
+
+    await provider.generateNextLine(createInput())
+
+    expect(fetch).toHaveBeenCalledWith(
+      'https://custom.example/v1/chat/completions',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer custom-key',
+        }),
+        body: expect.stringContaining('"model":"story-model"'),
+      }),
+    )
+  })
 })
 
 function createInput(): GenerateNextLineInput {
   return {
     conversationMode: 'manual',
     history: [],
+    model: 'story-model',
     rules: {
       maxChars: 20,
       punctuationAllowed: false,

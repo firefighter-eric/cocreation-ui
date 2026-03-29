@@ -1,6 +1,6 @@
-import { appEnv } from '../../config/env'
 import { sanitizeAssistantLine } from '../validation/storyLine'
 import { buildStoryPrompt } from './prompt'
+import type { ResolvedLLMConfig } from './runtimeConfig'
 import type {
   GenerateNextLineInput,
   LLMChatCompletionResponse,
@@ -10,7 +10,16 @@ import type {
 const REQUEST_TIMEOUT_MS = 20000
 
 export class OpenAICompatibleProvider implements LLMProvider {
-  label = 'OpenAI Compatible'
+  private readonly config: ResolvedLLMConfig
+  label: string
+
+  constructor(config: ResolvedLLMConfig) {
+    this.config = config
+    this.label =
+      config.source === 'custom'
+        ? 'OpenAI Compatible · 自定义配置'
+        : 'OpenAI Compatible'
+  }
 
   async generateNextLine(input: GenerateNextLineInput) {
     const controller = new AbortController()
@@ -18,15 +27,15 @@ export class OpenAICompatibleProvider implements LLMProvider {
     let response: Response
 
     try {
-      response = await fetch(`${appEnv.baseUrl}/chat/completions`, {
+      response = await fetch(`${this.config.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${appEnv.apiKey}`,
+          Authorization: `Bearer ${this.config.apiKey}`,
         },
         signal: controller.signal,
         body: JSON.stringify({
-          model: appEnv.model,
+          model: input.model,
           temperature: input.temperature,
           top_p: input.topP,
           max_tokens: 80,

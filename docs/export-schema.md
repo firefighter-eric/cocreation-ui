@@ -14,6 +14,7 @@
   "session_started_at": "string | null",
   "system_prompt": "string",
   "model_settings": {
+    "model": "gpt-4.1-mini",
     "temperature": 1.0,
     "top_p": 1.0
   },
@@ -41,6 +42,7 @@
 - 顶层字段全部使用 snake_case，只有 `rules` 和 `seed` 内部仍保留当前前端对象结构
 - `system_prompt` 是导出时当前生效的完整系统提示
 - `model_settings` 记录请求参数中的当前模型设置
+- `model_settings.model` 记录本次请求使用的模型名
 - `mode` 反映当前产品模式，不隐藏 `human_like` 的真实模式值
 
 ## conversation 数组

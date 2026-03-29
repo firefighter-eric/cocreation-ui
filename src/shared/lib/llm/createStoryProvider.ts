@@ -1,10 +1,10 @@
-import { hasRemoteProviderConfig } from '../../config/env'
 import { MockProvider } from './mockProvider'
 import { OpenAICompatibleProvider } from './openaiCompatibleProvider'
+import type { ResolvedLLMConfig } from './runtimeConfig'
 
-export function createStoryProvider() {
-  if (hasRemoteProviderConfig()) {
-    return new OpenAICompatibleProvider()
+export function createStoryProvider(config: ResolvedLLMConfig | null) {
+  if (config) {
+    return new OpenAICompatibleProvider(config)
   }
 
   return new MockProvider()

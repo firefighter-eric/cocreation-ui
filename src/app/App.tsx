@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { AutoConversationPanel } from '../features/story-session/components/AutoConversationPanel'
 import { StorySidebar } from '../features/story-settings/StorySidebar'
 import { SettingsDrawer } from '../features/story-settings/SettingsDrawer'
@@ -17,6 +17,12 @@ import { buildDefaultSystemPrompt } from '../shared/lib/llm/prompt'
 import { createSessionStore } from '../shared/lib/storage/sessionStore'
 import { createStoryProvider } from '../shared/lib/llm/createStoryProvider'
 import { exportStoryCsv } from '../shared/lib/export/storyCsv'
+import { fetchAvailableModels } from '../shared/lib/llm/modelDiscovery'
+import type { RuntimeLLMConfig } from '../shared/lib/llm/runtimeConfig'
+import { normalizeRuntimeLLMConfig } from '../shared/lib/llm/runtimeConfig'
+import { resolveLLMConfig } from '../shared/lib/llm/runtimeConfig'
+import { createRuntimeLLMConfigStore } from '../shared/lib/storage/runtimeLlmConfigStore'
+import { appEnv } from '../shared/config/env'
 
 export function App() {
   const [conversationMode, setConversationMode] = useState<StoryMode>(
@@ -24,8 +30,22 @@ export function App() {
   )
   const [autoTurnCount, setAutoTurnCount] = useState(defaultAutoTurnCount)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [provider] = useState(() => createStoryProvider())
-  const [store] = useState(() => createSessionStore())
+  const store = useMemo(() => createSessionStore(), [])
+  const runtimeConfigStore = useMemo(() => createRuntimeLLMConfigStore(), [])
+  const [runtimeConfig, setRuntimeConfig] = useState<RuntimeLLMConfig | null>(() =>
+    runtimeConfigStore.load(),
+  )
+  const [availableModels, setAvailableModels] = useState<string[]>([])
+  const [isFetchingModels, setIsFetchingModels] = useState(false)
+  const [modelFetchError, setModelFetchError] = useState<string | null>(null)
+  const resolvedConfig = useMemo(
+    () => resolveLLMConfig(runtimeConfig),
+    [runtimeConfig],
+  )
+  const provider = useMemo(
+    () => createStoryProvider(resolvedConfig),
+    [resolvedConfig],
+  )
 
   function handleExportCsv() {
     exportStoryCsv({
@@ -74,8 +94,32 @@ export function App() {
     conversationMode,
     provider,
     store,
+    initialModelSettings: {
+      model: runtimeConfig?.model || appEnv.model,
+      temperature: 1.0,
+      topP: 1,
+    },
     initialSeed: storySeeds[0],
   })
+
+  async function handleFetchModels(apiConfig: RuntimeLLMConfig) {
+    setIsFetchingModels(true)
+    setModelFetchError(null)
+
+    try {
+      const models = await fetchAvailableModels(apiConfig)
+      setAvailableModels(models)
+      return models
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : '获取模型列表失败，请稍后重试。'
+      setModelFetchError(message)
+      setAvailableModels([])
+      return []
+    } finally {
+      setIsFetchingModels(false)
+    }
+  }
 
   return (
     <div className="app-shell">
@@ -149,16 +193,24 @@ export function App() {
       </main>
 
       <SettingsDrawer
-        key={`${isSettingsOpen ? 'open' : 'closed'}-${state.systemPrompt}-${state.style}-${state.modelSettings.temperature}-${state.modelSettings.topP}`}
+        key={`${isSettingsOpen ? 'open' : 'closed'}-${state.systemPrompt}-${state.style}-${state.modelSettings.model}-${state.modelSettings.temperature}-${state.modelSettings.topP}-${runtimeConfig?.baseUrl ?? ''}-${runtimeConfig?.apiKey ?? ''}-${runtimeConfig?.model ?? ''}`}
+        availableModels={availableModels}
         conversationMode={conversationMode}
         currentStyle={state.style}
+        initialApiConfig={runtimeConfig}
         initialModelSettings={state.modelSettings}
+        isFetchingModels={isFetchingModels}
         initialPrompt={state.systemPrompt}
         isOpen={isSettingsOpen}
+        modelFetchError={modelFetchError}
         onClose={() => setIsSettingsOpen(false)}
-        onSave={({ modelSettings, style, systemPrompt }) =>
+        onFetchModels={handleFetchModels}
+        onSave={({ apiConfig, modelSettings, style, systemPrompt }) => {
           updatePromptSettings(style, systemPrompt, modelSettings)
-        }
+          const normalized = normalizeRuntimeLLMConfig(apiConfig)
+          runtimeConfigStore.save(normalized)
+          setRuntimeConfig(runtimeConfigStore.load())
+        }}
         providerLabel={providerLabel}
         rules={state.rules}
       />

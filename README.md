@@ -13,7 +13,9 @@
 - 三种模式：`与AI对话`、`与人对话`、`AI自动对话`
 - 左侧栏用于切换模式、选择开场句、重新开始
 - 右侧以聊天式故事流展示当前共创过程
-- 右上角支持打开设置抽屉，修改完整 `system prompt`、创作风格、`temperature`、`top_p`
+- 右上角支持打开设置抽屉，修改完整 `system prompt`、创作风格、`model`、`temperature`、`top_p`
+- 设置抽屉支持填写自定义 `base URL` 和 `API key`，并保存在浏览器本地
+- 设置抽屉支持从当前接口拉取候选模型，也支持手动填写模型名
 - 严格短句规则：默认 `20` 字内、禁止标点
 - 支持导出完整会话 JSON
 - 支持 OpenAI-compatible 接口
@@ -37,7 +39,9 @@ VITE_LLM_API_KEY=your_api_key_here
 VITE_LLM_MODEL=gpt-4.1-mini
 ```
 
-如果未配置 `API_KEY` 或 `BASE_URL`，应用会使用本地 mock provider，方便先跑通 UI 和交互。
+环境变量是默认远端配置。
+如果用户在设置抽屉里填写了完整的 `base URL` 和 `API key`，运行时会优先使用用户配置，并保存在浏览器 `localStorage`。
+如果用户配置和环境变量都不完整，应用会使用本地 mock provider，方便先跑通 UI 和交互。
 
 ## 导出
 

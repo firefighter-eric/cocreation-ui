@@ -43,7 +43,9 @@ body {
 }
 
 button,
-textarea {
+textarea,
+input,
+select {
   font: inherit;
 }
 
@@ -364,6 +366,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: auto;
 }
 
 .settings-drawer__header {
@@ -417,6 +420,24 @@ button {
   background: #fbfbfc;
 }
 
+.settings-drawer__field select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 42px 10px 12px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: #fbfbfc;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'%3E%3Cpath d='M3.25 5.5L7 9.25L10.75 5.5' stroke='%234b5563' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+}
+
 .settings-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -426,6 +447,53 @@ button {
 .settings-drawer__hint {
   margin: 0;
   color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.settings-drawer__inline-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.settings-drawer__input-with-action {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.settings-drawer__icon-button {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--text-secondary);
+  padding: 0;
+}
+
+.settings-drawer__icon-button:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.settings-drawer__icon-button:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.2);
+  outline-offset: 2px;
+}
+
+.settings-drawer__icon {
+  width: 18px;
+  height: 18px;
+}
+
+.settings-drawer__error {
+  margin: 0;
+  color: var(--danger);
   font-size: 12px;
   line-height: 1.45;
 }

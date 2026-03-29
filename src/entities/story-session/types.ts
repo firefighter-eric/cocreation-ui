@@ -15,6 +15,7 @@ export interface StoryRules {
 }
 
 export interface ModelSettings {
+  model: string
   temperature: number
   topP: number
 }

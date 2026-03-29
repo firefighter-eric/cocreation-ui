@@ -10,6 +10,7 @@ import type { StoryMode } from '../../config/story'
 export interface GenerateNextLineInput {
   conversationMode: StoryMode
   history: Message[]
+  model: string
   rules: StoryRules
   seed: StorySeed
   speaker: MessageRole

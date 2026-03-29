@@ -37,6 +37,7 @@ export function buildStoryJson(input: ExportStoryCsvInput, exportedAt = new Date
       session_started_at: input.sessionStartedAt,
       system_prompt: input.systemPrompt,
       model_settings: {
+        model: input.modelSettings.model,
         temperature: input.modelSettings.temperature,
         top_p: input.modelSettings.topP,
       },

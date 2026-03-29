@@ -8,6 +8,7 @@ import { buildDefaultSystemPrompt, buildStoryPrompt } from './prompt'
 
 describe('buildStoryPrompt', () => {
   const baseSettings = {
+    model: 'gpt-test',
     temperature: 1.0,
     topP: 1,
   }
