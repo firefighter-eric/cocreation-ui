@@ -8,7 +8,7 @@ export type StoryMode = 'manual' | 'human_like' | 'auto'
 
 export const defaultStoryStyle: StoryStyle = 'creative'
 export const defaultStoryMode: StoryMode = 'manual'
-export const defaultAutoTurnCount = 1
+export const defaultAutoTurnCount = 5
 export const autoTurnCountRange = {
   min: 1,
   max: 10,

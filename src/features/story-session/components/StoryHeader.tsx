@@ -1,37 +1,28 @@
 import type {
   StoryRules,
-  StorySessionStatus,
 } from '../../../entities/story-session/types'
-import type { StoryMode } from '../../../shared/config/story'
 
 interface StoryHeaderProps {
-  conversationMode: StoryMode
   hasMessages: boolean
   openingLine: string
   onExport: () => void
   onOpenSettings: () => void
+  providerStatusTone: 'mock' | 'connected'
+  providerStatusLabel: string
   rules: StoryRules
-  sessionStatus: StorySessionStatus
   title: string
 }
 
 export function StoryHeader({
-  conversationMode,
   hasMessages,
   openingLine,
   onExport,
   onOpenSettings,
+  providerStatusTone,
+  providerStatusLabel,
   rules,
-  sessionStatus,
   title,
 }: StoryHeaderProps) {
-  const statusCopy =
-    sessionStatus === 'waiting_for_ai' || sessionStatus === 'submitting_user_line'
-      ? conversationMode === 'human_like'
-        ? '对方正在输入'
-        : 'AI 正在续写'
-      : null
-
   return (
     <header className="workspace-header">
       <div>
@@ -42,9 +33,16 @@ export function StoryHeader({
 
       <div className="header-side">
         <div className="header-pills">
-          {statusCopy ? (
-            <span className="header-pill header-pill--muted">{statusCopy}</span>
-          ) : null}
+          <span
+            className={
+              providerStatusTone === 'connected'
+                ? 'header-pill header-pill--status header-pill--status-connected'
+                : 'header-pill header-pill--status header-pill--status-mock'
+            }
+          >
+            <span className="header-pill__dot" aria-hidden="true" />
+            {providerStatusLabel}
+          </span>
           <button
             className="header-export"
             disabled={!hasMessages}

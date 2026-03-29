@@ -27,30 +27,23 @@ export function Composer({
   const remaining = maxLength - Array.from(draft).length
   const canSubmit =
     hasStarted && !isBusy && draft.trim().length > 0 && draftError === null
+  const buttonLabel = !hasStarted ? '开始' : isBusy ? '生成中' : '发送'
 
   return (
     <form
       className="composer"
       onSubmit={(event) => {
         event.preventDefault()
+        if (!hasStarted) {
+          onStartSession()
+          return
+        }
+
         if (canSubmit) {
           onSubmit()
         }
       }}
     >
-      {!hasStarted ? (
-        <div className="composer-start-panel">
-          <p>点击开始后再输入，系统会记录你的思考时间。</p>
-          <button
-            className="restart-button restart-button--primary composer-start-button"
-            type="button"
-            onClick={onStartSession}
-          >
-            开始
-          </button>
-        </div>
-      ) : null}
-
       <label
         className={draftError ? 'composer-panel composer-panel--error' : 'composer-panel'}
       >
@@ -83,14 +76,21 @@ export function Composer({
             }
           }}
         />
-        <button className="composer-send" disabled={!canSubmit} type="submit">
-          {isBusy ? '生成中' : '发送'}
+        <button
+          className={!hasStarted ? 'composer-send composer-send--start' : 'composer-send'}
+          disabled={hasStarted ? !canSubmit : false}
+          type="submit"
+        >
+          {buttonLabel}
         </button>
       </label>
 
       <div className="composer-meta">
         <p className={draftError ? 'composer-error' : undefined}>
-          {draftError ?? '和 AI 一起一问一答接龙，故事会一直延续下去。'}
+          {draftError ??
+            (hasStarted
+              ? '和 AI 一起一问一答接龙，故事会一直延续下去。'
+              : '点击开始后再输入，系统会记录你的思考时间。')}
         </p>
         <span aria-live="polite">{remaining} / {maxLength}</span>
       </div>

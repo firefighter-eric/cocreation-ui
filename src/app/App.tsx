@@ -46,6 +46,8 @@ export function App() {
     () => createStoryProvider(resolvedConfig),
     [resolvedConfig],
   )
+  const providerStatusLabel = resolvedConfig ? 'API 已接入' : '本地 Mock'
+  const providerStatusTone = resolvedConfig ? 'connected' : 'mock'
 
   function handleExportCsv() {
     exportStoryCsv({
@@ -148,13 +150,13 @@ export function App() {
 
       <main className="workspace">
         <StoryHeader
-          conversationMode={conversationMode}
           hasMessages={state.messages.length > 0}
           openingLine={state.seed.openingLine}
           onExport={handleExportCsv}
           onOpenSettings={() => setIsSettingsOpen(true)}
+          providerStatusTone={providerStatusTone}
+          providerStatusLabel={providerStatusLabel}
           rules={state.rules}
-          sessionStatus={state.status}
           title={state.seed.title}
         />
 

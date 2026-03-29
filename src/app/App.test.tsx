@@ -34,7 +34,11 @@ describe('App', () => {
     const user = userEvent.setup()
 
     render(<App />)
+    expect(
+      screen.getByText(appEnv.baseUrl && appEnv.apiKey ? 'API 已接入' : '本地 Mock'),
+    ).toBeInTheDocument()
 
+    expect(screen.getByRole('button', { name: '开始' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '开始' }))
     await user.type(
       screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点'),
@@ -74,6 +78,20 @@ describe('App', () => {
     )
 
     expect(screen.getByText('这条规则不允许使用标点。')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '发送' })).toBeDisabled()
+  })
+
+  it('uses the main composer button as start action before input is enabled', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
+    expect(input).toBeDisabled()
+
+    await user.click(screen.getByRole('button', { name: '开始' }))
+
+    expect(input).not.toBeDisabled()
     expect(screen.getByRole('button', { name: '发送' })).toBeDisabled()
   })
 
@@ -239,6 +257,7 @@ describe('App', () => {
     await user.clear(screen.getByLabelText('Model'))
     await user.type(screen.getByLabelText('Model'), 'custom-model')
     await user.click(screen.getByRole('button', { name: '保存' }))
+    expect(screen.getByText('API 已接入')).toBeInTheDocument()
 
     expect(
       window.localStorage.getItem('cocreation.runtime_llm_config'),
@@ -397,7 +416,7 @@ describe('App', () => {
     fireEvent.change(input, { target: { value: '他把钟表藏进了袖口' } })
     fireEvent.keyDown(input, { key: 'Enter' })
 
-    expect(screen.getByText('对方正在输入')).toBeInTheDocument()
+    expect(document.querySelector('.message-bubble--typing')).toBeInTheDocument()
     expect(screen.queryByText('窗外的雨开始倒着落下')).not.toBeInTheDocument()
 
     await act(async () => {
