@@ -1,3 +1,4 @@
+import type { StartingRoundMode } from '../../../entities/story-session/types'
 import type { Message } from '../../../entities/message/types'
 import type { StorySessionStatus } from '../../../entities/story-session/types'
 import type { StoryMode } from '../../../shared/config/story'
@@ -7,6 +8,7 @@ interface MessageListProps {
   error: string | null
   messages: Message[]
   openingLine: string
+  startingRoundMode: StartingRoundMode
   status: StorySessionStatus
   onDismissError: () => void
 }
@@ -16,15 +18,22 @@ export function MessageList({
   error,
   messages,
   openingLine,
+  startingRoundMode,
   status,
   onDismissError,
 }: MessageListProps) {
   const partnerLabel = conversationMode === 'human_like' ? '对方' : 'AI'
   const selfLabel = '我'
   const emptyCopy =
-    conversationMode === 'human_like'
-      ? '你发送一句，对方会接着把故事继续写下去。'
-      : '你发送一句，AI 会继续接龙。'
+    startingRoundMode === 'assistant'
+      ? conversationMode === 'human_like'
+        ? '点击开始后，对方会先接上开场句。'
+        : '点击开始后，AI 会先接上开场句。'
+      : startingRoundMode === 'random'
+        ? '点击开始后，本次会随机决定由谁先接上开场句。'
+        : conversationMode === 'human_like'
+          ? '你发送一句，对方会接着把故事继续写下去。'
+          : '你发送一句，AI 会继续接龙。'
 
   return (
     <section className="chat-panel">

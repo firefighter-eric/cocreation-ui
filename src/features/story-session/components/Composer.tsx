@@ -8,6 +8,7 @@ interface ComposerProps {
   isRoundLimitReached: boolean
   maxLength: number
   maxRoundCount: number
+  startingRoundMode: 'user' | 'assistant' | 'random'
   onChange: (value: string) => void
   onBackspace: () => void
   onStartSession: () => void
@@ -22,6 +23,7 @@ export function Composer({
   isRoundLimitReached,
   maxLength,
   maxRoundCount,
+  startingRoundMode,
   onChange,
   onBackspace,
   onStartSession,
@@ -107,7 +109,11 @@ export function Composer({
         <p className={draftError ? 'composer-error' : undefined}>
           {draftError ??
             (!hasStarted
-              ? '点击开始后再输入，系统会记录你的思考时间。'
+              ? startingRoundMode === 'assistant'
+                ? '点击开始后先由对方说第一句，系统会记录你的思考时间。'
+                : startingRoundMode === 'random'
+                  ? '点击开始后会随机决定谁先说第一句。'
+                  : '点击开始后再输入，系统会记录你的思考时间。'
               : isRoundLimitReached
                 ? `已达到最大 ${maxRoundCount} 回合，请重新开始或在设置中调整。`
                 : '和 AI 一起一问一答接龙。')}

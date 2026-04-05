@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   defaultMaxRoundCount,
+  defaultStartingRoundMode,
   defaultStoryRules,
   storySeeds,
 } from '../../shared/config/story'
@@ -15,6 +16,7 @@ describe('story session state machine', () => {
         topP: 1,
       },
       maxRoundCount: defaultMaxRoundCount,
+      startingRoundMode: defaultStartingRoundMode,
       seed: storySeeds[0],
       systemPrompt: '',
       style: 'creative',
@@ -35,6 +37,7 @@ describe('story session state machine', () => {
           topP: 1,
         },
         maxRoundCount: defaultMaxRoundCount,
+        startingRoundMode: defaultStartingRoundMode,
         seed: storySeeds[0],
         systemPrompt: '',
         style: 'creative',
@@ -66,6 +69,7 @@ describe('story session state machine', () => {
           topP: 1,
         },
         maxRoundCount: defaultMaxRoundCount,
+        startingRoundMode: defaultStartingRoundMode,
         seed: storySeeds[0],
         systemPrompt: '保持安静语气',
         style: 'creative',

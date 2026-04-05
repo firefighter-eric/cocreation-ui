@@ -57,6 +57,8 @@ export function App() {
       seed: state.seed,
       sessionId: state.sessionId,
       sessionStartedAt: state.sessionStartedAt,
+      startingRoundMode: state.startingRoundMode,
+      startingRoundSpeaker: state.startingRoundSpeaker,
       status: state.status,
       style: state.style,
       systemPrompt: state.systemPrompt,
@@ -127,6 +129,7 @@ export function App() {
                 style: state.style,
               }),
               state.maxRoundCount,
+              state.startingRoundMode,
               state.modelSettings,
             )
           }}
@@ -139,6 +142,7 @@ export function App() {
         <StoryHeader
           hasMessages={state.messages.length > 0}
           maxRoundCount={state.maxRoundCount}
+          startingRoundMode={state.startingRoundMode}
           openingLine={state.seed.openingLine}
           onExport={handleExportCsv}
           onOpenSettings={() => setIsSettingsOpen(true)}
@@ -154,6 +158,7 @@ export function App() {
           messages={state.messages}
           onDismissError={clearError}
           openingLine={state.seed.openingLine}
+          startingRoundMode={state.startingRoundMode}
           status={state.status}
         />
 
@@ -169,6 +174,7 @@ export function App() {
             isRoundLimitReached={isRoundLimitReached}
             maxLength={state.rules.maxChars}
             maxRoundCount={state.maxRoundCount}
+            startingRoundMode={state.startingRoundMode}
             onBackspace={incrementBackspaceCount}
             onChange={setDraft}
             onStartSession={startSession}
@@ -178,6 +184,7 @@ export function App() {
           <AutoConversationPanel
             isBusy={state.status === 'waiting_for_ai'}
             maxRoundCount={state.maxRoundCount}
+            startingRoundMode={state.startingRoundMode}
             onGenerate={generateAutoConversation}
           />
         )}
@@ -190,6 +197,7 @@ export function App() {
         currentStyle={state.style}
         initialApiConfig={runtimeConfig}
         initialMaxRoundCount={state.maxRoundCount}
+        initialStartingRoundMode={state.startingRoundMode}
         initialModelSettings={state.modelSettings}
         isFetchingModels={isFetchingModels}
         initialPrompt={state.systemPrompt}
@@ -197,8 +205,21 @@ export function App() {
         modelFetchError={modelFetchError}
         onClose={() => setIsSettingsOpen(false)}
         onFetchModels={handleFetchModels}
-        onSave={({ apiConfig, maxRoundCount, modelSettings, style, systemPrompt }) => {
-          updatePromptSettings(style, systemPrompt, maxRoundCount, modelSettings)
+        onSave={({
+          apiConfig,
+          maxRoundCount,
+          modelSettings,
+          startingRoundMode,
+          style,
+          systemPrompt,
+        }) => {
+          updatePromptSettings(
+            style,
+            systemPrompt,
+            maxRoundCount,
+            startingRoundMode,
+            modelSettings,
+          )
           const normalized = normalizeRuntimeLLMConfig(apiConfig)
           runtimeConfigStore.save(normalized)
           setRuntimeConfig(runtimeConfigStore.load())

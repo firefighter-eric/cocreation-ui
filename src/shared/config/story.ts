@@ -1,4 +1,5 @@
 import type {
+  StartingRoundMode,
   StoryRules,
   StorySeed,
   StoryStyle,
@@ -9,10 +10,32 @@ export type StoryMode = 'manual' | 'human_like' | 'auto'
 export const defaultStoryStyle: StoryStyle = 'creative'
 export const defaultStoryMode: StoryMode = 'manual'
 export const defaultMaxRoundCount = 5
+export const defaultStartingRoundMode: StartingRoundMode = 'random'
 export const roundCountRange = {
   min: 1,
   max: 10,
 }
+export const startingRoundOptions: Array<{
+  value: StartingRoundMode
+  label: string
+  description: string
+}> = [
+  {
+    value: 'user',
+    label: '用户',
+    description: '由你先接上开场句。',
+  },
+  {
+    value: 'assistant',
+    label: '对方',
+    description: '点击开始后先由对方说第一句。',
+  },
+  {
+    value: 'random',
+    label: '随机',
+    description: '每次新会话随机决定谁先开始。',
+  },
+]
 
 export const storyModeOptions: Array<{
   value: StoryMode

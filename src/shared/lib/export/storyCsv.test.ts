@@ -45,6 +45,8 @@ const exportInput = {
   },
   sessionId: 'session-1',
   sessionStartedAt: '2026-03-28T09:59:00.000Z',
+  startingRoundMode: 'user' as const,
+  startingRoundSpeaker: 'user' as const,
   status: 'ready' as const,
   style: 'creative' as const,
   systemPrompt: '保持雪地般的安静',
@@ -69,6 +71,8 @@ describe('storyCsv', () => {
       top_p: 0.8,
     })
     expect(parsed.max_round_count).toBe(5)
+    expect(parsed.starting_round_mode).toBe('user')
+    expect(parsed.starting_round_speaker).toBe('user')
     expect(parsed.mode).toBe('manual')
     expect(parsed.seed.openingLine).toBe('第一片雪落在门把手上')
     expect(parsed.conversation[0]).toEqual({

@@ -1,3 +1,4 @@
+import type { StartingRoundMode } from '../../../entities/story-session/types'
 import type {
   StoryRules,
 } from '../../../entities/story-session/types'
@@ -5,6 +6,7 @@ import type {
 interface StoryHeaderProps {
   hasMessages: boolean
   maxRoundCount: number
+  startingRoundMode: StartingRoundMode
   openingLine: string
   onExport: () => void
   onOpenSettings: () => void
@@ -17,6 +19,7 @@ interface StoryHeaderProps {
 export function StoryHeader({
   hasMessages,
   maxRoundCount,
+  startingRoundMode,
   openingLine,
   onExport,
   onOpenSettings,
@@ -25,6 +28,13 @@ export function StoryHeader({
   rules,
   title,
 }: StoryHeaderProps) {
+  const startingRoundLabel =
+    startingRoundMode === 'user'
+      ? '用户先开始'
+      : startingRoundMode === 'assistant'
+        ? '对方先开始'
+        : '随机开始'
+
   return (
     <header className="workspace-header">
       <div>
@@ -70,6 +80,7 @@ export function StoryHeader({
               {rules.punctuationAllowed ? '允许标点' : '不允许标点'}
             </span>
             <span className="rule-chip">最多 {maxRoundCount} 回合</span>
+            <span className="rule-chip">{startingRoundLabel}</span>
           </div>
         </div>
       </div>

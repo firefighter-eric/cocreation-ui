@@ -1,6 +1,8 @@
+import type { MessageRole } from '../message/types'
 import type { Message } from '../message/types'
 
 export type StoryStyle = 'creative' | 'coherent'
+export type StartingRoundMode = MessageRole | 'random'
 
 export interface StorySeed {
   id: string
@@ -34,6 +36,8 @@ export interface StorySessionState {
   systemPrompt: string
   modelSettings: ModelSettings
   maxRoundCount: number
+  startingRoundMode: StartingRoundMode
+  startingRoundSpeaker: MessageRole | null
   seed: StorySeed
   style: StoryStyle
   rules: StoryRules
@@ -44,7 +48,11 @@ export interface StorySessionState {
 
 export type StorySessionEvent =
   | { type: 'BOOT' }
-  | { type: 'START_SESSION'; startedAt: string }
+  | {
+      type: 'START_SESSION'
+      startedAt: string
+      startingRoundSpeaker: MessageRole
+    }
   | { type: 'USER_SUBMIT'; message: Message }
   | {
       type: 'APPEND_MESSAGE'
@@ -57,10 +65,18 @@ export type StorySessionEvent =
   | { type: 'SET_SYSTEM_PROMPT'; systemPrompt: string }
   | { type: 'SET_MODEL_SETTINGS'; modelSettings: ModelSettings }
   | { type: 'SET_MAX_ROUND_COUNT'; maxRoundCount: number }
+  | {
+      type: 'SET_STARTING_ROUND'
+      startingRoundMode: StartingRoundMode
+      startingRoundSpeaker: MessageRole | null
+    }
+  | { type: 'SET_READY' }
   | { type: 'CLEAR_ERROR' }
   | {
       type: 'RESET'
       maxRoundCount?: number
+      startingRoundMode?: StartingRoundMode
+      startingRoundSpeaker?: MessageRole | null
       modelSettings?: ModelSettings
       seed?: StorySeed
       style?: StoryStyle

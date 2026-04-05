@@ -1,7 +1,15 @@
 import { useState } from 'react'
-import type { StoryRules, StoryStyle } from '../../entities/story-session/types'
+import type {
+  StartingRoundMode,
+  StoryRules,
+  StoryStyle,
+} from '../../entities/story-session/types'
 import type { StoryMode } from '../../shared/config/story'
-import { roundCountRange, styleOptions } from '../../shared/config/story'
+import {
+  roundCountRange,
+  startingRoundOptions,
+  styleOptions,
+} from '../../shared/config/story'
 import { buildDefaultSystemPrompt } from '../../shared/lib/llm/prompt'
 import type { RuntimeLLMConfig } from '../../shared/lib/llm/runtimeConfig'
 
@@ -15,6 +23,7 @@ interface SettingsDrawerProps {
     topP: number
   }
   initialMaxRoundCount: number
+  initialStartingRoundMode: StartingRoundMode
   initialApiConfig: RuntimeLLMConfig | null
   isFetchingModels: boolean
   initialPrompt: string
@@ -27,6 +36,7 @@ interface SettingsDrawerProps {
     style: StoryStyle
     systemPrompt: string
     maxRoundCount: number
+    startingRoundMode: StartingRoundMode
     modelSettings: {
       model: string
       temperature: number
@@ -43,6 +53,7 @@ export function SettingsDrawer({
   currentStyle,
   initialApiConfig,
   initialMaxRoundCount,
+  initialStartingRoundMode,
   initialModelSettings,
   isFetchingModels,
   initialPrompt,
@@ -62,6 +73,7 @@ export function SettingsDrawer({
   const [maxRoundCountDraft, setMaxRoundCountDraft] = useState(
     String(initialMaxRoundCount),
   )
+  const [startingRoundMode, setStartingRoundMode] = useState(initialStartingRoundMode)
   const [baseUrl, setBaseUrl] = useState(initialApiConfig?.baseUrl ?? '')
   const [apiKey, setApiKey] = useState(initialApiConfig?.apiKey ?? '')
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false)
@@ -166,6 +178,23 @@ export function SettingsDrawer({
           <p className="settings-drawer__hint">
             默认 5 回合，范围 1-10。1 回合表示 1 组“用户一句 + 对方一句”。
           </p>
+          <div className="option-grid option-grid--starting-round">
+            {startingRoundOptions.map((option) => (
+              <button
+                key={option.value}
+                className={
+                  option.value === startingRoundMode
+                    ? 'option-card option-card--active'
+                    : 'option-card'
+                }
+                type="button"
+                onClick={() => setStartingRoundMode(option.value)}
+              >
+                <strong>{option.label}</strong>
+                <span>{option.description}</span>
+              </button>
+            ))}
+          </div>
         </section>
 
         <section className="settings-drawer__section">
@@ -323,6 +352,7 @@ export function SettingsDrawer({
                 style: selectedStyle,
                 systemPrompt: draft,
                 maxRoundCount: normalizeMaxRoundCount(maxRoundCountDraft),
+                startingRoundMode,
                 modelSettings: {
                   model: normalizedModel,
                   temperature,

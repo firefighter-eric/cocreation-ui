@@ -1,6 +1,7 @@
 import type { Message } from '../../../entities/message/types'
 import type {
   ModelSettings,
+  StartingRoundMode,
   StoryRules,
   StorySeed,
   StorySessionStatus,
@@ -17,6 +18,8 @@ interface ExportStoryCsvInput {
   seed: StorySeed
   sessionId: string
   sessionStartedAt: string | null
+  startingRoundMode: StartingRoundMode
+  startingRoundSpeaker: Message['role'] | null
   status: StorySessionStatus
   style: StoryStyle
   systemPrompt: string
@@ -43,6 +46,8 @@ export function buildStoryJson(input: ExportStoryCsvInput, exportedAt = new Date
         top_p: input.modelSettings.topP,
       },
       max_round_count: input.maxRoundCount,
+      starting_round_mode: input.startingRoundMode,
+      starting_round_speaker: input.startingRoundSpeaker,
       exported_at: exportedAt.toISOString(),
       mode: input.mode,
       style: input.style,

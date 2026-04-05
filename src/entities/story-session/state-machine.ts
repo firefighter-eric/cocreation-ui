@@ -9,6 +9,7 @@ import type {
 
 interface CreateStorySessionInput {
   maxRoundCount: number
+  startingRoundMode: StorySessionState['startingRoundMode']
   modelSettings: StorySessionState['modelSettings']
   seed: StorySeed
   systemPrompt: string
@@ -25,6 +26,8 @@ export function createStorySession(
     systemPrompt: input.systemPrompt,
     modelSettings: input.modelSettings,
     maxRoundCount: input.maxRoundCount,
+    startingRoundMode: input.startingRoundMode,
+    startingRoundSpeaker: null,
     seed: input.seed,
     style: input.style,
     rules: input.rules,
@@ -55,6 +58,7 @@ export function advanceStorySession(
       return {
         ...state,
         sessionStartedAt: state.sessionStartedAt ?? event.startedAt,
+        startingRoundSpeaker: state.startingRoundSpeaker ?? event.startingRoundSpeaker,
         error: null,
       }
     case 'APPEND_MESSAGE':
@@ -97,6 +101,18 @@ export function advanceStorySession(
         ...state,
         maxRoundCount: event.maxRoundCount,
       }
+    case 'SET_STARTING_ROUND':
+      return {
+        ...state,
+        startingRoundMode: event.startingRoundMode,
+        startingRoundSpeaker: event.startingRoundSpeaker,
+      }
+    case 'SET_READY':
+      return {
+        ...state,
+        status: 'ready',
+        error: null,
+      }
     case 'CLEAR_ERROR':
       return {
         ...state,
@@ -110,6 +126,9 @@ export function advanceStorySession(
         systemPrompt: event.systemPrompt ?? state.systemPrompt,
         modelSettings: event.modelSettings ?? state.modelSettings,
         maxRoundCount: event.maxRoundCount ?? state.maxRoundCount,
+        startingRoundMode: event.startingRoundMode ?? state.startingRoundMode,
+        startingRoundSpeaker:
+          event.startingRoundSpeaker ?? null,
         seed: event.seed ?? state.seed,
         style: event.style ?? state.style,
         rules: event.rules ?? state.rules,

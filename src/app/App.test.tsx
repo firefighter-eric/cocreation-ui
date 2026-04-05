@@ -101,12 +101,18 @@ describe('App', () => {
 
     render(<App />)
 
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    await user.click(
+      screen.getByRole('button', { name: '用户由你先接上开场句。' }),
+    )
+    await user.click(screen.getByRole('button', { name: '保存' }))
+
     await user.click(screen.getByRole('button', { name: '开始' }))
     const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
 
     await user.type(input, '他忽然听见楼上传来脚步{enter}')
 
-    expect(await screen.findByText('窗外的雨开始倒着落下')).toBeInTheDocument()
+    expect(await screen.findAllByText('窗外的雨开始倒着落下')).not.toHaveLength(0)
     await waitFor(() => expect(input).toHaveFocus())
   })
 
@@ -271,10 +277,35 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: '保存' }))
 
     await user.click(screen.getByRole('button', { name: /AI自动对话/ }))
-    expect(screen.getByText('当前最大回合数为 2。每 1 回合代表 1 组“用户一句 + AI 一句”，可在右上角设置中修改。')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        '当前最大回合数为 2，开始回合为随机。每 1 回合代表 1 组“用户一句 + 对方一句”，可在右上角设置中修改。',
+      ),
+    ).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '自动生成 1 例对话' }))
 
     await waitFor(() => expect(window.fetch).toHaveBeenCalledTimes(4))
+  })
+
+  it('lets the partner speak first when starting round is set to 对方', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    await user.click(
+      screen.getByRole('button', { name: '对方点击开始后先由对方说第一句。' }),
+    )
+    await user.click(screen.getByRole('button', { name: '保存' }))
+
+    await user.click(screen.getByRole('button', { name: '开始' }))
+
+    expect(await screen.findByText('窗外的雨开始倒着落下')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(
+        screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点'),
+      ).toHaveFocus(),
+    )
   })
 
   it('stops manual conversation after reaching max round count', async () => {
@@ -418,6 +449,9 @@ describe('App', () => {
     render(<App />)
 
     await user.click(screen.getByRole('button', { name: '设置' }))
+    await user.click(
+      screen.getByRole('button', { name: '用户由你先接上开场句。' }),
+    )
     await user.type(screen.getByLabelText('Base URL'), 'https://custom.example/v1')
     await user.type(screen.getByLabelText('API Key'), 'custom-key')
     await user.click(screen.getByRole('button', { name: '获取候选模型' }))

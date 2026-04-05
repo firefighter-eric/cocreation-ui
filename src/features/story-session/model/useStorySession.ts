@@ -2,12 +2,14 @@ import { startTransition, useEffect, useState } from 'react'
 import { createMessage, createStorySession } from '../../../entities/story-session/state-machine'
 import { advanceStorySession } from '../../../entities/story-session/state-machine'
 import type {
+  StartingRoundMode,
   StorySeed,
   StorySessionState,
   StoryStyle,
 } from '../../../entities/story-session/types'
 import {
   defaultMaxRoundCount,
+  defaultStartingRoundMode,
   defaultStoryRules,
   defaultStoryStyle,
 } from '../../../shared/config/story'
@@ -45,6 +47,7 @@ export function useStorySession({
 
     const session = createStorySession({
       maxRoundCount: defaultMaxRoundCount,
+      startingRoundMode: defaultStartingRoundMode,
       modelSettings: initialModelSettings,
       seed: initialSeed,
       systemPrompt: buildDefaultSystemPrompt({
@@ -62,14 +65,90 @@ export function useStorySession({
   const [draftError, setDraftError] = useState<string | null>(null)
   const [manualInputStartedAt, setManualInputStartedAt] = useState<string | null>(null)
   const [manualBackspaceCount, setManualBackspaceCount] = useState(0)
-  const completedRoundCount = state.messages.filter(
-    (message) => message.role === 'assistant',
-  ).length
+  const completedRoundCount = Math.floor(state.messages.length / 2)
   const isRoundLimitReached = completedRoundCount >= state.maxRoundCount
+  const resolvedStartingSpeaker = state.startingRoundSpeaker ?? 'user'
 
   useEffect(() => {
     store.save(state)
   }, [state, store])
+
+  async function requestGeneratedLine(
+    history: typeof state.messages,
+    activeSessionId: string,
+  ) {
+    const aiStartedAt = new Date().toISOString()
+    setState((current) => advanceStorySession(current, { type: 'AI_REQUEST_START' }))
+
+    try {
+      const content = await provider.generateNextLine({
+        conversationMode,
+        history,
+        model: state.modelSettings.model,
+        rules: state.rules,
+        seed: state.seed,
+        speaker: 'assistant',
+        style: state.style,
+        systemPrompt: state.systemPrompt,
+        temperature: state.modelSettings.temperature,
+        topP: state.modelSettings.topP,
+      })
+
+      if (conversationMode === 'human_like') {
+        await waitForDelay(computeHumanLikeDelay(content))
+      }
+
+      const message = createMessage('assistant', content, {
+        aiEndedAt: new Date().toISOString(),
+        aiStartedAt,
+      })
+
+      startTransition(() => {
+        setState((current) =>
+          current.sessionId !== activeSessionId
+            ? current
+            : advanceStorySession(current, {
+                type: 'AI_SUCCESS',
+                message,
+              }),
+        )
+      })
+
+      return message
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : '模型返回异常，请稍后再试。'
+
+      setState((current) =>
+        current.sessionId !== activeSessionId
+          ? current
+          : advanceStorySession(current, {
+              type: 'AI_FAILURE',
+              error: message,
+            }),
+      )
+      return null
+    }
+  }
+
+  function resolveStartingSpeaker(mode: StartingRoundMode) {
+    if (mode !== 'random') {
+      return mode
+    }
+
+    return Math.random() < 0.5 ? 'user' : 'assistant'
+  }
+
+  function getNextSpeaker(
+    startingSpeaker: 'user' | 'assistant',
+    messageCount: number,
+  ) {
+    if (messageCount % 2 === 0) {
+      return startingSpeaker
+    }
+
+    return startingSpeaker === 'user' ? 'assistant' : 'user'
+  }
 
   function setValidatedDraft(value: string) {
     if (state.sessionStartedAt === null) {
@@ -130,7 +209,6 @@ export function useStorySession({
       reactionReferenceAt,
       reactionTimeMs,
     })
-    const aiStartedAt = new Date().toISOString()
 
     setDraft('')
     setDraftError(null)
@@ -142,53 +220,21 @@ export function useStorySession({
         message: userMessage,
       }),
     )
+    const nextHistory = [...state.messages, userMessage]
+    const nextCompletedRoundCount = Math.floor(nextHistory.length / 2)
+    const nextSpeaker = getNextSpeaker(resolvedStartingSpeaker, nextHistory.length)
 
-    setState((current) => advanceStorySession(current, { type: 'AI_REQUEST_START' }))
+    if (nextSpeaker === 'assistant' && nextCompletedRoundCount < state.maxRoundCount) {
+      const assistantMessage = await requestGeneratedLine(nextHistory, activeSessionId)
 
-    try {
-      const assistantContent = await provider.generateNextLine({
-        conversationMode,
-        history: [...state.messages, userMessage],
-        model: state.modelSettings.model,
-        rules: state.rules,
-        seed: state.seed,
-        speaker: 'assistant',
-        style: state.style,
-        systemPrompt: state.systemPrompt,
-        temperature: state.modelSettings.temperature,
-        topP: state.modelSettings.topP,
-      })
-
-      if (conversationMode === 'human_like') {
-        await waitForDelay(computeHumanLikeDelay(assistantContent))
+      if (assistantMessage === null) {
+        return
       }
-
-      const assistantMessage = createMessage('assistant', assistantContent, {
-        aiEndedAt: new Date().toISOString(),
-        aiStartedAt,
-      })
-
-      startTransition(() => {
-        setState((current) =>
-          current.sessionId !== activeSessionId
-            ? current
-            : advanceStorySession(current, {
-                type: 'AI_SUCCESS',
-                message: assistantMessage,
-              }),
-        )
-      })
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : '模型返回异常，请稍后再试。'
-
+    } else {
       setState((current) =>
         current.sessionId !== activeSessionId
           ? current
-          : advanceStorySession(current, {
-              type: 'AI_FAILURE',
-              error: message,
-            }),
+          : advanceStorySession(current, { type: 'SET_READY' }),
       )
     }
   }
@@ -198,6 +244,7 @@ export function useStorySession({
     let history = [...state.messages]
     const totalMessages = roundCount * 2
     const sessionStartedAt = new Date().toISOString()
+    const startingRoundSpeaker = resolveStartingSpeaker(state.startingRoundMode)
 
     setDraft('')
     setDraftError(null)
@@ -205,13 +252,18 @@ export function useStorySession({
       advanceStorySession(current, {
         type: 'START_SESSION',
         startedAt: sessionStartedAt,
+        startingRoundSpeaker,
       }),
     )
-    setState((current) => advanceStorySession(current, { type: 'AI_REQUEST_START' }))
 
     try {
       for (let index = 0; index < totalMessages; index += 1) {
-        const speaker = index % 2 === 0 ? 'user' : 'assistant'
+        const speaker =
+          index % 2 === 0
+            ? startingRoundSpeaker
+            : startingRoundSpeaker === 'user'
+              ? 'assistant'
+              : 'user'
         const content = await provider.generateNextLine({
           conversationMode,
           history,
@@ -257,6 +309,7 @@ export function useStorySession({
     nextStyle = state.style,
     nextSystemPrompt = state.systemPrompt,
     nextMaxRoundCount = state.maxRoundCount,
+    nextStartingRoundMode = state.startingRoundMode,
     nextModelSettings = state.modelSettings,
   ) {
     startTransition(() => {
@@ -271,6 +324,8 @@ export function useStorySession({
           style: nextStyle,
           systemPrompt: nextSystemPrompt,
           maxRoundCount: nextMaxRoundCount,
+          startingRoundMode: nextStartingRoundMode,
+          startingRoundSpeaker: null,
           modelSettings: nextModelSettings,
         }),
       )
@@ -309,6 +364,7 @@ export function useStorySession({
     style: StoryStyle,
     systemPrompt: string,
     maxRoundCount: number,
+    startingRoundMode: StartingRoundMode,
     modelSettings: StorySessionState['modelSettings'],
   ) {
     restartSession(
@@ -316,6 +372,7 @@ export function useStorySession({
       style,
       systemPrompt.trim(),
       maxRoundCount,
+      startingRoundMode,
       modelSettings,
     )
   }
@@ -326,12 +383,18 @@ export function useStorySession({
 
   function startSession() {
     setDraftError(null)
+    const startingRoundSpeaker = resolveStartingSpeaker(state.startingRoundMode)
     setState((current) =>
       advanceStorySession(current, {
         type: 'START_SESSION',
         startedAt: new Date().toISOString(),
+        startingRoundSpeaker,
       }),
     )
+
+    if (startingRoundSpeaker === 'assistant') {
+      void requestGeneratedLine(state.messages, state.sessionId)
+    }
   }
 
   return {
