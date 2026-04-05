@@ -7,6 +7,7 @@ import { appEnv } from '../shared/config/env'
 describe('App', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+    vi.spyOn(Math, 'random').mockReturnValue(0.9)
     window.localStorage.clear()
     Object.defineProperty(URL, 'createObjectURL', {
       configurable: true,
@@ -502,6 +503,7 @@ describe('App', () => {
     fireEvent.keyDown(input, { key: 'Enter' })
 
     expect(document.querySelector('.message-bubble--typing')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '对方输入中' })).toBeInTheDocument()
     expect(screen.queryByText('窗外的雨开始倒着落下')).not.toBeInTheDocument()
 
     await act(async () => {

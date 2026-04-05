@@ -1,6 +1,6 @@
-const baseDelayMs = 700
-const perCharDelayMs = 140
-const maxJitterMs = 450
+const baseDelayMs = 1400
+const perCharDelayMs = 280
+const maxJitterMs = 900
 
 export function computeHumanLikeDelay(
   content: string,

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 interface ComposerProps {
+  conversationMode: 'manual' | 'human_like'
   draft: string
   draftError: string | null
   hasStarted: boolean
@@ -16,6 +17,7 @@ interface ComposerProps {
 }
 
 export function Composer({
+  conversationMode,
   draft,
   draftError,
   hasStarted,
@@ -38,7 +40,13 @@ export function Composer({
     !isRoundLimitReached &&
     draft.trim().length > 0 &&
     draftError === null
-  const buttonLabel = !hasStarted ? '开始' : isBusy ? '生成中' : '发送'
+  const buttonLabel = !hasStarted
+    ? '开始'
+    : isBusy
+      ? conversationMode === 'human_like'
+        ? '对方输入中'
+        : '生成中'
+      : '发送'
 
   useEffect(() => {
     if (!hasStarted || isBusy) {

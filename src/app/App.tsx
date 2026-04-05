@@ -143,13 +143,11 @@ export function App() {
           hasMessages={state.messages.length > 0}
           maxRoundCount={state.maxRoundCount}
           startingRoundMode={state.startingRoundMode}
-          openingLine={state.seed.openingLine}
           onExport={handleExportCsv}
           onOpenSettings={() => setIsSettingsOpen(true)}
           providerStatusTone={providerStatusTone}
           providerStatusLabel={providerStatusLabel}
           rules={state.rules}
-          title={state.seed.title}
         />
 
         <MessageList
@@ -159,11 +157,13 @@ export function App() {
           onDismissError={clearError}
           openingLine={state.seed.openingLine}
           startingRoundMode={state.startingRoundMode}
+          startingRoundSpeaker={state.startingRoundSpeaker}
           status={state.status}
         />
 
         {conversationMode === 'manual' || conversationMode === 'human_like' ? (
           <Composer
+            conversationMode={conversationMode}
             draft={draft}
             draftError={draftError}
             hasStarted={state.sessionStartedAt !== null}

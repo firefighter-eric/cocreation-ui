@@ -13,6 +13,6 @@ describe('computeHumanLikeDelay', () => {
     const minDelay = computeHumanLikeDelay('测试', 0)
     const maxDelay = computeHumanLikeDelay('测试', 1)
 
-    expect(maxDelay - minDelay).toBeLessThanOrEqual(450)
+    expect(maxDelay - minDelay).toBeLessThanOrEqual(900)
   })
 })

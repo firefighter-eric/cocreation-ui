@@ -7,26 +7,22 @@ interface StoryHeaderProps {
   hasMessages: boolean
   maxRoundCount: number
   startingRoundMode: StartingRoundMode
-  openingLine: string
   onExport: () => void
   onOpenSettings: () => void
   providerStatusTone: 'mock' | 'connected'
   providerStatusLabel: string
   rules: StoryRules
-  title: string
 }
 
 export function StoryHeader({
   hasMessages,
   maxRoundCount,
   startingRoundMode,
-  openingLine,
   onExport,
   onOpenSettings,
   providerStatusTone,
   providerStatusLabel,
   rules,
-  title,
 }: StoryHeaderProps) {
   const startingRoundLabel =
     startingRoundMode === 'user'
@@ -37,10 +33,16 @@ export function StoryHeader({
 
   return (
     <header className="workspace-header">
-      <div>
-        <p className="eyebrow">共创故事</p>
-        <h2>{title}</h2>
-        <p className="workspace-subtitle">{openingLine}</p>
+      <div className="rule-card rule-card--header rule-card--header-main">
+        <span className="rule-card__label">当前规则</span>
+        <div className="rule-card__items">
+          <span className="rule-chip">{rules.maxChars} 字内</span>
+          <span className="rule-chip">
+            {rules.punctuationAllowed ? '允许标点' : '不允许标点'}
+          </span>
+          <span className="rule-chip">最多 {maxRoundCount} 回合</span>
+          <span className="rule-chip">{startingRoundLabel}</span>
+        </div>
       </div>
 
       <div className="header-side">
@@ -70,18 +72,6 @@ export function StoryHeader({
           >
             设置
           </button>
-        </div>
-
-        <div className="rule-card rule-card--header">
-          <span className="rule-card__label">当前规则</span>
-          <div className="rule-card__items">
-            <span className="rule-chip">{rules.maxChars} 字内</span>
-            <span className="rule-chip">
-              {rules.punctuationAllowed ? '允许标点' : '不允许标点'}
-            </span>
-            <span className="rule-chip">最多 {maxRoundCount} 回合</span>
-            <span className="rule-chip">{startingRoundLabel}</span>
-          </div>
         </div>
       </div>
     </header>

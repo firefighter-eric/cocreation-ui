@@ -232,6 +232,12 @@ button {
   background: #f8fafc;
 }
 
+.rule-card--header-main {
+  flex: 1;
+  min-width: 0;
+  max-width: 720px;
+}
+
 .rule-card h2 {
   margin: 0 0 10px;
   font-size: 13px;
@@ -247,7 +253,7 @@ button {
 .rule-card__items {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 8px;
 }
 
@@ -578,6 +584,35 @@ button {
   background: linear-gradient(180deg, #f8fbff, #ffffff);
 }
 
+.opening-card__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.opening-card__turn {
+  min-width: 260px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.opening-card__turn-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.opening-card__turn strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
 .opening-card h1 {
   font-size: 20px;
   margin-bottom: 6px;
@@ -893,6 +928,15 @@ button {
 
   .opening-card h1 {
     font-size: 24px;
+  }
+
+  .opening-card__content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .opening-card__turn {
+    min-width: 0;
   }
 
   .option-grid--starting-round {

@@ -1,4 +1,5 @@
 import type { StartingRoundMode } from '../../../entities/story-session/types'
+import type { MessageRole } from '../../../entities/message/types'
 import type { Message } from '../../../entities/message/types'
 import type { StorySessionStatus } from '../../../entities/story-session/types'
 import type { StoryMode } from '../../../shared/config/story'
@@ -9,6 +10,7 @@ interface MessageListProps {
   messages: Message[]
   openingLine: string
   startingRoundMode: StartingRoundMode
+  startingRoundSpeaker: MessageRole | null
   status: StorySessionStatus
   onDismissError: () => void
 }
@@ -19,6 +21,7 @@ export function MessageList({
   messages,
   openingLine,
   startingRoundMode,
+  startingRoundSpeaker,
   status,
   onDismissError,
 }: MessageListProps) {
@@ -34,13 +37,31 @@ export function MessageList({
         : conversationMode === 'human_like'
           ? '你发送一句，对方会接着把故事继续写下去。'
           : '你发送一句，AI 会继续接龙。'
+  const openingTurnCopy =
+    startingRoundSpeaker === 'user'
+      ? '本轮由你先接龙'
+      : startingRoundSpeaker === 'assistant'
+        ? '本轮由对方先接龙'
+        : startingRoundMode === 'user'
+          ? '本轮由你先接龙'
+          : startingRoundMode === 'assistant'
+            ? '本轮由对方先接龙'
+            : '本轮开始后随机决定'
 
   return (
     <section className="chat-panel">
       <div className="chat-scroll">
         <div className="opening-card">
-          <p className="eyebrow">故事开场</p>
-          <h1>{openingLine}</h1>
+          <div className="opening-card__content">
+            <div>
+              <p className="eyebrow">故事开场</p>
+              <h1>{openingLine}</h1>
+            </div>
+            <div className="opening-card__turn">
+              <span className="opening-card__turn-label">开始顺序</span>
+              <strong>{openingTurnCopy}</strong>
+            </div>
+          </div>
         </div>
 
         {messages.length === 0 ? (
