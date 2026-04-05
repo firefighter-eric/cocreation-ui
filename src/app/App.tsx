@@ -26,6 +26,7 @@ export function App() {
   const [conversationMode, setConversationMode] = useState<StoryMode>(
     defaultStoryMode,
   )
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const store = useMemo(() => createSessionStore(), [])
   const runtimeConfigStore = useMemo(() => createRuntimeLLMConfigStore(), [])
@@ -112,8 +113,25 @@ export function App() {
   }
 
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
+    <div
+      className={
+        isSidebarCollapsed ? 'app-shell app-shell--sidebar-collapsed' : 'app-shell'
+      }
+    >
+      <aside className={isSidebarCollapsed ? 'sidebar sidebar--collapsed' : 'sidebar'}>
+        <button
+          aria-expanded={!isSidebarCollapsed}
+          aria-label={isSidebarCollapsed ? '展开左侧栏' : '收起左侧栏'}
+          className="sidebar-toggle"
+          type="button"
+          onClick={() => setIsSidebarCollapsed((collapsed) => !collapsed)}
+        >
+          <span className="sidebar-toggle__glyph" aria-hidden="true">
+            <span className="sidebar-toggle__panel sidebar-toggle__panel--sidebar" />
+            <span className="sidebar-toggle__divider" />
+            <span className="sidebar-toggle__panel sidebar-toggle__panel--workspace" />
+          </span>
+        </button>
         <StorySidebar
           seeds={storySeeds}
           selectedMode={conversationMode}
