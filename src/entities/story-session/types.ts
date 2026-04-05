@@ -33,6 +33,7 @@ export interface StorySessionState {
   sessionStartedAt: string | null
   systemPrompt: string
   modelSettings: ModelSettings
+  maxRoundCount: number
   seed: StorySeed
   style: StoryStyle
   rules: StoryRules
@@ -55,9 +56,11 @@ export type StorySessionEvent =
   | { type: 'AI_FAILURE'; error: string }
   | { type: 'SET_SYSTEM_PROMPT'; systemPrompt: string }
   | { type: 'SET_MODEL_SETTINGS'; modelSettings: ModelSettings }
+  | { type: 'SET_MAX_ROUND_COUNT'; maxRoundCount: number }
   | { type: 'CLEAR_ERROR' }
   | {
       type: 'RESET'
+      maxRoundCount?: number
       modelSettings?: ModelSettings
       seed?: StorySeed
       style?: StoryStyle

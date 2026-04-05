@@ -5,7 +5,9 @@ interface ComposerProps {
   draftError: string | null
   hasStarted: boolean
   isBusy: boolean
+  isRoundLimitReached: boolean
   maxLength: number
+  maxRoundCount: number
   onChange: (value: string) => void
   onBackspace: () => void
   onStartSession: () => void
@@ -17,7 +19,9 @@ export function Composer({
   draftError,
   hasStarted,
   isBusy,
+  isRoundLimitReached,
   maxLength,
+  maxRoundCount,
   onChange,
   onBackspace,
   onStartSession,
@@ -27,7 +31,11 @@ export function Composer({
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const remaining = maxLength - Array.from(draft).length
   const canSubmit =
-    hasStarted && !isBusy && draft.trim().length > 0 && draftError === null
+    hasStarted &&
+    !isBusy &&
+    !isRoundLimitReached &&
+    draft.trim().length > 0 &&
+    draftError === null
   const buttonLabel = !hasStarted ? '开始' : isBusy ? '生成中' : '发送'
 
   useEffect(() => {
@@ -61,7 +69,7 @@ export function Composer({
           ref={inputRef}
           className="composer-input"
           aria-invalid={draftError ? 'true' : 'false'}
-          disabled={isBusy || !hasStarted}
+          disabled={isBusy || !hasStarted || isRoundLimitReached}
           maxLength={maxLength}
           placeholder="输入下一句故事，20字内，不使用标点"
           rows={1}
@@ -98,9 +106,11 @@ export function Composer({
       <div className="composer-meta">
         <p className={draftError ? 'composer-error' : undefined}>
           {draftError ??
-            (hasStarted
-              ? '和 AI 一起一问一答接龙，故事会一直延续下去。'
-              : '点击开始后再输入，系统会记录你的思考时间。')}
+            (!hasStarted
+              ? '点击开始后再输入，系统会记录你的思考时间。'
+              : isRoundLimitReached
+                ? `已达到最大 ${maxRoundCount} 回合，请重新开始或在设置中调整。`
+                : '和 AI 一起一问一答接龙。')}
         </p>
         <span aria-live="polite">{remaining} / {maxLength}</span>
       </div>

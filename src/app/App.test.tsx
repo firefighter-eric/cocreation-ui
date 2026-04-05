@@ -116,11 +116,9 @@ describe('App', () => {
     render(<App />)
 
     await user.click(screen.getByRole('button', { name: /AI自动对话/ }))
-    const turnInput = screen.getByRole('textbox')
-    fireEvent.change(turnInput, { target: { value: '2' } })
     await user.click(screen.getByRole('button', { name: '自动生成 1 例对话' }))
 
-    await waitFor(() => expect(window.fetch).toHaveBeenCalledTimes(4))
+    await waitFor(() => expect(window.fetch).toHaveBeenCalledTimes(10))
   })
 
   it('exports the current conversation as json', async () => {
@@ -196,6 +194,7 @@ describe('App', () => {
     expect(exported.session_started_at).toEqual(expect.any(String))
     expect(exported.system_prompt).toContain('让画面更安静')
     expect(exported.model_settings.model).toBe(appEnv.model)
+    expect(exported.max_round_count).toBe(5)
     expect(exported).not.toHaveProperty('base_url')
     expect(exported).not.toHaveProperty('api_key')
     expect(exported.conversation[1].interaction.input_started_at).toEqual(
@@ -259,6 +258,43 @@ describe('App', () => {
     expect(payload.model).toBe('story-model')
     expect(payload.temperature).toBe(0.7)
     expect(payload.top_p).toBe(0.85)
+  })
+
+  it('uses max round count from settings for auto mode', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    await user.clear(screen.getByLabelText('最大回合数量'))
+    await user.type(screen.getByLabelText('最大回合数量'), '2')
+    await user.click(screen.getByRole('button', { name: '保存' }))
+
+    await user.click(screen.getByRole('button', { name: /AI自动对话/ }))
+    expect(screen.getByText('当前最大回合数为 2。每 1 回合代表 1 组“用户一句 + AI 一句”，可在右上角设置中修改。')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '自动生成 1 例对话' }))
+
+    await waitFor(() => expect(window.fetch).toHaveBeenCalledTimes(4))
+  })
+
+  it('stops manual conversation after reaching max round count', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    await user.clear(screen.getByLabelText('最大回合数量'))
+    await user.type(screen.getByLabelText('最大回合数量'), '1')
+    await user.click(screen.getByRole('button', { name: '保存' }))
+
+    await user.click(screen.getByRole('button', { name: '开始' }))
+    const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
+    await user.type(input, '他把月光卷进袖口{enter}')
+
+    expect(await screen.findByText('窗外的雨开始倒着落下')).toBeInTheDocument()
+    expect(screen.getByText('已达到最大 1 回合，请重新开始或在设置中调整。')).toBeInTheDocument()
+    expect(input).toBeDisabled()
+    expect(screen.getByRole('button', { name: '发送' })).toBeDisabled()
   })
 
   it('uses saved custom api config from settings and persists it in localStorage', async () => {

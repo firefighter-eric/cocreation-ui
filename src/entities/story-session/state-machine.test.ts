@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { defaultStoryRules, storySeeds } from '../../shared/config/story'
+import {
+  defaultMaxRoundCount,
+  defaultStoryRules,
+  storySeeds,
+} from '../../shared/config/story'
 import { advanceStorySession, createMessage, createStorySession } from './state-machine'
 
 describe('story session state machine', () => {
@@ -10,6 +14,7 @@ describe('story session state machine', () => {
         temperature: 1.0,
         topP: 1,
       },
+      maxRoundCount: defaultMaxRoundCount,
       seed: storySeeds[0],
       systemPrompt: '',
       style: 'creative',
@@ -29,6 +34,7 @@ describe('story session state machine', () => {
           temperature: 1.0,
           topP: 1,
         },
+        maxRoundCount: defaultMaxRoundCount,
         seed: storySeeds[0],
         systemPrompt: '',
         style: 'creative',
@@ -59,6 +65,7 @@ describe('story session state machine', () => {
           temperature: 1.0,
           topP: 1,
         },
+        maxRoundCount: defaultMaxRoundCount,
         seed: storySeeds[0],
         systemPrompt: '保持安静语气',
         style: 'creative',

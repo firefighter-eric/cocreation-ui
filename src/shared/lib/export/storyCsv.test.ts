@@ -6,6 +6,7 @@ import {
 
 const exportInput = {
   error: null,
+  maxRoundCount: 5,
   messages: [
     {
       id: 'm-1',
@@ -67,6 +68,7 @@ describe('storyCsv', () => {
       temperature: 0.9,
       top_p: 0.8,
     })
+    expect(parsed.max_round_count).toBe(5)
     expect(parsed.mode).toBe('manual')
     expect(parsed.seed.openingLine).toBe('第一片雪落在门把手上')
     expect(parsed.conversation[0]).toEqual({

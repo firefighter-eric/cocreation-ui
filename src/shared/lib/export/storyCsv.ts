@@ -10,6 +10,7 @@ import type { StoryMode } from '../../config/story'
 
 interface ExportStoryCsvInput {
   error: string | null
+  maxRoundCount: number
   messages: Message[]
   mode: StoryMode
   rules: StoryRules
@@ -41,6 +42,7 @@ export function buildStoryJson(input: ExportStoryCsvInput, exportedAt = new Date
         temperature: input.modelSettings.temperature,
         top_p: input.modelSettings.topP,
       },
+      max_round_count: input.maxRoundCount,
       exported_at: exportedAt.toISOString(),
       mode: input.mode,
       style: input.style,

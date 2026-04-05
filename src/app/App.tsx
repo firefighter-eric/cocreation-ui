@@ -7,8 +7,6 @@ import { MessageList } from '../features/story-session/components/MessageList'
 import { StoryHeader } from '../features/story-session/components/StoryHeader'
 import { useStorySession } from '../features/story-session/model/useStorySession'
 import {
-  autoTurnCountRange,
-  defaultAutoTurnCount,
   defaultStoryMode,
   storySeeds,
   type StoryMode,
@@ -28,7 +26,6 @@ export function App() {
   const [conversationMode, setConversationMode] = useState<StoryMode>(
     defaultStoryMode,
   )
-  const [autoTurnCount, setAutoTurnCount] = useState(defaultAutoTurnCount)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const store = useMemo(() => createSessionStore(), [])
   const runtimeConfigStore = useMemo(() => createRuntimeLLMConfigStore(), [])
@@ -52,6 +49,7 @@ export function App() {
   function handleExportCsv() {
     exportStoryCsv({
       error: state.error,
+      maxRoundCount: state.maxRoundCount,
       messages: state.messages,
       modelSettings: state.modelSettings,
       mode: conversationMode,
@@ -65,23 +63,11 @@ export function App() {
     })
   }
 
-  function handleAutoTurnChange(nextCount: number) {
-    if (Number.isNaN(nextCount)) {
-      return
-    }
-
-    const clamped = Math.min(
-      autoTurnCountRange.max,
-      Math.max(autoTurnCountRange.min, Math.trunc(nextCount)),
-    )
-
-    setAutoTurnCount(clamped)
-  }
-
   const {
     state,
     draft,
     draftError,
+    isRoundLimitReached,
     providerLabel,
     setDraft,
     submitDraft,
@@ -140,6 +126,7 @@ export function App() {
                 rules: state.rules,
                 style: state.style,
               }),
+              state.maxRoundCount,
               state.modelSettings,
             )
           }}
@@ -151,6 +138,7 @@ export function App() {
       <main className="workspace">
         <StoryHeader
           hasMessages={state.messages.length > 0}
+          maxRoundCount={state.maxRoundCount}
           openingLine={state.seed.openingLine}
           onExport={handleExportCsv}
           onOpenSettings={() => setIsSettingsOpen(true)}
@@ -178,7 +166,9 @@ export function App() {
               state.status === 'submitting_user_line' ||
               state.status === 'waiting_for_ai'
             }
+            isRoundLimitReached={isRoundLimitReached}
             maxLength={state.rules.maxChars}
+            maxRoundCount={state.maxRoundCount}
             onBackspace={incrementBackspaceCount}
             onChange={setDraft}
             onStartSession={startSession}
@@ -186,20 +176,20 @@ export function App() {
           />
         ) : (
           <AutoConversationPanel
-            autoTurnCount={autoTurnCount}
             isBusy={state.status === 'waiting_for_ai'}
-            onAutoTurnChange={handleAutoTurnChange}
+            maxRoundCount={state.maxRoundCount}
             onGenerate={generateAutoConversation}
           />
         )}
       </main>
 
       <SettingsDrawer
-        key={`${isSettingsOpen ? 'open' : 'closed'}-${state.systemPrompt}-${state.style}-${state.modelSettings.model}-${state.modelSettings.temperature}-${state.modelSettings.topP}-${runtimeConfig?.baseUrl ?? ''}-${runtimeConfig?.apiKey ?? ''}-${runtimeConfig?.model ?? ''}`}
+        key={`${isSettingsOpen ? 'open' : 'closed'}-${state.systemPrompt}-${state.style}-${state.maxRoundCount}-${state.modelSettings.model}-${state.modelSettings.temperature}-${state.modelSettings.topP}-${runtimeConfig?.baseUrl ?? ''}-${runtimeConfig?.apiKey ?? ''}-${runtimeConfig?.model ?? ''}`}
         availableModels={availableModels}
         conversationMode={conversationMode}
         currentStyle={state.style}
         initialApiConfig={runtimeConfig}
+        initialMaxRoundCount={state.maxRoundCount}
         initialModelSettings={state.modelSettings}
         isFetchingModels={isFetchingModels}
         initialPrompt={state.systemPrompt}
@@ -207,8 +197,8 @@ export function App() {
         modelFetchError={modelFetchError}
         onClose={() => setIsSettingsOpen(false)}
         onFetchModels={handleFetchModels}
-        onSave={({ apiConfig, modelSettings, style, systemPrompt }) => {
-          updatePromptSettings(style, systemPrompt, modelSettings)
+        onSave={({ apiConfig, maxRoundCount, modelSettings, style, systemPrompt }) => {
+          updatePromptSettings(style, systemPrompt, maxRoundCount, modelSettings)
           const normalized = normalizeRuntimeLLMConfig(apiConfig)
           runtimeConfigStore.save(normalized)
           setRuntimeConfig(runtimeConfigStore.load())

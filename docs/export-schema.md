@@ -18,6 +18,7 @@
     "temperature": 1.0,
     "top_p": 1.0
   },
+  "max_round_count": 5,
   "exported_at": "string",
   "mode": "manual | human_like | auto",
   "style": "creative | coherent",
@@ -43,6 +44,7 @@
 - `system_prompt` 是导出时当前生效的完整系统提示
 - `model_settings` 记录请求参数中的当前模型设置
 - `model_settings.model` 记录本次请求使用的模型名
+- `max_round_count` 记录当前会话允许的最大回合数
 - `mode` 反映当前产品模式，不隐藏 `human_like` 的真实模式值
 
 ## conversation 数组

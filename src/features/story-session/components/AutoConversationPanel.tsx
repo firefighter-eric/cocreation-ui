@@ -1,80 +1,32 @@
-import { useEffect, useState } from 'react'
-import { autoTurnCountRange } from '../../../shared/config/story'
-
 interface AutoConversationPanelProps {
-  autoTurnCount: number
   isBusy: boolean
-  onAutoTurnChange: (count: number) => void
+  maxRoundCount: number
   onGenerate: (count: number) => void
 }
 
 export function AutoConversationPanel({
-  autoTurnCount,
   isBusy,
-  onAutoTurnChange,
+  maxRoundCount,
   onGenerate,
 }: AutoConversationPanelProps) {
-  const [draftValue, setDraftValue] = useState(String(autoTurnCount))
-
-  useEffect(() => {
-    setDraftValue(String(autoTurnCount))
-  }, [autoTurnCount])
-
-  function commitDraft(value: string) {
-    if (value.trim() === '') {
-      setDraftValue('')
-      return null
-    }
-
-    const parsed = Number(value)
-
-    if (Number.isNaN(parsed)) {
-      setDraftValue(String(autoTurnCount))
-      return null
-    }
-
-    const clamped = Math.min(
-      autoTurnCountRange.max,
-      Math.max(autoTurnCountRange.min, Math.trunc(parsed)),
-    )
-
-    onAutoTurnChange(clamped)
-    setDraftValue(String(clamped))
-    return clamped
-  }
-
   return (
     <section className="auto-mode-panel">
       <div className="auto-mode-panel__inner">
         <div className="section-heading">
           <h2>自动对话轮数</h2>
-          <span>机器自动模式</span>
+          <span>由设置统一控制</span>
         </div>
 
-        <label className="auto-turn-input">
-          <span>输入 1-10 轮</span>
-          <input
-            inputMode="numeric"
-            pattern="[0-9]*"
-            type="text"
-            value={draftValue}
-            onBlur={(event) => commitDraft(event.target.value)}
-            onChange={(event) => setDraftValue(event.target.value)}
-            onFocus={(event) => event.currentTarget.select()}
-          />
-        </label>
+        <p className="settings-drawer__hint">
+          当前最大回合数为 {maxRoundCount}。每 1 回合代表 1 组“用户一句 + AI
+          一句”，可在右上角设置中修改。
+        </p>
 
         <button
           className="restart-button restart-button--primary"
           disabled={isBusy}
           type="button"
-          onClick={() => {
-            const nextCount = commitDraft(draftValue)
-
-            if (nextCount !== null) {
-              onGenerate(nextCount)
-            }
-          }}
+          onClick={() => onGenerate(maxRoundCount)}
         >
           {isBusy ? '自动生成中' : '自动生成 1 例对话'}
         </button>

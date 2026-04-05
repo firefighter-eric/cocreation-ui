@@ -4,6 +4,7 @@ import type {
 
 interface StoryHeaderProps {
   hasMessages: boolean
+  maxRoundCount: number
   openingLine: string
   onExport: () => void
   onOpenSettings: () => void
@@ -15,6 +16,7 @@ interface StoryHeaderProps {
 
 export function StoryHeader({
   hasMessages,
+  maxRoundCount,
   openingLine,
   onExport,
   onOpenSettings,
@@ -67,7 +69,7 @@ export function StoryHeader({
             <span className="rule-chip">
               {rules.punctuationAllowed ? '允许标点' : '不允许标点'}
             </span>
-            <span className="rule-chip">一来一回接龙</span>
+            <span className="rule-chip">最多 {maxRoundCount} 回合</span>
           </div>
         </div>
       </div>

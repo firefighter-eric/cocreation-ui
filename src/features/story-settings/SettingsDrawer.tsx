@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { StoryRules, StoryStyle } from '../../entities/story-session/types'
 import type { StoryMode } from '../../shared/config/story'
-import { styleOptions } from '../../shared/config/story'
+import { roundCountRange, styleOptions } from '../../shared/config/story'
 import { buildDefaultSystemPrompt } from '../../shared/lib/llm/prompt'
 import type { RuntimeLLMConfig } from '../../shared/lib/llm/runtimeConfig'
 
@@ -14,6 +14,7 @@ interface SettingsDrawerProps {
     temperature: number
     topP: number
   }
+  initialMaxRoundCount: number
   initialApiConfig: RuntimeLLMConfig | null
   isFetchingModels: boolean
   initialPrompt: string
@@ -25,6 +26,7 @@ interface SettingsDrawerProps {
     apiConfig: RuntimeLLMConfig
     style: StoryStyle
     systemPrompt: string
+    maxRoundCount: number
     modelSettings: {
       model: string
       temperature: number
@@ -40,6 +42,7 @@ export function SettingsDrawer({
   conversationMode,
   currentStyle,
   initialApiConfig,
+  initialMaxRoundCount,
   initialModelSettings,
   isFetchingModels,
   initialPrompt,
@@ -56,9 +59,25 @@ export function SettingsDrawer({
   const [model, setModel] = useState(initialModelSettings.model)
   const [temperature, setTemperature] = useState(initialModelSettings.temperature)
   const [topP, setTopP] = useState(initialModelSettings.topP)
+  const [maxRoundCountDraft, setMaxRoundCountDraft] = useState(
+    String(initialMaxRoundCount),
+  )
   const [baseUrl, setBaseUrl] = useState(initialApiConfig?.baseUrl ?? '')
   const [apiKey, setApiKey] = useState(initialApiConfig?.apiKey ?? '')
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false)
+
+  function normalizeMaxRoundCount(value: string) {
+    const parsed = Number(value)
+
+    if (Number.isNaN(parsed)) {
+      return initialMaxRoundCount
+    }
+
+    return Math.min(
+      roundCountRange.max,
+      Math.max(roundCountRange.min, Math.trunc(parsed)),
+    )
+  }
 
   if (!isOpen) {
     return null
@@ -122,6 +141,31 @@ export function SettingsDrawer({
               </button>
             ))}
           </div>
+        </section>
+
+        <section className="settings-drawer__section">
+          <div className="section-heading">
+            <h2>回合设置</h2>
+            <span>所有模式通用</span>
+          </div>
+          <label className="settings-drawer__field">
+            <span>最大回合数量</span>
+            <input
+              inputMode="numeric"
+              pattern="[0-9]*"
+              type="text"
+              value={maxRoundCountDraft}
+              onBlur={(event) =>
+                setMaxRoundCountDraft(
+                  String(normalizeMaxRoundCount(event.target.value)),
+                )
+              }
+              onChange={(event) => setMaxRoundCountDraft(event.target.value)}
+            />
+          </label>
+          <p className="settings-drawer__hint">
+            默认 5 回合，范围 1-10。1 回合表示 1 组“用户一句 + 对方一句”。
+          </p>
         </section>
 
         <section className="settings-drawer__section">
@@ -278,6 +322,7 @@ export function SettingsDrawer({
                 },
                 style: selectedStyle,
                 systemPrompt: draft,
+                maxRoundCount: normalizeMaxRoundCount(maxRoundCountDraft),
                 modelSettings: {
                   model: normalizedModel,
                   temperature,

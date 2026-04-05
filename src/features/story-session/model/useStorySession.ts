@@ -7,6 +7,7 @@ import type {
   StoryStyle,
 } from '../../../entities/story-session/types'
 import {
+  defaultMaxRoundCount,
   defaultStoryRules,
   defaultStoryStyle,
 } from '../../../shared/config/story'
@@ -43,6 +44,7 @@ export function useStorySession({
     }
 
     const session = createStorySession({
+      maxRoundCount: defaultMaxRoundCount,
       modelSettings: initialModelSettings,
       seed: initialSeed,
       systemPrompt: buildDefaultSystemPrompt({
@@ -60,6 +62,10 @@ export function useStorySession({
   const [draftError, setDraftError] = useState<string | null>(null)
   const [manualInputStartedAt, setManualInputStartedAt] = useState<string | null>(null)
   const [manualBackspaceCount, setManualBackspaceCount] = useState(0)
+  const completedRoundCount = state.messages.filter(
+    (message) => message.role === 'assistant',
+  ).length
+  const isRoundLimitReached = completedRoundCount >= state.maxRoundCount
 
   useEffect(() => {
     store.save(state)
@@ -88,6 +94,11 @@ export function useStorySession({
   async function submitDraft() {
     if (state.sessionStartedAt === null) {
       setDraftError('请先点击开始，再输入你的故事。')
+      return
+    }
+
+    if (isRoundLimitReached) {
+      setDraftError(`已达到最大 ${state.maxRoundCount} 回合，请重新开始或在设置中调整。`)
       return
     }
 
@@ -245,6 +256,7 @@ export function useStorySession({
     nextSeed = state.seed,
     nextStyle = state.style,
     nextSystemPrompt = state.systemPrompt,
+    nextMaxRoundCount = state.maxRoundCount,
     nextModelSettings = state.modelSettings,
   ) {
     startTransition(() => {
@@ -258,6 +270,7 @@ export function useStorySession({
           seed: nextSeed,
           style: nextStyle,
           systemPrompt: nextSystemPrompt,
+          maxRoundCount: nextMaxRoundCount,
           modelSettings: nextModelSettings,
         }),
       )
@@ -295,9 +308,16 @@ export function useStorySession({
   function updatePromptSettings(
     style: StoryStyle,
     systemPrompt: string,
+    maxRoundCount: number,
     modelSettings: StorySessionState['modelSettings'],
   ) {
-    restartSession(state.seed, style, systemPrompt.trim(), modelSettings)
+    restartSession(
+      state.seed,
+      style,
+      systemPrompt.trim(),
+      maxRoundCount,
+      modelSettings,
+    )
   }
 
   function incrementBackspaceCount() {
@@ -318,6 +338,7 @@ export function useStorySession({
     state,
     draft,
     draftError,
+    isRoundLimitReached,
     providerLabel: provider.label,
     setDraft: setValidatedDraft,
     submitDraft,

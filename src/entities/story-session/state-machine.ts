@@ -8,6 +8,7 @@ import type {
 } from './types'
 
 interface CreateStorySessionInput {
+  maxRoundCount: number
   modelSettings: StorySessionState['modelSettings']
   seed: StorySeed
   systemPrompt: string
@@ -23,6 +24,7 @@ export function createStorySession(
     sessionStartedAt: null,
     systemPrompt: input.systemPrompt,
     modelSettings: input.modelSettings,
+    maxRoundCount: input.maxRoundCount,
     seed: input.seed,
     style: input.style,
     rules: input.rules,
@@ -90,6 +92,11 @@ export function advanceStorySession(
         ...state,
         modelSettings: event.modelSettings,
       }
+    case 'SET_MAX_ROUND_COUNT':
+      return {
+        ...state,
+        maxRoundCount: event.maxRoundCount,
+      }
     case 'CLEAR_ERROR':
       return {
         ...state,
@@ -102,6 +109,7 @@ export function advanceStorySession(
         sessionStartedAt: null,
         systemPrompt: event.systemPrompt ?? state.systemPrompt,
         modelSettings: event.modelSettings ?? state.modelSettings,
+        maxRoundCount: event.maxRoundCount ?? state.maxRoundCount,
         seed: event.seed ?? state.seed,
         style: event.style ?? state.style,
         rules: event.rules ?? state.rules,
