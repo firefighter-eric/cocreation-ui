@@ -66,28 +66,40 @@ export const defaultStoryRules: StoryRules = {
 
 export const storySeeds: StorySeed[] = [
   {
-    id: 'library',
-    title: '图书馆角落',
-    openingLine: '图书馆的角落里有个读书的人',
-    summary: '从安静、克制的空间里慢慢长出异样。',
+    id: 'taxi',
+    title: '路边出租车',
+    openingLine: '一辆出租车停在路边',
+    summary: '从街头短暂停顿的瞬间，往未知去向慢慢展开。',
   },
   {
-    id: 'coffee',
-    title: '苦涩牛奶',
-    openingLine: '咖啡是苦涩的牛奶',
-    summary: '让熟悉的事物从一开始就带着错位感。',
+    id: 'hallway-light',
+    title: '走廊感应灯',
+    openingLine: '走廊尽头的感应灯亮了起来',
+    summary: '适合从安静空间里的细小变化开始推进。',
   },
   {
-    id: 'grape',
-    title: '葡萄太阳',
-    openingLine: '公园里有一颗葡萄想要变成太阳',
-    summary: '适合往童话、荒诞或寓言方向延伸。',
+    id: 'traffic-light',
+    title: '路口红绿灯',
+    openingLine: '我在路边等红绿灯',
+    summary: '从常见城市时刻切入，容易长出人物关系和事件。',
   },
   {
-    id: 'ai-human',
-    title: '成为人类',
-    openingLine: '有一个人工智能想要成为人类',
-    summary: '适合展开身份、情感和选择的冲突。',
+    id: 'email',
+    title: '今天的邮件',
+    openingLine: '今天我收到了一封电子邮件',
+    summary: '让故事从一条信息开始，逐步揭开后续变化。',
+  },
+  {
+    id: 'clock',
+    title: '挂钟敲响',
+    openingLine: '墙上的挂钟刚刚敲响',
+    summary: '适合围绕时间节点、等待和转折继续推进。',
+  },
+  {
+    id: 'tv',
+    title: '电视闪烁',
+    openingLine: '电视屏幕突然闪烁了一下',
+    summary: '从日常物件的异常反应切入，制造悬念或错位感。',
   },
 ]
 
@@ -110,6 +122,6 @@ export const styleOptions: Array<{
 
 export function getStyleSystemPrompt(style: StoryStyle) {
   return style === 'creative'
-    ? '请给出一个意想不到、跳跃感强、但仍然延续当前故事的短句。'
-    : '请给出一个自然连贯、符合日常叙事逻辑的短句。'
+    ? '请给出一句意想不到但仍能自然延续上文的短句。'
+    : '请给出一句自然连贯、符合日常叙事逻辑的短句。'
 }

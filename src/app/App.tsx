@@ -87,7 +87,7 @@ export function App() {
     store,
     initialModelSettings: {
       model: runtimeConfig?.model || appEnv.model || 'none',
-      temperature: 1.0,
+      temperature: 1.5,
       topP: 1,
     },
     initialSeed: storySeeds[0],

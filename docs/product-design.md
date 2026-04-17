@@ -59,6 +59,8 @@
 - 设置抽屉中展示完整可编辑的 `system prompt`
 - 切换风格时，直接改写这段可见文本
 - 用户可在此基础上继续手动修改
+- 默认模板语气应接近日常口语，像普通大学生讲故事
+- 默认模板不使用书面化表达或生僻词要求
 
 ### 3.3 故事规则
 
@@ -272,7 +274,7 @@ JSON 导出字段统一使用 snake_case 命名，不使用 camelCase。
 - 风格切换会直接改写可见的 system prompt 文本
 - 开场句不写入 system prompt，而是作为请求中的第一条 user message
 - 默认规则仍然保留，不允许被 UI 层删除
-- 默认模型参数为 `temperature = 1.0`、`top_p = 1.0`
+- 默认模型参数为 `temperature = 1.5`、`top_p = 1.0`
 - 默认模型名取环境变量中的 `VITE_LLM_MODEL`，未配置时使用默认值
 - 用户可在设置抽屉里填写自己的 `base URL` 和 `API key`
 - 这份 API 配置保存在浏览器本地 `localStorage`，用于避免反复填写

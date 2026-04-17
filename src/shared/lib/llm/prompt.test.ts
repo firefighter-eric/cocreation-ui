@@ -67,6 +67,19 @@ describe('buildStoryPrompt', () => {
     expect(prompt).toContain('人类玩家')
   })
 
+  it('uses the new colloquial creative template', () => {
+    const prompt = buildDefaultSystemPrompt({
+      conversationMode: 'manual',
+      rules: defaultStoryRules,
+      style: 'creative',
+    })
+
+    expect(prompt).toContain('你现在扮演故事共创的AI搭档')
+    expect(prompt).toContain('语言像普通大学生讲故事')
+    expect(prompt).toContain('不要书面化或使用生僻词')
+    expect(prompt).toContain('输出必须不超过20个汉字')
+  })
+
   it('contains human-like partner guidance', () => {
     const prompt = buildStoryPrompt({
       ...baseSettings,

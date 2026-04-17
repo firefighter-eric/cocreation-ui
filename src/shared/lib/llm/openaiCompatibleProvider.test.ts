@@ -138,9 +138,9 @@ function createInput(
       punctuationAllowed: false,
     },
     seed: {
-      id: 'library',
-      title: '图书馆角落',
-      openingLine: '图书馆的角落里有个读书的人',
+      id: 'taxi',
+      title: '路边出租车',
+      openingLine: '一辆出租车停在路边',
       summary: '',
     },
     speaker: 'assistant',

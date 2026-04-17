@@ -7,7 +7,7 @@ import { appEnv } from '../shared/config/env'
 describe('App', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
-    vi.spyOn(Math, 'random').mockReturnValue(0.9)
+    vi.spyOn(Math, 'random').mockReturnValue(0.1)
     window.localStorage.clear()
     Object.defineProperty(URL, 'createObjectURL', {
       configurable: true,
@@ -260,7 +260,7 @@ describe('App', () => {
     expect(payload.messages[0].content).not.toContain('故事开场')
     expect(payload.messages[1]).toEqual({
       role: 'user',
-      content: '图书馆的角落里有个读书的人',
+      content: '一辆出租车停在路边',
     })
     expect(payload.model).toBe('story-model')
     expect(payload.temperature).toBe(0.7)

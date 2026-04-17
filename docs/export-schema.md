@@ -15,7 +15,7 @@
   "system_prompt": "string",
   "model_settings": {
     "model": "gpt-4.1-mini",
-    "temperature": 1.0,
+    "temperature": 1.5,
     "top_p": 1.0
   },
   "max_round_count": 5,
@@ -62,7 +62,7 @@
 ```json
 {
   "role": "user",
-  "content": "图书馆的角落里有个读书的人",
+  "content": "一辆出租车停在路边",
   "is_opening": true
 }
 ```
