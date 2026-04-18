@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeHumanLikeDelay } from './humanLikeDelay'
+import { computeHumanLikeDelay, computePartnerReadyDelay } from './humanLikeDelay'
 
 describe('computeHumanLikeDelay', () => {
   it('applies the configured delay multiplier to the combined delay budget', () => {
@@ -18,5 +18,12 @@ describe('computeHumanLikeDelay', () => {
     const maxDelay = computeHumanLikeDelay('测试', 1, 2)
 
     expect(maxDelay - minDelay).toBeLessThanOrEqual(1800)
+  })
+})
+
+describe('computePartnerReadyDelay', () => {
+  it('stays within the expected 1-5 second range', () => {
+    expect(computePartnerReadyDelay(0)).toBe(1000)
+    expect(computePartnerReadyDelay(1)).toBe(5000)
   })
 })

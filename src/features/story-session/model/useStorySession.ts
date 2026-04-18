@@ -20,6 +20,7 @@ import type { LLMProvider } from '../../../shared/lib/llm/types'
 import type { SessionStore } from '../../../shared/lib/storage/sessionStore'
 import {
   computeHumanLikeDelay,
+  computePartnerReadyDelay,
   waitForDelay,
 } from '../../../shared/lib/timing/humanLikeDelay'
 import { validateStoryLine } from '../../../shared/lib/validation/storyLine'
@@ -87,7 +88,11 @@ export function useStorySession({
     activeSessionId: string,
   ) {
     const aiStartedAt = new Date().toISOString()
-    setState((current) => advanceStorySession(current, { type: 'AI_REQUEST_START' }))
+    setState((current) =>
+      current.sessionId !== activeSessionId
+        ? current
+        : advanceStorySession(current, { type: 'AI_REQUEST_START' }),
+    )
 
     try {
       const content = await provider.generateNextLine({
@@ -445,6 +450,7 @@ export function useStorySession({
     setDraftError(null)
     const startingRoundSpeaker =
       forcedStartingRoundSpeaker ?? resolveStartingSpeaker(state.startingRoundMode)
+    const activeSessionId = state.sessionId
     setState((current) =>
       advanceStorySession(current, {
         type: 'START_SESSION',
@@ -454,7 +460,20 @@ export function useStorySession({
     )
 
     if (startingRoundSpeaker === 'assistant') {
-      void requestGeneratedLine(state.messages, state.sessionId)
+      if (conversationMode === 'human_like') {
+        setState((current) =>
+          current.sessionId !== activeSessionId
+            ? current
+            : advanceStorySession(current, { type: 'PARTNER_READY_WAIT_START' }),
+        )
+        void (async () => {
+          await waitForDelay(computePartnerReadyDelay())
+          await requestGeneratedLine(state.messages, activeSessionId)
+        })()
+        return
+      }
+
+      void requestGeneratedLine(state.messages, activeSessionId)
     }
   }
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { StorySessionStatus } from '../../../entities/story-session/types'
 
 interface ComposerProps {
   conversationMode: 'manual' | 'human_like'
@@ -6,6 +7,7 @@ interface ComposerProps {
   draftError: string | null
   hasStarted: boolean
   isBusy: boolean
+  status: StorySessionStatus
   isRoundLimitReached: boolean
   maxLength: number
   maxRoundCount: number
@@ -22,6 +24,7 @@ export function Composer({
   draftError,
   hasStarted,
   isBusy,
+  status,
   isRoundLimitReached,
   maxLength,
   maxRoundCount,
@@ -44,7 +47,9 @@ export function Composer({
     ? '开始'
     : isBusy
       ? conversationMode === 'human_like'
-        ? '对方输入中'
+        ? status === 'waiting_for_partner_ready'
+          ? '等待对方就绪'
+          : '对方输入中'
         : '生成中'
       : '发送'
 
@@ -118,13 +123,15 @@ export function Composer({
           {draftError ??
             (!hasStarted
               ? startingRoundMode === 'assistant'
-                ? '点击开始后先由对方说第一句，系统会记录你的思考时间。'
+                ? conversationMode === 'human_like'
+                  ? '点击开始后会先等待对方就绪，再进入对方输入状态。'
+                  : '点击开始后先由对方说第一句，系统会记录你的思考时间。'
                 : startingRoundMode === 'random'
                   ? '点击开始后会随机决定谁先说第一句。'
                   : '点击开始后再输入，系统会记录你的思考时间。'
               : isRoundLimitReached
                 ? `已达到最大 ${maxRoundCount} 回合，请重新开始或在设置中调整。`
-                : '和 AI 一起一问一答接龙。')}
+                : '')}
         </p>
         <span aria-live="polite">{remaining} / {maxLength}</span>
       </div>

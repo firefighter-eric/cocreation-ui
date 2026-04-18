@@ -27,8 +27,13 @@ export function MessageList({
 }: MessageListProps) {
   const partnerLabel = conversationMode === 'human_like' ? '对方' : 'AI'
   const selfLabel = '我'
-  const emptyCopy =
-    startingRoundMode === 'assistant'
+  const isWaitingForPartnerReady = status === 'waiting_for_partner_ready'
+  const emptyTitle = isWaitingForPartnerReady
+    ? '等待对方就绪'
+    : '先写一句，把故事推向下一步。'
+  const emptyCopy = isWaitingForPartnerReady
+    ? '对方正在进入当前题目，准备好后会继续接上开场句。'
+    : startingRoundMode === 'assistant'
       ? conversationMode === 'human_like'
         ? '点击开始后，对方会先接上开场句。'
         : '点击开始后，AI 会先接上开场句。'
@@ -66,7 +71,7 @@ export function MessageList({
 
         {messages.length === 0 ? (
           <div className="empty-state">
-            <p className="empty-title">先写一句，把故事推向下一步。</p>
+            <p className="empty-title">{emptyTitle}</p>
             <p className="empty-copy">{emptyCopy}</p>
           </div>
         ) : null}

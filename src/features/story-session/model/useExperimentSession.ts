@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createExperimentPlan } from '../../../entities/experiment/planner'
 import type {
   ExperimentMode,
@@ -30,6 +30,7 @@ export function useExperimentSession({
   seeds,
   store,
 }: UseExperimentSessionInput) {
+  const advanceTimerRef = useRef<number | null>(null)
   const [state, setState] = useState<ExperimentState>(
     () => store.load() ?? createIdleExperimentState(),
   )
@@ -37,6 +38,14 @@ export function useExperimentSession({
   useEffect(() => {
     store.save(state)
   }, [state, store])
+
+  useEffect(() => {
+    return () => {
+      if (advanceTimerRef.current !== null) {
+        window.clearTimeout(advanceTimerRef.current)
+      }
+    }
+  }, [])
 
   const currentItem = state.items[state.currentItemIndex] ?? null
   const isRunning = state.status === 'running'
@@ -49,6 +58,11 @@ export function useExperimentSession({
   )
 
   function startExperiment(mode: ExperimentMode) {
+    if (advanceTimerRef.current !== null) {
+      window.clearTimeout(advanceTimerRef.current)
+      advanceTimerRef.current = null
+    }
+
     const startedAt = new Date()
     const experimentSeed = startedAt.getTime()
 
@@ -81,22 +95,39 @@ export function useExperimentSession({
     setState((current) => {
       const nextSessions = [...current.sessions, nextRecord]
       const hasNextItem = current.currentItemIndex + 1 < current.items.length
+      const nextStatus: ExperimentState['status'] = hasNextItem
+        ? 'advancing'
+        : 'completed'
 
-      return {
+      const nextState = {
         ...current,
         sessions: nextSessions,
-        currentItemIndex: hasNextItem
-          ? current.currentItemIndex + 1
-          : current.currentItemIndex,
-        experimentCompletedAt: hasNextItem
-          ? null
-          : new Date().toISOString(),
-        status: hasNextItem ? current.status : 'completed',
+        currentItemIndex: current.currentItemIndex,
+        experimentCompletedAt: hasNextItem ? null : new Date().toISOString(),
+        status: nextStatus,
       }
+
+      if (hasNextItem) {
+        advanceTimerRef.current = window.setTimeout(() => {
+          setState((latest) => ({
+            ...latest,
+            currentItemIndex: latest.currentItemIndex + 1,
+            status: 'running',
+          }))
+          advanceTimerRef.current = null
+        }, 3000)
+      }
+
+      return nextState
     })
   }
 
   function resetExperiment() {
+    if (advanceTimerRef.current !== null) {
+      window.clearTimeout(advanceTimerRef.current)
+      advanceTimerRef.current = null
+    }
+
     const next = createIdleExperimentState()
     setState(next)
     store.clear()

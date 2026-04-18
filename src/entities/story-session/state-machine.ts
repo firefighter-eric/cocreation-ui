@@ -64,6 +64,12 @@ export function advanceStorySession(
         startingRoundSpeaker: state.startingRoundSpeaker ?? event.startingRoundSpeaker,
         error: null,
       }
+    case 'PARTNER_READY_WAIT_START':
+      return {
+        ...state,
+        status: 'waiting_for_partner_ready',
+        error: null,
+      }
     case 'APPEND_MESSAGE':
       return {
         ...state,

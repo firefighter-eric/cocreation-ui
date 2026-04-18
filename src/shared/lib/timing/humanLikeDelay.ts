@@ -1,6 +1,8 @@
 const baseDelayMs = 1400
 const perCharDelayMs = 280
 const maxJitterMs = 900
+const minPartnerReadyDelayMs = 1000
+const partnerReadyDelayRangeMs = 4000
 
 export function computeHumanLikeDelay(
   content: string,
@@ -11,6 +13,10 @@ export function computeHumanLikeDelay(
   const jitter = Math.round(randomValue * maxJitterMs)
 
   return (baseDelayMs + charCount * perCharDelayMs + jitter) * delayMultiplier
+}
+
+export function computePartnerReadyDelay(randomValue = Math.random()) {
+  return minPartnerReadyDelayMs + Math.round(randomValue * partnerReadyDelayRangeMs)
 }
 
 export function waitForDelay(delayMs: number) {

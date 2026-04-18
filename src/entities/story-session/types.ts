@@ -29,6 +29,7 @@ export interface HumanLikeSettings {
 export type StorySessionStatus =
   | 'idle'
   | 'ready'
+  | 'waiting_for_partner_ready'
   | 'submitting_user_line'
   | 'waiting_for_ai'
   | 'ai_replied'
@@ -58,6 +59,7 @@ export type StorySessionEvent =
       startedAt: string
       startingRoundSpeaker: MessageRole
     }
+  | { type: 'PARTNER_READY_WAIT_START' }
   | { type: 'USER_SUBMIT'; message: Message }
   | {
       type: 'APPEND_MESSAGE'

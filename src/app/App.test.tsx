@@ -3,7 +3,10 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
 import { appEnv } from '../shared/config/env'
-import { computeHumanLikeDelay } from '../shared/lib/timing/humanLikeDelay'
+import {
+  computeHumanLikeDelay,
+  computePartnerReadyDelay,
+} from '../shared/lib/timing/humanLikeDelay'
 
 describe('App', () => {
   beforeEach(() => {
@@ -299,21 +302,37 @@ describe('App', () => {
 
     render(<App />)
 
+    await user.click(screen.getByRole('button', { name: /与人对话/ }))
     await user.click(screen.getByRole('button', { name: '设置' }))
     await user.click(
       screen.getByRole('button', { name: '对方点击开始后先由对方说第一句。' }),
     )
     await user.click(screen.getByRole('button', { name: '保存' }))
 
-    await user.click(screen.getByRole('button', { name: '开始' }))
+    vi.useFakeTimers()
 
-    expect(await screen.findByText('窗外的雨开始倒着落下')).toBeInTheDocument()
-    await waitFor(() =>
-      expect(
-        screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点'),
-      ).toHaveFocus(),
-    )
-  })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    })
+
+    expect(screen.getAllByText('等待对方就绪')).toHaveLength(2)
+    expect(screen.getByRole('button', { name: '等待对方就绪' })).toBeInTheDocument()
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(computePartnerReadyDelay(0.1))
+    })
+
+    expect(screen.getByRole('button', { name: '对方输入中' })).toBeInTheDocument()
+
+    await act(async () => {
+      await vi.runAllTimersAsync()
+    })
+
+    expect(screen.getByText('窗外的雨开始倒着落下')).toBeInTheDocument()
+    expect(
+      screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点'),
+    ).toHaveFocus()
+  }, 10000)
 
   it('stops manual conversation after reaching max round count', async () => {
     const user = userEvent.setup()
@@ -637,8 +656,10 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: '开始实验' })).toBeInTheDocument()
   })
 
-  it('completes a formal experiment and exports one aggregated json file', async () => {
-    const user = userEvent.setup()
+  it(
+    'completes a formal experiment and exports one aggregated json file',
+    async () => {
+    vi.useFakeTimers()
     const clickMock = vi.fn()
     const downloadNames: string[] = []
     const blobContents: string[] = []
@@ -683,31 +704,46 @@ describe('App', () => {
 
     render(<App />)
 
-    await user.click(screen.getByRole('button', { name: '设置' }))
-    await user.clear(screen.getByLabelText('最大回合数量'))
-    await user.type(screen.getByLabelText('最大回合数量'), '1')
-    await user.click(screen.getByRole('button', { name: '保存' }))
+    fireEvent.click(screen.getByRole('button', { name: '设置' }))
+    fireEvent.change(screen.getByLabelText('最大回合数量'), {
+      target: { value: '1' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: '保存' }))
 
-    await user.click(screen.getByRole('button', { name: '开始实验' }))
-    await user.click(screen.getByRole('button', { name: /和AI开始/ }))
+    fireEvent.click(screen.getByRole('button', { name: '开始实验' }))
+    fireEvent.click(screen.getByRole('button', { name: /和AI开始/ }))
 
-    for (let index = 1; index <= 6; index += 1) {
-      expect(screen.getByText(`第 ${index} / 6 题`)).toBeInTheDocument()
+      for (let index = 1; index <= 6; index += 1) {
+        expect(screen.getByText(`第 ${index} / 6 题`)).toBeInTheDocument()
 
-      await user.click(screen.getByRole('button', { name: '开始' }))
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: '开始' }))
+        })
 
-      const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
-      await waitFor(() => expect(input).not.toBeDisabled())
-      await user.type(input, `第${index}题故事{enter}`)
+        const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
 
-      if (index < 6) {
-        await screen.findByText(`第 ${index + 1} / 6 题`)
+        if (input.hasAttribute('disabled')) {
+          expect(await screen.findByText('窗外的雨开始倒着落下')).toBeInTheDocument()
+          expect(input).not.toBeDisabled()
+        }
+
+        await act(async () => {
+          fireEvent.change(input, { target: { value: `第${index}题故事` } })
+          fireEvent.keyDown(input, { key: 'Enter' })
+        })
+
+        if (index < 6) {
+          await act(async () => {
+            await Promise.resolve()
+            await vi.runAllTimersAsync()
+          })
+          expect(screen.getByText(`第 ${index + 1} / 6 题`)).toBeInTheDocument()
+        }
       }
-    }
 
-    expect(await screen.findByText('6 个 prompt 已全部完成')).toBeInTheDocument()
+      expect(screen.getByText('6 个 prompt 已全部完成')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: '导出 JSON' }))
+    fireEvent.click(screen.getByRole('button', { name: '导出 JSON' }))
 
     expect(URL.createObjectURL).toHaveBeenCalled()
     expect(clickMock).toHaveBeenCalledTimes(1)
@@ -723,7 +759,9 @@ describe('App', () => {
     expect(exported.sessions[0].conversation[0].is_opening).toBe(true)
     expect(exported.sessions[0].prompt_index).toBe(1)
 
-    createElementSpy.mockRestore()
-    globalThis.Blob = originalBlob
-  })
+      createElementSpy.mockRestore()
+      globalThis.Blob = originalBlob
+    },
+    15000,
+  )
 })

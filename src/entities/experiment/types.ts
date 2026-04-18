@@ -2,7 +2,7 @@ import type { MessageRole } from '../message/types'
 import type { StorySeed, StorySessionState } from '../story-session/types'
 
 export type ExperimentMode = 'manual' | 'human_like'
-export type ExperimentStatus = 'idle' | 'running' | 'completed'
+export type ExperimentStatus = 'idle' | 'running' | 'advancing' | 'completed'
 
 export interface ExperimentItem {
   id: string

@@ -90,7 +90,9 @@ export function App() {
   })
 
   const isExperimentWorkspace =
-    experiment.state.status === 'running' || experiment.state.status === 'completed'
+    experiment.state.status === 'running' ||
+    experiment.state.status === 'advancing' ||
+    experiment.state.status === 'completed'
   const activeSession = isExperimentWorkspace ? experimentSession : playgroundSession
   const activeConversationMode = isExperimentWorkspace
     ? experimentConversationMode
@@ -241,6 +243,12 @@ export function App() {
             '本次正式实验的 6 个 prompt 已全部完成，可直接导出整次实验 JSON。',
           title: '正式实验',
         }
+      : experiment.state.status === 'advancing'
+        ? {
+            badge: `第 ${experiment.completedCount} / ${experiment.state.items.length} 题`,
+            subtitle: '本题完成，3秒钟后进入下一题。',
+            title: '正式实验',
+          }
       : {
           badge: `第 ${experiment.completedCount + 1} / ${experiment.state.items.length} 题`,
           subtitle:
@@ -424,6 +432,14 @@ export function App() {
                 </p>
               </div>
             </section>
+          ) : experiment.state.status === 'advancing' ? (
+            <section className="experiment-summary">
+              <div className="experiment-summary__inner">
+                <p className="eyebrow">本题完成</p>
+                <h2>本题完成，3秒钟后进入下一题</h2>
+                <p>请保持当前页面，系统会自动进入下一题。</p>
+              </div>
+            </section>
           ) : (
             <Composer
               conversationMode={experimentConversationMode}
@@ -431,9 +447,11 @@ export function App() {
               draftError={experimentSession.draftError}
               hasStarted={experimentSession.state.sessionStartedAt !== null}
               isBusy={
+                experimentSession.state.status === 'waiting_for_partner_ready' ||
                 experimentSession.state.status === 'submitting_user_line' ||
                 experimentSession.state.status === 'waiting_for_ai'
               }
+              status={experimentSession.state.status}
               isRoundLimitReached={experimentSession.isRoundLimitReached}
               maxLength={experimentSession.state.rules.maxChars}
               maxRoundCount={experimentSession.state.maxRoundCount}
@@ -456,9 +474,11 @@ export function App() {
             draftError={playgroundSession.draftError}
             hasStarted={playgroundSession.state.sessionStartedAt !== null}
             isBusy={
+              playgroundSession.state.status === 'waiting_for_partner_ready' ||
               playgroundSession.state.status === 'submitting_user_line' ||
               playgroundSession.state.status === 'waiting_for_ai'
             }
+            status={playgroundSession.state.status}
             isRoundLimitReached={playgroundSession.isRoundLimitReached}
             maxLength={playgroundSession.state.rules.maxChars}
             maxRoundCount={playgroundSession.state.maxRoundCount}

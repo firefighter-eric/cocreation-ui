@@ -3,11 +3,12 @@ import type {
 } from '../../entities/story-session/types'
 import { storyModeOptions, type StoryMode } from '../../shared/config/story'
 import type { ExperimentMode } from '../../entities/experiment/types'
+import type { ExperimentStatus } from '../../entities/experiment/types'
 
 interface StorySidebarProps {
   experimentCompletedCount: number
   experimentPromptCount: number
-  experimentStatus: 'idle' | 'running' | 'completed'
+  experimentStatus: ExperimentStatus
   isExperimentPickerOpen: boolean
   playgroundLabel: string
   seeds: StorySeed[]
@@ -39,7 +40,8 @@ export function StorySidebar({
   onRestart,
   onSeedChange,
 }: StorySidebarProps) {
-  const isExperimentActive = experimentStatus === 'running'
+  const isExperimentActive =
+    experimentStatus === 'running' || experimentStatus === 'advancing'
   const isExperimentFinished = experimentStatus === 'completed'
   const selectedExperimentLabel =
     selectedExperimentMode === 'human_like' ? '与人开始' : '与AI开始'
@@ -55,7 +57,7 @@ export function StorySidebar({
         <div className="section-heading">
           <h2>正式实验</h2>
           <span>
-            {experimentStatus === 'running'
+            {experimentStatus === 'running' || experimentStatus === 'advancing'
               ? `${experimentCompletedCount} / ${experimentPromptCount}`
               : experimentStatus === 'completed'
                 ? '已完成'
