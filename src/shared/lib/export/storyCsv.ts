@@ -1,5 +1,6 @@
 import type { Message } from '../../../entities/message/types'
 import type {
+  HumanLikeSettings,
   ModelSettings,
   StartingRoundMode,
   StoryRules,
@@ -23,6 +24,7 @@ interface ExportStoryCsvInput {
   status: StorySessionStatus
   style: StoryStyle
   systemPrompt: string
+  humanLikeSettings: HumanLikeSettings
   modelSettings: ModelSettings
 }
 
@@ -34,6 +36,9 @@ export interface StoryExportPayload {
     model: string
     temperature: number
     top_p: number
+  }
+  human_like_settings: {
+    delay_multiplier: number
   }
   max_round_count: number
   starting_round_mode: StartingRoundMode
@@ -87,6 +92,9 @@ export function buildStoryExportPayload(
       model: input.modelSettings.model,
       temperature: input.modelSettings.temperature,
       top_p: input.modelSettings.topP,
+    },
+    human_like_settings: {
+      delay_multiplier: input.humanLikeSettings.delayMultiplier,
     },
     max_round_count: input.maxRoundCount,
     starting_round_mode: input.startingRoundMode,

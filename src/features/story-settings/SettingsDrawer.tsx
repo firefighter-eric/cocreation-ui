@@ -6,6 +6,8 @@ import type {
 } from '../../entities/story-session/types'
 import type { StoryMode } from '../../shared/config/story'
 import {
+  defaultHumanLikeDelayMultiplier,
+  humanLikeDelayMultiplierRange,
   roundCountRange,
   startingRoundOptions,
   styleOptions,
@@ -26,6 +28,9 @@ interface SettingsDrawerProps {
   initialMaxRoundCount: number
   initialStartingRoundMode: StartingRoundMode
   initialApiConfig: RuntimeLLMConfig | null
+  initialHumanLikeSettings: {
+    delayMultiplier: number
+  }
   isFetchingModels: boolean
   initialPrompt: string
   isOpen: boolean
@@ -38,6 +43,9 @@ interface SettingsDrawerProps {
     systemPrompt: string
     maxRoundCount: number
     startingRoundMode: StartingRoundMode
+    humanLikeSettings: {
+      delayMultiplier: number
+    }
     modelSettings: {
       model: string
       temperature: number
@@ -54,6 +62,7 @@ export function SettingsDrawer({
   currentStyle,
   hideStartingRoundSettings = false,
   initialApiConfig,
+  initialHumanLikeSettings,
   initialMaxRoundCount,
   initialStartingRoundMode,
   initialModelSettings,
@@ -75,6 +84,9 @@ export function SettingsDrawer({
   const [maxRoundCountDraft, setMaxRoundCountDraft] = useState(
     String(initialMaxRoundCount),
   )
+  const [delayMultiplierDraft, setDelayMultiplierDraft] = useState(
+    String(initialHumanLikeSettings.delayMultiplier),
+  )
   const [startingRoundMode, setStartingRoundMode] = useState(initialStartingRoundMode)
   const [baseUrl, setBaseUrl] = useState(initialApiConfig?.baseUrl ?? '')
   const [apiKey, setApiKey] = useState(initialApiConfig?.apiKey ?? '')
@@ -90,6 +102,23 @@ export function SettingsDrawer({
     return Math.min(
       roundCountRange.max,
       Math.max(roundCountRange.min, Math.trunc(parsed)),
+    )
+  }
+
+  function normalizeDelayMultiplier(value: string) {
+    if (value.trim().length === 0) {
+      return initialHumanLikeSettings.delayMultiplier ?? defaultHumanLikeDelayMultiplier
+    }
+
+    const parsed = Number(value)
+
+    if (Number.isNaN(parsed)) {
+      return initialHumanLikeSettings.delayMultiplier ?? defaultHumanLikeDelayMultiplier
+    }
+
+    return Math.min(
+      humanLikeDelayMultiplierRange.max,
+      Math.max(humanLikeDelayMultiplierRange.min, parsed),
     )
   }
 
@@ -284,6 +313,38 @@ export function SettingsDrawer({
 
         <section className="settings-drawer__section">
           <div className="section-heading">
+            <h2>与人对话节奏</h2>
+            <span>仅与人对话生效</span>
+          </div>
+          <label className="settings-drawer__field">
+            <span>人类回复延迟倍率</span>
+            <input
+              inputMode="decimal"
+              type="text"
+              value={delayMultiplierDraft}
+              onBlur={(event) =>
+                setDelayMultiplierDraft(
+                  String(normalizeDelayMultiplier(event.target.value)),
+                )
+              }
+              onChange={(event) => setDelayMultiplierDraft(event.target.value)}
+            />
+          </label>
+          <p className="settings-drawer__hint">
+            公式：
+            <code>(基础等待 + 字数等待 + 随机波动) × 倍率</code>
+            。当前基础等待是 1400ms，每个字额外增加 280ms，随机波动范围是
+            0-900ms。
+          </p>
+          <p className="settings-drawer__hint">
+            这个倍率只影响前台“对方正在输入”的展示节奏，不影响模型真实请求，
+            导出里仍会保留真实的 <code>ai_started_at</code> 和{' '}
+            <code>ai_ended_at</code>。
+          </p>
+        </section>
+
+        <section className="settings-drawer__section">
+          <div className="section-heading">
             <h2>API 配置</h2>
             <span>浏览器本地保存</span>
           </div>
@@ -359,6 +420,9 @@ export function SettingsDrawer({
                 systemPrompt: draft,
                 maxRoundCount: normalizeMaxRoundCount(maxRoundCountDraft),
                 startingRoundMode,
+                humanLikeSettings: {
+                  delayMultiplier: normalizeDelayMultiplier(delayMultiplierDraft),
+                },
                 modelSettings: {
                   model: normalizedModel,
                   temperature,

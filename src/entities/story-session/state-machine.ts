@@ -1,5 +1,6 @@
 import type { Message } from '../message/types'
 import type {
+  HumanLikeSettings,
   StoryRules,
   StorySeed,
   StorySessionEvent,
@@ -10,6 +11,7 @@ import type {
 interface CreateStorySessionInput {
   maxRoundCount: number
   startingRoundMode: StorySessionState['startingRoundMode']
+  humanLikeSettings: HumanLikeSettings
   modelSettings: StorySessionState['modelSettings']
   seed: StorySeed
   systemPrompt: string
@@ -25,6 +27,7 @@ export function createStorySession(
     sessionStartedAt: null,
     systemPrompt: input.systemPrompt,
     modelSettings: input.modelSettings,
+    humanLikeSettings: input.humanLikeSettings,
     maxRoundCount: input.maxRoundCount,
     startingRoundMode: input.startingRoundMode,
     startingRoundSpeaker: null,
@@ -101,6 +104,11 @@ export function advanceStorySession(
         ...state,
         modelSettings: event.modelSettings,
       }
+    case 'SET_HUMAN_LIKE_SETTINGS':
+      return {
+        ...state,
+        humanLikeSettings: event.humanLikeSettings,
+      }
     case 'SET_MAX_ROUND_COUNT':
       return {
         ...state,
@@ -130,6 +138,7 @@ export function advanceStorySession(
         sessionStartedAt: null,
         systemPrompt: event.systemPrompt ?? state.systemPrompt,
         modelSettings: event.modelSettings ?? state.modelSettings,
+        humanLikeSettings: event.humanLikeSettings ?? state.humanLikeSettings,
         maxRoundCount: event.maxRoundCount ?? state.maxRoundCount,
         startingRoundMode: event.startingRoundMode ?? state.startingRoundMode,
         startingRoundSpeaker:

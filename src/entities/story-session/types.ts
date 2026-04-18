@@ -22,6 +22,10 @@ export interface ModelSettings {
   topP: number
 }
 
+export interface HumanLikeSettings {
+  delayMultiplier: number
+}
+
 export type StorySessionStatus =
   | 'idle'
   | 'ready'
@@ -35,6 +39,7 @@ export interface StorySessionState {
   sessionStartedAt: string | null
   systemPrompt: string
   modelSettings: ModelSettings
+  humanLikeSettings: HumanLikeSettings
   maxRoundCount: number
   startingRoundMode: StartingRoundMode
   startingRoundSpeaker: MessageRole | null
@@ -65,6 +70,7 @@ export type StorySessionEvent =
   | { type: 'SET_SYSTEM_PROMPT'; systemPrompt: string }
   | { type: 'SET_STYLE'; style: StoryStyle }
   | { type: 'SET_MODEL_SETTINGS'; modelSettings: ModelSettings }
+  | { type: 'SET_HUMAN_LIKE_SETTINGS'; humanLikeSettings: HumanLikeSettings }
   | { type: 'SET_MAX_ROUND_COUNT'; maxRoundCount: number }
   | {
       type: 'SET_STARTING_ROUND'
@@ -78,6 +84,7 @@ export type StorySessionEvent =
       maxRoundCount?: number
       startingRoundMode?: StartingRoundMode
       startingRoundSpeaker?: MessageRole | null
+      humanLikeSettings?: HumanLikeSettings
       modelSettings?: ModelSettings
       seed?: StorySeed
       style?: StoryStyle

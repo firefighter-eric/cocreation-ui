@@ -26,6 +26,7 @@ import { validateStoryLine } from '../../../shared/lib/validation/storyLine'
 
 interface UseStorySessionInput {
   conversationMode: StoryMode
+  initialHumanLikeSettings: StorySessionState['humanLikeSettings']
   initialModelSettings: StorySessionState['modelSettings']
   initialSeed: StorySeed
   provider: LLMProvider
@@ -34,6 +35,7 @@ interface UseStorySessionInput {
 
 export function useStorySession({
   conversationMode,
+  initialHumanLikeSettings,
   initialModelSettings,
   initialSeed,
   provider,
@@ -43,10 +45,16 @@ export function useStorySession({
     const stored = store.load()
 
     if (stored) {
-      return stored
+      return {
+        ...stored,
+        humanLikeSettings: stored.humanLikeSettings ?? {
+          delayMultiplier: initialHumanLikeSettings.delayMultiplier,
+        },
+      }
     }
 
     const session = createStorySession({
+      humanLikeSettings: initialHumanLikeSettings,
       maxRoundCount: defaultMaxRoundCount,
       startingRoundMode: defaultStartingRoundMode,
       modelSettings: initialModelSettings,
@@ -96,7 +104,13 @@ export function useStorySession({
       })
 
       if (conversationMode === 'human_like') {
-        await waitForDelay(computeHumanLikeDelay(content))
+        await waitForDelay(
+          computeHumanLikeDelay(
+            content,
+            Math.random(),
+            state.humanLikeSettings.delayMultiplier,
+          ),
+        )
       }
 
       const message = createMessage('assistant', content, {
@@ -311,6 +325,7 @@ export function useStorySession({
     nextSystemPrompt = state.systemPrompt,
     nextMaxRoundCount = state.maxRoundCount,
     nextStartingRoundMode = state.startingRoundMode,
+    nextHumanLikeSettings = state.humanLikeSettings,
     nextModelSettings = state.modelSettings,
     nextStartingRoundSpeaker: MessageRole | null = null,
   ) {
@@ -327,6 +342,7 @@ export function useStorySession({
           systemPrompt: nextSystemPrompt,
           maxRoundCount: nextMaxRoundCount,
           startingRoundMode: nextStartingRoundMode,
+          humanLikeSettings: nextHumanLikeSettings,
           startingRoundSpeaker: nextStartingRoundSpeaker,
           modelSettings: nextModelSettings,
         }),
@@ -367,6 +383,7 @@ export function useStorySession({
     systemPrompt: string,
     maxRoundCount: number,
     startingRoundMode: StartingRoundMode,
+    humanLikeSettings: StorySessionState['humanLikeSettings'],
     modelSettings: StorySessionState['modelSettings'],
   ) {
     restartSession(
@@ -375,6 +392,7 @@ export function useStorySession({
       systemPrompt.trim(),
       maxRoundCount,
       startingRoundMode,
+      humanLikeSettings,
       modelSettings,
       null,
     )
@@ -384,24 +402,31 @@ export function useStorySession({
     style: StoryStyle,
     systemPrompt: string,
     maxRoundCount: number,
+    humanLikeSettings: StorySessionState['humanLikeSettings'],
     modelSettings: StorySessionState['modelSettings'],
   ) {
     setState((current) =>
       advanceStorySession(
         advanceStorySession(
           advanceStorySession(
-            advanceStorySession(current, {
-              type: 'SET_STYLE',
-              style,
-            }),
+            advanceStorySession(
+              advanceStorySession(current, {
+                type: 'SET_STYLE',
+                style,
+              }),
+              {
+                type: 'SET_SYSTEM_PROMPT',
+                systemPrompt: systemPrompt.trim(),
+              },
+            ),
             {
-              type: 'SET_SYSTEM_PROMPT',
-              systemPrompt: systemPrompt.trim(),
+              type: 'SET_MAX_ROUND_COUNT',
+              maxRoundCount,
             },
           ),
           {
-            type: 'SET_MAX_ROUND_COUNT',
-            maxRoundCount,
+            type: 'SET_HUMAN_LIKE_SETTINGS',
+            humanLikeSettings,
           },
         ),
         {

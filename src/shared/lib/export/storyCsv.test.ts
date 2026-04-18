@@ -50,6 +50,9 @@ const exportInput = {
   status: 'ready' as const,
   style: 'creative' as const,
   systemPrompt: '保持雪地般的安静',
+  humanLikeSettings: {
+    delayMultiplier: 2,
+  },
   modelSettings: {
     model: 'story-model',
     temperature: 0.9,
@@ -69,6 +72,9 @@ describe('storyCsv', () => {
       model: 'story-model',
       temperature: 0.9,
       top_p: 0.8,
+    })
+    expect(parsed.human_like_settings).toEqual({
+      delay_multiplier: 2,
     })
     expect(parsed.max_round_count).toBe(5)
     expect(parsed.starting_round_mode).toBe('user')

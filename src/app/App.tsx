@@ -8,6 +8,7 @@ import { StoryHeader } from '../features/story-session/components/StoryHeader'
 import { useExperimentSession } from '../features/story-session/model/useExperimentSession'
 import { useStorySession } from '../features/story-session/model/useStorySession'
 import {
+  defaultHumanLikeDelayMultiplier,
   defaultStoryMode,
   storySeeds,
   type StoryMode,
@@ -62,6 +63,9 @@ export function App() {
       temperature: 1.5,
       topP: 1,
     },
+    initialHumanLikeSettings: {
+      delayMultiplier: defaultHumanLikeDelayMultiplier,
+    },
     initialSeed: storySeeds[0],
   })
   const experiment = useExperimentSession({
@@ -79,6 +83,9 @@ export function App() {
       temperature: 1.5,
       topP: 1,
     },
+    initialHumanLikeSettings: {
+      delayMultiplier: defaultHumanLikeDelayMultiplier,
+    },
     initialSeed: storySeeds[0],
   })
 
@@ -93,6 +100,7 @@ export function App() {
     activeSession.state.status === 'waiting_for_ai'
   const experimentSessionConfigRef = useRef({
     maxRoundCount: experimentSession.state.maxRoundCount,
+    humanLikeSettings: experimentSession.state.humanLikeSettings,
     modelSettings: experimentSession.state.modelSettings,
     sessionSnapshot: experimentSession.state,
     style: experimentSession.state.style,
@@ -104,6 +112,7 @@ export function App() {
   useEffect(() => {
     experimentSessionConfigRef.current = {
       maxRoundCount: experimentSession.state.maxRoundCount,
+      humanLikeSettings: experimentSession.state.humanLikeSettings,
       modelSettings: experimentSession.state.modelSettings,
       sessionSnapshot: experimentSession.state,
       style: experimentSession.state.style,
@@ -111,6 +120,7 @@ export function App() {
     }
   }, [
     experimentSession.state.maxRoundCount,
+    experimentSession.state.humanLikeSettings,
     experimentSession.state.modelSettings,
     experimentSession.state,
     experimentSession.state.style,
@@ -138,6 +148,7 @@ export function App() {
       currentConfig.systemPrompt,
       currentConfig.maxRoundCount,
       currentExperimentItem.startingRoundSpeaker,
+      currentConfig.humanLikeSettings,
       currentConfig.modelSettings,
       null,
     )
@@ -189,6 +200,7 @@ export function App() {
       maxRoundCount: activeSession.state.maxRoundCount,
       messages: activeSession.state.messages,
       modelSettings: activeSession.state.modelSettings,
+      humanLikeSettings: activeSession.state.humanLikeSettings,
       mode: activeConversationMode,
       rules: activeSession.state.rules,
       seed: activeSession.state.seed,
@@ -284,6 +296,7 @@ export function App() {
             onExperimentModePick={(mode) => {
               const nextExperimentConfig = {
                 maxRoundCount: playgroundSession.state.maxRoundCount,
+                humanLikeSettings: playgroundSession.state.humanLikeSettings,
                 modelSettings: playgroundSession.state.modelSettings,
                 sessionSnapshot: experimentSession.state,
                 style: playgroundSession.state.style,
@@ -297,6 +310,7 @@ export function App() {
                 nextExperimentConfig.systemPrompt,
                 nextExperimentConfig.maxRoundCount,
                 experimentSession.state.startingRoundMode,
+                nextExperimentConfig.humanLikeSettings,
                 nextExperimentConfig.modelSettings,
                 null,
               )
@@ -318,6 +332,7 @@ export function App() {
                 }),
                 experimentSession.state.maxRoundCount,
                 experimentSession.state.startingRoundMode,
+                experimentSession.state.humanLikeSettings,
                 experimentSession.state.modelSettings,
                 null,
               )
@@ -335,6 +350,7 @@ export function App() {
                 }),
                 playgroundSession.state.maxRoundCount,
                 playgroundSession.state.startingRoundMode,
+                playgroundSession.state.humanLikeSettings,
                 playgroundSession.state.modelSettings,
                 null,
               )
@@ -364,6 +380,7 @@ export function App() {
                     }),
                     experimentSession.state.maxRoundCount,
                     experimentSession.state.startingRoundMode,
+                    experimentSession.state.humanLikeSettings,
                     experimentSession.state.modelSettings,
                     null,
                   )
@@ -462,12 +479,13 @@ export function App() {
       </main>
 
       <SettingsDrawer
-        key={`${isSettingsOpen ? 'open' : 'closed'}-${activeSession.state.systemPrompt}-${activeSession.state.style}-${activeSession.state.maxRoundCount}-${activeSession.state.modelSettings.model}-${activeSession.state.modelSettings.temperature}-${activeSession.state.modelSettings.topP}-${runtimeConfig?.baseUrl ?? ''}-${runtimeConfig?.apiKey ?? ''}-${runtimeConfig?.model ?? ''}-${activeConversationMode}`}
+        key={`${isSettingsOpen ? 'open' : 'closed'}-${activeSession.state.systemPrompt}-${activeSession.state.style}-${activeSession.state.maxRoundCount}-${activeSession.state.modelSettings.model}-${activeSession.state.modelSettings.temperature}-${activeSession.state.modelSettings.topP}-${activeSession.state.humanLikeSettings.delayMultiplier}-${runtimeConfig?.baseUrl ?? ''}-${runtimeConfig?.apiKey ?? ''}-${runtimeConfig?.model ?? ''}-${activeConversationMode}`}
         availableModels={availableModels}
         conversationMode={activeConversationMode}
         currentStyle={activeSession.state.style}
         hideStartingRoundSettings={isExperimentWorkspace}
         initialApiConfig={runtimeConfig}
+        initialHumanLikeSettings={activeSession.state.humanLikeSettings}
         initialMaxRoundCount={activeSession.state.maxRoundCount}
         initialStartingRoundMode={activeSession.state.startingRoundMode}
         initialModelSettings={activeSession.state.modelSettings}
@@ -479,6 +497,7 @@ export function App() {
         onFetchModels={handleFetchModels}
         onSave={({
           apiConfig,
+          humanLikeSettings,
           maxRoundCount,
           modelSettings,
           startingRoundMode,
@@ -490,6 +509,7 @@ export function App() {
               style,
               systemPrompt,
               maxRoundCount,
+              humanLikeSettings,
               modelSettings,
             )
           } else {
@@ -498,6 +518,7 @@ export function App() {
               systemPrompt,
               maxRoundCount,
               startingRoundMode,
+              humanLikeSettings,
               modelSettings,
             )
           }

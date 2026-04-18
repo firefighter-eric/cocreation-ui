@@ -23,6 +23,9 @@
     "temperature": 1.5,
     "top_p": 1.0
   },
+  "human_like_settings": {
+    "delay_multiplier": 2
+  },
   "max_round_count": 5,
   "starting_round_mode": "user | assistant | random",
   "starting_round_speaker": "user | assistant | null",
@@ -51,6 +54,7 @@
 - `system_prompt` 是导出时当前生效的完整系统提示
 - `model_settings` 记录请求参数中的当前模型设置
 - `model_settings.model` 记录本次请求使用的模型名
+- `human_like_settings.delay_multiplier` 记录“与人对话”前台延迟展示使用的倍率
 - `max_round_count` 记录当前会话允许的最大回合数
 - `starting_round_mode` 记录当前会话采用的开始回合策略；playground 中来自设置选择，正式实验中为实验计划锁定后的值
 - `starting_round_speaker` 记录本次会话实际的起手方；如果会话尚未开始则为 `null`
@@ -214,6 +218,9 @@
     "model": "gpt-4.1-mini",
     "temperature": 1.5,
     "top_p": 1.0
+  },
+  "human_like_settings": {
+    "delay_multiplier": 2
   },
   "max_round_count": 5,
   "starting_round_mode": "user | assistant",

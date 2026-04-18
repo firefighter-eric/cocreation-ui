@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { createStorySession } from '../../../entities/story-session/state-machine'
-import { defaultStoryRules, storySeeds } from '../../config/story'
+import {
+  defaultHumanLikeDelayMultiplier,
+  defaultStoryRules,
+  storySeeds,
+} from '../../config/story'
 import { buildExperimentJson } from './experimentExport'
 
 describe('buildExperimentJson', () => {
@@ -10,6 +14,9 @@ describe('buildExperimentJson', () => {
         model: 'story-model',
         temperature: 1,
         topP: 0.9,
+      },
+      humanLikeSettings: {
+        delayMultiplier: defaultHumanLikeDelayMultiplier,
       },
       maxRoundCount: 5,
       startingRoundMode: 'user',
@@ -37,6 +44,7 @@ describe('buildExperimentJson', () => {
     expect(parsed.prompt_count).toBe(1)
     expect(parsed.sessions[0].prompt_index).toBe(1)
     expect(parsed.sessions[0].seed.id).toBe(storySeeds[0].id)
+    expect(parsed.sessions[0].human_like_settings.delay_multiplier).toBe(2)
     expect(parsed.sessions[0].conversation[0]).toEqual({
       content: storySeeds[0].openingLine,
       is_opening: true,

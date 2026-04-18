@@ -11,6 +11,11 @@ export const defaultStoryStyle: StoryStyle = 'creative'
 export const defaultStoryMode: StoryMode = 'manual'
 export const defaultMaxRoundCount = 5
 export const defaultStartingRoundMode: StartingRoundMode = 'random'
+export const defaultHumanLikeDelayMultiplier = 2
+export const humanLikeDelayMultiplierRange = {
+  min: 0.5,
+  max: 5,
+}
 export const roundCountRange = {
   min: 1,
   max: 10,

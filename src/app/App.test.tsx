@@ -1,8 +1,9 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
 import { appEnv } from '../shared/config/env'
+import { computeHumanLikeDelay } from '../shared/lib/timing/humanLikeDelay'
 
 describe('App', () => {
   beforeEach(() => {
@@ -29,6 +30,10 @@ describe('App', () => {
         ],
       }),
     } as Response)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('allows sending a valid line and getting a mock reply', async () => {
@@ -201,6 +206,7 @@ describe('App', () => {
     expect(exported.session_started_at).toEqual(expect.any(String))
     expect(exported.system_prompt).toContain('让画面更安静')
     expect(exported.model_settings.model).toBe(appEnv.model)
+    expect(exported.human_like_settings.delay_multiplier).toBe(2)
     expect(exported.max_round_count).toBe(5)
     expect(exported).not.toHaveProperty('base_url')
     expect(exported).not.toHaveProperty('api_key')
@@ -505,13 +511,48 @@ describe('App', () => {
     expect(document.querySelector('.message-bubble--typing')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '对方输入中' })).toBeInTheDocument()
     expect(screen.queryByText('窗外的雨开始倒着落下')).not.toBeInTheDocument()
-
     await act(async () => {
       await vi.runAllTimersAsync()
     })
 
     expect(screen.getByText('窗外的雨开始倒着落下')).toBeInTheDocument()
     vi.useRealTimers()
+  })
+
+  it('uses the saved human-like delay multiplier from settings', async () => {
+    vi.useFakeTimers()
+
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: /与人对话/ }))
+    fireEvent.click(screen.getByRole('button', { name: '设置' }))
+    expect(
+      screen.getByText('(基础等待 + 字数等待 + 随机波动) × 倍率'),
+    ).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('人类回复延迟倍率'), {
+      target: { value: '3' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+    const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
+    fireEvent.change(input, { target: { value: '他把钟表藏进了袖口' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+
+    const replyDelay = computeHumanLikeDelay('窗外的雨开始倒着落下', 0.1, 3)
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(replyDelay - 1000)
+    })
+
+    expect(document.querySelector('.message-bubble--typing')).toBeInTheDocument()
+    expect(screen.queryByText('窗外的雨开始倒着落下')).not.toBeInTheDocument()
+
+    await act(async () => {
+      await vi.runAllTimersAsync()
+    })
+
+    expect(screen.getByText('窗外的雨开始倒着落下')).toBeInTheDocument()
   })
 
   it('does not submit while IME composition is active', async () => {

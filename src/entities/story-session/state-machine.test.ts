@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  defaultHumanLikeDelayMultiplier,
   defaultMaxRoundCount,
   defaultStartingRoundMode,
   defaultStoryRules,
@@ -14,6 +15,9 @@ describe('story session state machine', () => {
         model: 'gpt-test',
         temperature: 1.0,
         topP: 1,
+      },
+      humanLikeSettings: {
+        delayMultiplier: defaultHumanLikeDelayMultiplier,
       },
       maxRoundCount: defaultMaxRoundCount,
       startingRoundMode: defaultStartingRoundMode,
@@ -35,6 +39,9 @@ describe('story session state machine', () => {
           model: 'gpt-test',
           temperature: 1.0,
           topP: 1,
+        },
+        humanLikeSettings: {
+          delayMultiplier: defaultHumanLikeDelayMultiplier,
         },
         maxRoundCount: defaultMaxRoundCount,
         startingRoundMode: defaultStartingRoundMode,
@@ -68,6 +75,9 @@ describe('story session state machine', () => {
           temperature: 1.0,
           topP: 1,
         },
+        humanLikeSettings: {
+          delayMultiplier: defaultHumanLikeDelayMultiplier,
+        },
         maxRoundCount: defaultMaxRoundCount,
         startingRoundMode: defaultStartingRoundMode,
         seed: storySeeds[0],
@@ -91,6 +101,9 @@ describe('story session state machine', () => {
       model: 'gpt-test',
       temperature: 1.0,
       topP: 1,
+    })
+    expect(reset.humanLikeSettings).toEqual({
+      delayMultiplier: defaultHumanLikeDelayMultiplier,
     })
     expect(reset.messages).toHaveLength(0)
   })

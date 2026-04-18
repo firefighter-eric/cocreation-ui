@@ -44,6 +44,7 @@ export function buildExperimentJson(
             messages: session.messages,
             mode: input.experimentMode,
             modelSettings: session.modelSettings,
+            humanLikeSettings: session.humanLikeSettings,
             rules: session.rules,
             seed: session.seed,
             sessionId: session.sessionId,
