@@ -32,4 +32,15 @@ describe('createExperimentPlan', () => {
 
     expect(secondPlan).not.toEqual(firstPlan)
   })
+
+  it('avoids repeating the previous first seed when starting a new plan', () => {
+    const previousPlan = createExperimentPlan(storySeeds, 1713412800000)
+    const nextPlan = createExperimentPlan(
+      storySeeds,
+      1713412800000,
+      previousPlan[0]?.seed.id,
+    )
+
+    expect(nextPlan[0]?.seed.id).not.toBe(previousPlan[0]?.seed.id)
+  })
 })

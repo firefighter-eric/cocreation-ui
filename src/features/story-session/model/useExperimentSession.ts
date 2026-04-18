@@ -52,16 +52,20 @@ export function useExperimentSession({
     const startedAt = new Date()
     const experimentSeed = startedAt.getTime()
 
-    setState({
+    setState((current) => ({
       experimentId: globalThis.crypto?.randomUUID?.() ?? `experiment-${Date.now()}`,
       experimentStartedAt: startedAt.toISOString(),
       experimentCompletedAt: null,
       mode,
-      items: createExperimentPlan(seeds, experimentSeed),
+      items: createExperimentPlan(
+        seeds,
+        experimentSeed,
+        current.items[0]?.seed.id ?? null,
+      ),
       currentItemIndex: 0,
       sessions: [],
       status: 'running',
-    })
+    }))
   }
 
   function completeCurrentSession(session: StorySessionState) {

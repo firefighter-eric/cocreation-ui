@@ -5,9 +5,14 @@ import type { ExperimentItem } from './types'
 export function createExperimentPlan(
   seeds: StorySeed[],
   seed: number,
+  previousFirstSeedId?: string | null,
 ): ExperimentItem[] {
   const random = createSeededRandom(seed)
-  const shuffledSeeds = shuffle(seeds, random)
+  const shuffledSeeds = avoidRepeatedFirstSeed(
+    shuffle(seeds, random),
+    previousFirstSeedId,
+    random,
+  )
   const speakers = shuffle<MessageRole>([
     'user',
     'user',
@@ -33,6 +38,21 @@ function shuffle<T>(items: T[], random: () => number): T[] {
     ;[next[index], next[swapIndex]] = [next[swapIndex], next[index]]
   }
 
+  return next
+}
+
+function avoidRepeatedFirstSeed<T extends { id: string }>(
+  items: T[],
+  previousFirstSeedId: string | null | undefined,
+  random: () => number,
+) {
+  if (!previousFirstSeedId || items.length < 2 || items[0]?.id !== previousFirstSeedId) {
+    return items
+  }
+
+  const swapIndex = 1 + Math.floor(random() * (items.length - 1))
+  const next = [...items]
+  ;[next[0], next[swapIndex]] = [next[swapIndex], next[0]]
   return next
 }
 
