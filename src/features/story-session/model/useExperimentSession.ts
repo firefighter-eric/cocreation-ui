@@ -49,12 +49,15 @@ export function useExperimentSession({
   )
 
   function startExperiment(mode: ExperimentMode) {
+    const startedAt = new Date()
+    const experimentSeed = startedAt.getTime()
+
     setState({
       experimentId: globalThis.crypto?.randomUUID?.() ?? `experiment-${Date.now()}`,
-      experimentStartedAt: new Date().toISOString(),
+      experimentStartedAt: startedAt.toISOString(),
       experimentCompletedAt: null,
       mode,
-      items: createExperimentPlan(seeds),
+      items: createExperimentPlan(seeds, experimentSeed),
       currentItemIndex: 0,
       sessions: [],
       status: 'running',
