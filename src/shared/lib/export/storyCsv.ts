@@ -26,6 +26,43 @@ interface ExportStoryCsvInput {
   modelSettings: ModelSettings
 }
 
+export interface StoryExportPayload {
+  session_id: string
+  session_started_at: string | null
+  system_prompt: string
+  model_settings: {
+    model: string
+    temperature: number
+    top_p: number
+  }
+  max_round_count: number
+  starting_round_mode: StartingRoundMode
+  starting_round_speaker: Message['role'] | null
+  exported_at: string
+  mode: StoryMode
+  style: StoryStyle
+  status: StorySessionStatus
+  error: string | null
+  rules: StoryRules
+  seed: StorySeed
+  conversation: Array<{
+    id?: string
+    role: Message['role']
+    content: string
+    created_at?: string
+    is_opening: boolean
+    interaction?: {
+      ai_ended_at: string | undefined
+      ai_started_at: string | undefined
+      backspace_count: number | undefined
+      input_ended_at: string | undefined
+      input_started_at: string | undefined
+      reaction_reference_at: string | undefined
+      reaction_time_ms: number | undefined
+    } | null
+  }>
+}
+
 export function exportStoryCsv(input: ExportStoryCsvInput) {
   const exportedAt = new Date()
   const json = buildStoryJson(input, exportedAt)
@@ -35,55 +72,58 @@ export function exportStoryCsv(input: ExportStoryCsvInput) {
 }
 
 export function buildStoryJson(input: ExportStoryCsvInput, exportedAt = new Date()) {
-  return JSON.stringify(
-    {
-      session_id: input.sessionId,
-      session_started_at: input.sessionStartedAt,
-      system_prompt: input.systemPrompt,
-      model_settings: {
-        model: input.modelSettings.model,
-        temperature: input.modelSettings.temperature,
-        top_p: input.modelSettings.topP,
-      },
-      max_round_count: input.maxRoundCount,
-      starting_round_mode: input.startingRoundMode,
-      starting_round_speaker: input.startingRoundSpeaker,
-      exported_at: exportedAt.toISOString(),
-      mode: input.mode,
-      style: input.style,
-      status: input.status,
-      error: input.error,
-      rules: input.rules,
-      seed: input.seed,
-      conversation: [
-        {
-          role: 'user',
-          content: input.seed.openingLine,
-          is_opening: true,
-        },
-        ...input.messages.map((message) => ({
-          id: message.id,
-          role: message.role,
-          content: message.content,
-          created_at: message.createdAt,
-          is_opening: false,
-          interaction: message.interaction
-            ? {
-                ai_ended_at: message.interaction.aiEndedAt,
-                ai_started_at: message.interaction.aiStartedAt,
-                backspace_count: message.interaction.backspaceCount,
-                input_ended_at: message.interaction.inputEndedAt,
-                input_started_at: message.interaction.inputStartedAt,
-                reaction_reference_at: message.interaction.reactionReferenceAt,
-                reaction_time_ms: message.interaction.reactionTimeMs,
-              }
-            : null,
-        })),
-      ],
+  return JSON.stringify(buildStoryExportPayload(input, exportedAt), null, 2)
+}
+
+export function buildStoryExportPayload(
+  input: ExportStoryCsvInput,
+  exportedAt = new Date(),
+): StoryExportPayload {
+  return {
+    session_id: input.sessionId,
+    session_started_at: input.sessionStartedAt,
+    system_prompt: input.systemPrompt,
+    model_settings: {
+      model: input.modelSettings.model,
+      temperature: input.modelSettings.temperature,
+      top_p: input.modelSettings.topP,
     },
-    null,
-    2,
-  )
+    max_round_count: input.maxRoundCount,
+    starting_round_mode: input.startingRoundMode,
+    starting_round_speaker: input.startingRoundSpeaker,
+    exported_at: exportedAt.toISOString(),
+    mode: input.mode,
+    style: input.style,
+    status: input.status,
+    error: input.error,
+    rules: input.rules,
+    seed: input.seed,
+    conversation: [
+      {
+        role: 'user',
+        content: input.seed.openingLine,
+        is_opening: true,
+      },
+      ...input.messages.map((message) => ({
+        id: message.id,
+        role: message.role,
+        content: message.content,
+        created_at: message.createdAt,
+        is_opening: false,
+        interaction: message.interaction
+          ? {
+              ai_ended_at: message.interaction.aiEndedAt,
+              ai_started_at: message.interaction.aiStartedAt,
+              backspace_count: message.interaction.backspaceCount,
+              input_ended_at: message.interaction.inputEndedAt,
+              input_started_at: message.interaction.inputStartedAt,
+              reaction_reference_at: message.interaction.reactionReferenceAt,
+              reaction_time_ms: message.interaction.reactionTimeMs,
+            }
+          : null,
+      })),
+    ],
+  }
 }
 
 export function createExportFileStem(date = new Date()) {

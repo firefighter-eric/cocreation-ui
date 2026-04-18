@@ -1,4 +1,5 @@
 import { startTransition, useEffect, useState } from 'react'
+import type { MessageRole } from '../../../entities/message/types'
 import { createMessage, createStorySession } from '../../../entities/story-session/state-machine'
 import { advanceStorySession } from '../../../entities/story-session/state-machine'
 import type {
@@ -311,6 +312,7 @@ export function useStorySession({
     nextMaxRoundCount = state.maxRoundCount,
     nextStartingRoundMode = state.startingRoundMode,
     nextModelSettings = state.modelSettings,
+    nextStartingRoundSpeaker: MessageRole | null = null,
   ) {
     startTransition(() => {
       setDraft('')
@@ -325,7 +327,7 @@ export function useStorySession({
           systemPrompt: nextSystemPrompt,
           maxRoundCount: nextMaxRoundCount,
           startingRoundMode: nextStartingRoundMode,
-          startingRoundSpeaker: null,
+          startingRoundSpeaker: nextStartingRoundSpeaker,
           modelSettings: nextModelSettings,
         }),
       )
@@ -374,6 +376,39 @@ export function useStorySession({
       maxRoundCount,
       startingRoundMode,
       modelSettings,
+      null,
+    )
+  }
+
+  function applyPromptSettings(
+    style: StoryStyle,
+    systemPrompt: string,
+    maxRoundCount: number,
+    modelSettings: StorySessionState['modelSettings'],
+  ) {
+    setState((current) =>
+      advanceStorySession(
+        advanceStorySession(
+          advanceStorySession(
+            advanceStorySession(current, {
+              type: 'SET_STYLE',
+              style,
+            }),
+            {
+              type: 'SET_SYSTEM_PROMPT',
+              systemPrompt: systemPrompt.trim(),
+            },
+          ),
+          {
+            type: 'SET_MAX_ROUND_COUNT',
+            maxRoundCount,
+          },
+        ),
+        {
+          type: 'SET_MODEL_SETTINGS',
+          modelSettings,
+        },
+      ),
     )
   }
 
@@ -381,9 +416,10 @@ export function useStorySession({
     setManualBackspaceCount((current) => current + 1)
   }
 
-  function startSession() {
+  function startSession(forcedStartingRoundSpeaker?: MessageRole) {
     setDraftError(null)
-    const startingRoundSpeaker = resolveStartingSpeaker(state.startingRoundMode)
+    const startingRoundSpeaker =
+      forcedStartingRoundSpeaker ?? resolveStartingSpeaker(state.startingRoundMode)
     setState((current) =>
       advanceStorySession(current, {
         type: 'START_SESSION',
@@ -401,6 +437,7 @@ export function useStorySession({
     state,
     draft,
     draftError,
+    completedRoundCount,
     isRoundLimitReached,
     providerLabel: provider.label,
     setDraft: setValidatedDraft,
@@ -413,5 +450,6 @@ export function useStorySession({
     incrementBackspaceCount,
     startSession,
     updatePromptSettings,
+    applyPromptSettings,
   }
 }

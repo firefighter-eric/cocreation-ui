@@ -17,6 +17,7 @@ interface SettingsDrawerProps {
   availableModels: string[]
   conversationMode: StoryMode
   currentStyle: StoryStyle
+  hideStartingRoundSettings?: boolean
   initialModelSettings: {
     model: string
     temperature: number
@@ -51,6 +52,7 @@ export function SettingsDrawer({
   availableModels,
   conversationMode,
   currentStyle,
+  hideStartingRoundSettings = false,
   initialApiConfig,
   initialMaxRoundCount,
   initialStartingRoundMode,
@@ -158,7 +160,9 @@ export function SettingsDrawer({
         <section className="settings-drawer__section">
           <div className="section-heading">
             <h2>回合设置</h2>
-            <span>所有模式通用</span>
+            <span>
+              {hideStartingRoundSettings ? '正式实验已锁定起手方' : '所有模式通用'}
+            </span>
           </div>
           <label className="settings-drawer__field">
             <span>最大回合数量</span>
@@ -178,23 +182,25 @@ export function SettingsDrawer({
           <p className="settings-drawer__hint">
             默认 5 回合，范围 1-10。1 回合表示 1 组“用户一句 + 对方一句”。
           </p>
-          <div className="option-grid option-grid--starting-round">
-            {startingRoundOptions.map((option) => (
-              <button
-                key={option.value}
-                className={
-                  option.value === startingRoundMode
-                    ? 'option-card option-card--active'
-                    : 'option-card'
-                }
-                type="button"
-                onClick={() => setStartingRoundMode(option.value)}
-              >
-                <strong>{option.label}</strong>
-                <span>{option.description}</span>
-              </button>
-            ))}
-          </div>
+          {hideStartingRoundSettings ? null : (
+            <div className="option-grid option-grid--starting-round">
+              {startingRoundOptions.map((option) => (
+                <button
+                  key={option.value}
+                  className={
+                    option.value === startingRoundMode
+                      ? 'option-card option-card--active'
+                      : 'option-card'
+                  }
+                  type="button"
+                  onClick={() => setStartingRoundMode(option.value)}
+                >
+                  <strong>{option.label}</strong>
+                  <span>{option.description}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="settings-drawer__section">

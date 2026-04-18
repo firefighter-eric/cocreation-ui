@@ -91,6 +91,11 @@ export function advanceStorySession(
         ...state,
         systemPrompt: event.systemPrompt,
       }
+    case 'SET_STYLE':
+      return {
+        ...state,
+        style: event.style,
+      }
     case 'SET_MODEL_SETTINGS':
       return {
         ...state,

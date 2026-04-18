@@ -264,6 +264,14 @@ button {
   transform: translateY(-1px);
 }
 
+.option-card:disabled,
+.seed-card:disabled,
+.restart-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .option-card--active,
 .seed-card--active {
   border-color: #d1d5db;
@@ -325,6 +333,11 @@ button {
   white-space: nowrap;
 }
 
+.rule-card__header-copy {
+  display: grid;
+  gap: 4px;
+}
+
 .rule-card__items {
   display: flex;
   flex-wrap: wrap;
@@ -345,6 +358,12 @@ button {
   white-space: nowrap;
 }
 
+.rule-chip--strong {
+  border-color: rgba(37, 99, 235, 0.22);
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
 .restart-button {
   background: transparent;
   text-align: center;
@@ -354,6 +373,22 @@ button {
   background: var(--accent-strong);
   color: #ffffff;
   border-color: var(--accent-strong);
+}
+
+.experiment-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+}
+
+.experiment-card__copy {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .workspace {
@@ -388,9 +423,9 @@ button {
 .header-pills {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
 }
 
 .header-side {
@@ -398,7 +433,8 @@ button {
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
-  min-width: 320px;
+  min-width: fit-content;
+  flex-shrink: 0;
 }
 
 .header-pill {
@@ -450,8 +486,9 @@ button {
   border-radius: 999px;
   background: #ffffff;
   color: var(--text-primary);
-  padding: 7px 12px;
+  padding: 7px 10px;
   font-size: 11px;
+  white-space: nowrap;
 }
 
 .header-export:disabled {
@@ -918,6 +955,38 @@ button {
   gap: 12px;
 }
 
+.experiment-summary {
+  padding: 10px 20px 18px;
+  border-top: 1px solid var(--border);
+  background: #ffffff;
+}
+
+.experiment-summary__inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #f8fbff, #ffffff);
+}
+
+.experiment-summary__inner h2,
+.experiment-summary__inner p {
+  margin: 0;
+}
+
+.experiment-summary__inner h2 {
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-size: 20px;
+}
+
+.experiment-summary__inner p:last-child {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .auto-turn-input {
   display: grid;
   gap: 8px;
@@ -978,6 +1047,10 @@ button {
     min-width: 0;
     width: 100%;
     align-items: stretch;
+  }
+
+  .header-pills {
+    flex-wrap: wrap;
   }
 
   .rule-card--header {

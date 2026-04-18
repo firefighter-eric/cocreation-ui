@@ -63,6 +63,7 @@ export type StorySessionEvent =
   | { type: 'AI_SUCCESS'; message: Message }
   | { type: 'AI_FAILURE'; error: string }
   | { type: 'SET_SYSTEM_PROMPT'; systemPrompt: string }
+  | { type: 'SET_STYLE'; style: StoryStyle }
   | { type: 'SET_MODEL_SETTINGS'; modelSettings: ModelSettings }
   | { type: 'SET_MAX_ROUND_COUNT'; maxRoundCount: number }
   | {

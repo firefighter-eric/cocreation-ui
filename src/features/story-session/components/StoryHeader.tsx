@@ -4,19 +4,27 @@ import type {
 } from '../../../entities/story-session/types'
 
 interface StoryHeaderProps {
+  badge?: string
   hasMessages: boolean
   maxRoundCount: number
+  onExitExperiment?: () => void
+  onOpenSettings?: () => void
+  title?: string
+  subtitle?: string
   startingRoundMode: StartingRoundMode
   onExport: () => void
-  onOpenSettings: () => void
   providerStatusTone: 'mock' | 'connected'
   providerStatusLabel: string
   rules: StoryRules
 }
 
 export function StoryHeader({
+  badge,
   hasMessages,
   maxRoundCount,
+  onExitExperiment,
+  title = '当前规则',
+  subtitle,
   startingRoundMode,
   onExport,
   onOpenSettings,
@@ -34,8 +42,12 @@ export function StoryHeader({
   return (
     <header className="workspace-header">
       <div className="rule-card rule-card--header rule-card--header-main">
-        <span className="rule-card__label">当前规则</span>
+        <div className="rule-card__header-copy">
+          <span className="rule-card__label">{title}</span>
+          {subtitle ? <p className="workspace-subtitle">{subtitle}</p> : null}
+        </div>
         <div className="rule-card__items">
+          {badge ? <span className="rule-chip rule-chip--strong">{badge}</span> : null}
           <span className="rule-chip">{rules.maxChars} 字内</span>
           <span className="rule-chip">
             {rules.punctuationAllowed ? '允许标点' : '不允许标点'}
@@ -65,13 +77,24 @@ export function StoryHeader({
           >
             导出 JSON
           </button>
-          <button
-            className="header-export"
-            type="button"
-            onClick={onOpenSettings}
-          >
-            设置
-          </button>
+          {onOpenSettings ? (
+            <button
+              className="header-export"
+              type="button"
+              onClick={onOpenSettings}
+            >
+              设置
+            </button>
+          ) : null}
+          {onExitExperiment ? (
+            <button
+              className="header-export"
+              type="button"
+              onClick={onExitExperiment}
+            >
+              退出正式实验
+            </button>
+          ) : null}
         </div>
       </div>
     </header>

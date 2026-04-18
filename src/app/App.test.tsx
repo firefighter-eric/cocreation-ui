@@ -532,4 +532,157 @@ describe('App', () => {
 
     fireEvent.compositionEnd(input)
   })
+
+  it('starts a formal experiment and locks playground controls', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '开始实验' }))
+    await user.click(screen.getByRole('button', { name: /和人开始/ }))
+
+    expect(screen.getByText('正式实验')).toBeInTheDocument()
+    expect(screen.getByText('第 1 / 6 题')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '退出正式实验' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: '展开左侧栏' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: '设置' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /AI自动对话/ }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: '一辆出租车停在路边' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: '重新开始当前故事' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('requires settings to be configured before a formal experiment starts', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    expect(screen.getByText('Prompt 设置')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '关闭' }))
+
+    await user.click(screen.getByRole('button', { name: '开始实验' }))
+    await user.click(screen.getByRole('button', { name: /和AI开始/ }))
+
+    expect(
+      screen.queryByRole('button', { name: '设置' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('Prompt 设置'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('re-expands the sidebar after exiting a formal experiment', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '开始实验' }))
+    await user.click(screen.getByRole('button', { name: /和AI开始/ }))
+    await user.click(screen.getByRole('button', { name: '退出正式实验' }))
+
+    expect(screen.getByRole('button', { name: '收起左侧栏' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '设置' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /AI自动对话/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '开始实验' })).toBeInTheDocument()
+  })
+
+  it('completes a formal experiment and exports one aggregated json file', async () => {
+    const user = userEvent.setup()
+    const clickMock = vi.fn()
+    const downloadNames: string[] = []
+    const blobContents: string[] = []
+    const originalBlob = globalThis.Blob
+    const createElementSpy = vi
+      .spyOn(document, 'createElement')
+      .mockImplementation(((tagName: string) => {
+        const element = document.createElementNS(
+          'http://www.w3.org/1999/xhtml',
+          tagName,
+        ) as HTMLAnchorElement
+
+        if (tagName === 'a') {
+          Object.defineProperty(element, 'download', {
+            configurable: true,
+            get: () => downloadNames.at(-1) ?? '',
+            set: (value: string) => {
+              downloadNames.push(value)
+            },
+          })
+          Object.defineProperty(element, 'click', {
+            value: clickMock,
+          })
+        }
+
+        return element
+      }) as typeof document.createElement)
+    globalThis.Blob = class {
+      parts: string[]
+
+      constructor(parts: BlobPart[]) {
+        this.parts = parts.map((part) => String(part))
+      }
+    } as unknown as typeof Blob
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: vi.fn((blob: { parts: string[] }) => {
+        blobContents.push(blob.parts.join(''))
+        return 'blob:experiment'
+      }),
+    })
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    await user.clear(screen.getByLabelText('最大回合数量'))
+    await user.type(screen.getByLabelText('最大回合数量'), '1')
+    await user.click(screen.getByRole('button', { name: '保存' }))
+
+    await user.click(screen.getByRole('button', { name: '开始实验' }))
+    await user.click(screen.getByRole('button', { name: /和AI开始/ }))
+
+    for (let index = 1; index <= 6; index += 1) {
+      expect(screen.getByText(`第 ${index} / 6 题`)).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: '开始' }))
+
+      const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
+      await waitFor(() => expect(input).not.toBeDisabled())
+      await user.type(input, `第${index}题故事{enter}`)
+
+      if (index < 6) {
+        await screen.findByText(`第 ${index + 1} / 6 题`)
+      }
+    }
+
+    expect(await screen.findByText('6 个 prompt 已全部完成')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '导出 JSON' }))
+
+    expect(URL.createObjectURL).toHaveBeenCalled()
+    expect(clickMock).toHaveBeenCalledTimes(1)
+    expect(downloadNames).toEqual([
+      expect.stringMatching(/^cocreation-\d{6}-\d{6}\.json$/),
+    ])
+
+    const exported = JSON.parse(blobContents[0])
+    expect(exported.experiment_id).toEqual(expect.any(String))
+    expect(exported.experiment_mode).toBe('manual')
+    expect(exported.prompt_count).toBe(6)
+    expect(exported.sessions).toHaveLength(6)
+    expect(exported.sessions[0].conversation[0].is_opening).toBe(true)
+    expect(exported.sessions[0].prompt_index).toBe(1)
+
+    createElementSpy.mockRestore()
+    globalThis.Blob = originalBlob
+  })
 })
