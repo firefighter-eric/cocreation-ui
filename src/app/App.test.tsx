@@ -896,8 +896,6 @@ describe('App', () => {
         }),
       ).toHaveAttribute('href', 'https://www.credamo.com/s/zuER3eano/')
 
-    fireEvent.click(screen.getByRole('button', { name: '导出 JSON' }))
-
     expect(URL.createObjectURL).toHaveBeenCalled()
     expect(clickMock).toHaveBeenCalledTimes(1)
     expect(downloadNames).toEqual([

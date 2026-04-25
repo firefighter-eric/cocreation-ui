@@ -122,6 +122,9 @@ export function App() {
   })
   const experimentRestartRef = useRef(experimentSession.restartSession)
   const completeExperimentSessionRef = useRef(experiment.completeCurrentSession)
+  const autoExportedExperimentIdRef = useRef<string | null>(null)
+  const isExperimentCompletionViewVisible =
+    isExperimentWorkspace && experiment.state.status === 'completed'
 
   useEffect(() => {
     experimentSessionConfigRef.current = {
@@ -192,6 +195,33 @@ export function App() {
     isActiveSessionBusy,
   ])
 
+  useEffect(() => {
+    if (
+      !isExperimentCompletionViewVisible ||
+      !experiment.state.mode ||
+      !experiment.state.experimentStartedAt ||
+      autoExportedExperimentIdRef.current === experiment.state.experimentId
+    ) {
+      return
+    }
+
+    autoExportedExperimentIdRef.current = experiment.state.experimentId
+    exportExperimentJson({
+      experimentCompletedAt: experiment.state.experimentCompletedAt,
+      experimentId: experiment.state.experimentId,
+      experimentMode: experiment.state.mode,
+      experimentStartedAt: experiment.state.experimentStartedAt,
+      sessions: experiment.state.sessions,
+    })
+  }, [
+    experiment.state.experimentCompletedAt,
+    experiment.state.experimentId,
+    experiment.state.experimentStartedAt,
+    experiment.state.mode,
+    experiment.state.sessions,
+    isExperimentCompletionViewVisible,
+  ])
+
   function handleExport() {
     if (
       isExperimentWorkspace &&
@@ -251,7 +281,7 @@ export function App() {
     ? experiment.state.status === 'completed'
       ? {
           badge: '实验完成',
-          subtitle: '全部题目已完成，可直接导出结果 JSON。',
+          subtitle: '全部题目已完成，结果 JSON 已自动导出。',
           title: '正式实验',
         }
       : experiment.state.status === 'advancing'
