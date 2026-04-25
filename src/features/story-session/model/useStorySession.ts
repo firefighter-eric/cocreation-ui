@@ -28,8 +28,12 @@ import { validateStoryLine } from '../../../shared/lib/validation/storyLine'
 interface UseStorySessionInput {
   conversationMode: StoryMode
   initialHumanLikeSettings: StorySessionState['humanLikeSettings']
+  initialMaxRoundCount?: number
   initialModelSettings: StorySessionState['modelSettings']
   initialSeed: StorySeed
+  initialStartingRoundMode?: StartingRoundMode
+  initialStyle?: StoryStyle
+  initialSystemPrompt?: string
   provider: LLMProvider
   store: SessionStore
 }
@@ -37,8 +41,12 @@ interface UseStorySessionInput {
 export function useStorySession({
   conversationMode,
   initialHumanLikeSettings,
+  initialMaxRoundCount = defaultMaxRoundCount,
   initialModelSettings,
   initialSeed,
+  initialStartingRoundMode = defaultStartingRoundMode,
+  initialStyle = defaultStoryStyle,
+  initialSystemPrompt,
   provider,
   store,
 }: UseStorySessionInput) {
@@ -57,16 +65,18 @@ export function useStorySession({
 
     const session = createStorySession({
       humanLikeSettings: initialHumanLikeSettings,
-      maxRoundCount: defaultMaxRoundCount,
-      startingRoundMode: defaultStartingRoundMode,
+      maxRoundCount: initialMaxRoundCount,
+      startingRoundMode: initialStartingRoundMode,
       modelSettings: initialModelSettings,
       seed: initialSeed,
-      systemPrompt: buildDefaultSystemPrompt({
-        conversationMode,
-        rules: defaultStoryRules,
-        style: defaultStoryStyle,
-      }),
-      style: defaultStoryStyle,
+      systemPrompt:
+        initialSystemPrompt ??
+        buildDefaultSystemPrompt({
+          conversationMode,
+          rules: defaultStoryRules,
+          style: initialStyle,
+        }),
+      style: initialStyle,
       rules: defaultStoryRules,
     })
 

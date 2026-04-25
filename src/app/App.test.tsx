@@ -221,6 +221,47 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: /模式1/ })).toBeInTheDocument()
   })
 
+  it('persists non-api settings in localStorage and hydrates them after reload', async () => {
+    const user = userEvent.setup()
+    const { unmount } = render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    await user.clear(screen.getByLabelText('给 AI 的 System Prompt'))
+    await user.type(screen.getByLabelText('给 AI 的 System Prompt'), '让画面更安静')
+    await user.click(screen.getByRole('button', { name: /显示模式名称/ }))
+    await user.clear(screen.getByLabelText('最大回合数量'))
+    await user.type(screen.getByLabelText('最大回合数量'), '2')
+    await user.clear(screen.getByLabelText('Temperature'))
+    await user.type(screen.getByLabelText('Temperature'), '0.7')
+    await user.clear(screen.getByLabelText('Top P'))
+    await user.type(screen.getByLabelText('Top P'), '0.85')
+    await user.clear(screen.getByLabelText('Max Tokens'))
+    await user.type(screen.getByLabelText('Max Tokens'), '4096')
+    await user.clear(screen.getByLabelText('回复延迟倍率'))
+    await user.type(screen.getByLabelText('回复延迟倍率'), '3')
+    await user.click(screen.getByRole('button', { name: '关闭' }))
+
+    expect(window.localStorage.getItem('cocreation.story_settings')).toContain(
+      '让画面更安静',
+    )
+
+    unmount()
+    render(<App />)
+
+    expect(screen.getByRole('button', { name: /与人对话/ })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+
+    expect(screen.getByLabelText('给 AI 的 System Prompt')).toHaveValue(
+      '让画面更安静',
+    )
+    expect(screen.getByLabelText('最大回合数量')).toHaveValue('2')
+    expect(screen.getByLabelText('Temperature')).toHaveValue(0.7)
+    expect(screen.getByLabelText('Top P')).toHaveValue(0.85)
+    expect(screen.getByLabelText('Max Tokens')).toHaveValue('4096')
+    expect(screen.getByLabelText('回复延迟倍率')).toHaveValue('3')
+  })
+
   it('exports the current conversation as json', async () => {
     const user = userEvent.setup()
     const clickMock = vi.fn()
@@ -295,7 +336,7 @@ describe('App', () => {
     expect(exported.system_prompt).toContain('让画面更安静')
     expect(exported.model_settings.model).toBe(appEnv.model)
     expect(exported.model_settings.max_tokens).toBe(8000)
-    expect(exported.human_like_settings.delay_multiplier).toBe(4)
+    expect(exported.human_like_settings.delay_multiplier).toBe(2)
     expect(exported.max_round_count).toBe(5)
     expect(exported).not.toHaveProperty('base_url')
     expect(exported).not.toHaveProperty('api_key')

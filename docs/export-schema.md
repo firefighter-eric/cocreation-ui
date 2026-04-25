@@ -25,7 +25,7 @@
     "max_tokens": 8000
   },
   "human_like_settings": {
-    "delay_multiplier": 4
+    "delay_multiplier": 2
   },
   "max_round_count": 5,
   "starting_round_mode": "user | assistant | random",
@@ -33,11 +33,11 @@
   "exported_at": "string",
   "mode": "manual | human_like | auto",
   "style": "creative | coherent",
-  "status": "idle | ready | submitting_user_line | waiting_for_ai | ai_replied | failed",
+  "status": "idle | ready | waiting_for_partner_ready | submitting_user_line | waiting_for_ai | ai_replied | failed",
   "error": "string | null",
   "rules": {
     "maxChars": 20,
-    "allowPunctuation": false
+    "punctuationAllowed": false
   },
   "seed": {
     "id": "string",
@@ -52,6 +52,7 @@
 说明：
 
 - 顶层字段全部使用 snake_case，只有 `rules` 和 `seed` 内部仍保留当前前端对象结构
+- `rules.maxChars` 和 `rules.punctuationAllowed` 来自前端 `StoryRules`
 - `system_prompt` 是导出时当前生效的完整系统提示
 - `model_settings` 记录请求参数中的当前模型设置
 - `model_settings.model` 记录本次请求使用的模型名
@@ -61,6 +62,7 @@
 - `starting_round_mode` 记录当前会话采用的开始回合策略；playground 中来自设置选择，正式实验中为实验计划锁定后的值
 - `starting_round_speaker` 记录本次会话实际的起手方；如果会话尚未开始则为 `null`
 - `mode` 反映当前产品模式，不隐藏 `human_like` 的真实模式值
+- `base_url`、`api_key` 等 API 配置不会写入导出 JSON
 
 ## conversation 数组
 
@@ -82,6 +84,7 @@
 
 - 开场句不是 `system`，也不是自定义的 `opening`
 - 它与真实请求组织保持一致，作为第一条 `user` message
+- 开场句项不包含 `id`、`created_at` 和 `interaction`
 
 ### 后续普通消息
 
@@ -223,14 +226,14 @@
     "max_tokens": 8000
   },
   "human_like_settings": {
-    "delay_multiplier": 4
+    "delay_multiplier": 2
   },
   "max_round_count": 5,
   "starting_round_mode": "user | assistant",
   "starting_round_speaker": "user | assistant",
   "mode": "manual | human_like",
   "style": "creative | coherent",
-  "status": "string",
+  "status": "idle | ready | waiting_for_partner_ready | submitting_user_line | waiting_for_ai | ai_replied | failed",
   "error": "string | null",
   "rules": {},
   "seed": {},

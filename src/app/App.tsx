@@ -29,16 +29,19 @@ import type { RuntimeLLMConfig } from '../shared/lib/llm/runtimeConfig'
 import { normalizeRuntimeLLMConfig } from '../shared/lib/llm/runtimeConfig'
 import { resolveLLMConfig } from '../shared/lib/llm/runtimeConfig'
 import { createRuntimeLLMConfigStore } from '../shared/lib/storage/runtimeLlmConfigStore'
+import { createStorySettingsStore } from '../shared/lib/storage/storySettingsStore'
 import { appEnv } from '../shared/config/env'
 
 const followUpSurveyUrl = 'https://www.credamo.com/s/zuER3eano/'
 
 export function App() {
+  const storySettingsStore = useMemo(() => createStorySettingsStore(), [])
+  const [storedStorySettings] = useState(() => storySettingsStore.load())
   const [conversationMode, setConversationMode] = useState<StoryMode>(
     defaultStoryMode,
   )
   const [modeLabelDisplay, setModeLabelDisplay] = useState<ModeLabelDisplay>(
-    defaultModeLabelDisplay,
+    storedStorySettings?.modeLabelDisplay ?? defaultModeLabelDisplay,
   )
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -64,19 +67,34 @@ export function App() {
   const providerStatusLabel = resolvedConfig ? '已接入' : '本地 Mock'
   const providerStatusTone = resolvedConfig ? 'connected' : 'mock'
 
+  const initialModelSettings = {
+    model:
+      storedStorySettings?.modelSettings?.model ||
+      runtimeConfig?.model ||
+      appEnv.model ||
+      'none',
+    temperature:
+      storedStorySettings?.modelSettings?.temperature ?? defaultModelTemperature,
+    topP: storedStorySettings?.modelSettings?.topP ?? defaultModelTopP,
+    maxTokens:
+      storedStorySettings?.modelSettings?.maxTokens ?? defaultModelMaxTokens,
+  }
+  const initialHumanLikeSettings = {
+    delayMultiplier:
+      storedStorySettings?.humanLikeSettings?.delayMultiplier ??
+      defaultHumanLikeDelayMultiplier,
+  }
+
   const playgroundSession = useStorySession({
     conversationMode,
     provider,
     store: playgroundStore,
-    initialModelSettings: {
-      model: runtimeConfig?.model || appEnv.model || 'none',
-      temperature: defaultModelTemperature,
-      topP: defaultModelTopP,
-      maxTokens: defaultModelMaxTokens,
-    },
-    initialHumanLikeSettings: {
-      delayMultiplier: defaultHumanLikeDelayMultiplier,
-    },
+    initialModelSettings,
+    initialHumanLikeSettings,
+    initialMaxRoundCount: storedStorySettings?.maxRoundCount,
+    initialStartingRoundMode: storedStorySettings?.startingRoundMode,
+    initialStyle: storedStorySettings?.style,
+    initialSystemPrompt: storedStorySettings?.systemPrompt,
     initialSeed: storySeeds[0],
   })
   const experiment = useExperimentSession({
@@ -89,15 +107,12 @@ export function App() {
     conversationMode: experimentConversationMode,
     provider,
     store: experimentSessionStore,
-    initialModelSettings: {
-      model: runtimeConfig?.model || appEnv.model || 'none',
-      temperature: defaultModelTemperature,
-      topP: defaultModelTopP,
-      maxTokens: defaultModelMaxTokens,
-    },
-    initialHumanLikeSettings: {
-      delayMultiplier: defaultHumanLikeDelayMultiplier,
-    },
+    initialModelSettings,
+    initialHumanLikeSettings,
+    initialMaxRoundCount: storedStorySettings?.maxRoundCount,
+    initialStartingRoundMode: storedStorySettings?.startingRoundMode,
+    initialStyle: storedStorySettings?.style,
+    initialSystemPrompt: storedStorySettings?.systemPrompt,
     initialSeed: storySeeds[0],
   })
 
@@ -601,6 +616,15 @@ export function App() {
           const normalized = normalizeRuntimeLLMConfig(apiConfig)
           runtimeConfigStore.save(normalized)
           setRuntimeConfig(runtimeConfigStore.load())
+          storySettingsStore.save({
+            humanLikeSettings,
+            maxRoundCount,
+            modeLabelDisplay: nextModeLabelDisplay,
+            modelSettings,
+            startingRoundMode,
+            style,
+            systemPrompt: systemPrompt.trim(),
+          })
           setModeLabelDisplay(nextModeLabelDisplay)
         }}
         providerLabel={activeSession.providerLabel}
