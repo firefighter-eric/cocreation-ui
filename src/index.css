@@ -992,6 +992,12 @@ button {
   line-height: 1.5;
 }
 
+.experiment-summary__link {
+  color: var(--accent);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
 .auto-turn-input {
   display: grid;
   gap: 8px;

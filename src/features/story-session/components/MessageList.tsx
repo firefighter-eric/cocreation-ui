@@ -7,6 +7,7 @@ import type { StoryMode } from '../../../shared/config/story'
 interface MessageListProps {
   conversationMode: StoryMode
   error: string | null
+  hideOpeningLine?: boolean
   messages: Message[]
   openingLine: string
   startingRoundMode: StartingRoundMode
@@ -18,6 +19,7 @@ interface MessageListProps {
 export function MessageList({
   conversationMode,
   error,
+  hideOpeningLine = false,
   messages,
   openingLine,
   startingRoundMode,
@@ -29,10 +31,10 @@ export function MessageList({
   const selfLabel = '我'
   const isWaitingForPartnerReady = status === 'waiting_for_partner_ready'
   const emptyTitle = isWaitingForPartnerReady
-    ? '等待对方就绪'
+    ? '等待对方进场'
     : '先写一句，把故事推向下一步。'
   const emptyCopy = isWaitingForPartnerReady
-    ? '对方正在进入当前题目，准备好后会继续接上开场句。'
+    ? '对方正在进入当前题目，双方准备好后会显示故事开场句。'
     : startingRoundMode === 'assistant'
       ? conversationMode === 'human_like'
         ? '点击开始后，对方会先接上开场句。'
@@ -56,18 +58,20 @@ export function MessageList({
   return (
     <section className="chat-panel">
       <div className="chat-scroll">
-        <div className="opening-card">
-          <div className="opening-card__content">
-            <div>
-              <p className="eyebrow">故事开场</p>
-              <h1>{openingLine}</h1>
-            </div>
-            <div className="opening-card__turn">
-              <span className="opening-card__turn-label">开始顺序</span>
-              <strong>{openingTurnCopy}</strong>
+        {hideOpeningLine ? null : (
+          <div className="opening-card">
+            <div className="opening-card__content">
+              <div>
+                <p className="eyebrow">故事开场</p>
+                <h1>{openingLine}</h1>
+              </div>
+              <div className="opening-card__turn">
+                <span className="opening-card__turn-label">开始顺序</span>
+                <strong>{openingTurnCopy}</strong>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {messages.length === 0 ? (
           <div className="empty-state">

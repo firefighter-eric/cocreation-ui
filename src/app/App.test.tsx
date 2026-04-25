@@ -44,7 +44,7 @@ describe('App', () => {
 
     render(<App />)
     expect(
-      screen.getByText(appEnv.baseUrl && appEnv.apiKey ? 'API 已接入' : '本地 Mock'),
+      screen.getByText(appEnv.baseUrl && appEnv.apiKey ? '已接入' : '本地 Mock'),
     ).toBeInTheDocument()
 
     expect(screen.getByRole('button', { name: '开始' })).toBeInTheDocument()
@@ -114,7 +114,7 @@ describe('App', () => {
     await user.click(
       screen.getByRole('button', { name: '用户由你先接上开场句。' }),
     )
-    await user.click(screen.getByRole('button', { name: '保存' }))
+    await user.click(screen.getByRole('button', { name: '关闭' }))
 
     await user.click(screen.getByRole('button', { name: '开始' }))
     const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
@@ -147,7 +147,7 @@ describe('App', () => {
 
     await user.click(screen.getByRole('button', { name: '设置' }))
     await user.click(screen.getByRole('button', { name: /显示模式名称/ }))
-    await user.click(screen.getByRole('button', { name: '保存' }))
+    await user.click(screen.getByRole('button', { name: '关闭' }))
 
     expect(screen.getByRole('button', { name: /与人对话/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /与AI对话/ })).toBeInTheDocument()
@@ -157,6 +157,39 @@ describe('App', () => {
 
     expect(screen.getByRole('button', { name: /和人开始/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /和AI开始/ })).toBeInTheDocument()
+  })
+
+  it('auto-saves settings changes and can restore defaults', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+
+    expect(screen.queryByRole('button', { name: '保存' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '清空' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '还原默认' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /显示模式名称/ }))
+    await user.clear(screen.getByLabelText('最大回合数量'))
+    await user.type(screen.getByLabelText('最大回合数量'), '2')
+    await user.clear(screen.getByLabelText('Model'))
+    await user.type(screen.getByLabelText('Model'), 'custom-model')
+    await user.click(screen.getByRole('button', { name: '关闭' }))
+
+    expect(screen.getByRole('button', { name: /与人对话/ })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    expect(screen.getByLabelText('最大回合数量')).toHaveValue('2')
+    expect(screen.getByLabelText('Model')).toHaveValue('custom-model')
+
+    await user.click(screen.getByRole('button', { name: '还原默认' }))
+
+    expect(screen.getByLabelText('最大回合数量')).toHaveValue('5')
+    expect(screen.getByLabelText('Model')).toHaveValue('deepseek-v4-pro')
+
+    await user.click(screen.getByRole('button', { name: '关闭' }))
+    expect(screen.getByRole('button', { name: /模式1/ })).toBeInTheDocument()
   })
 
   it('exports the current conversation as json', async () => {
@@ -210,7 +243,7 @@ describe('App', () => {
       screen.getByLabelText('给 AI 的 System Prompt'),
       '让画面更安静',
     )
-    await user.click(screen.getByRole('button', { name: '保存' }))
+    await user.click(screen.getByRole('button', { name: '关闭' }))
 
     await user.click(screen.getByRole('button', { name: '开始' }))
     const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
@@ -276,7 +309,7 @@ describe('App', () => {
     await user.type(screen.getByLabelText('Temperature'), '0.7')
     await user.clear(screen.getByLabelText('Top P'))
     await user.type(screen.getByLabelText('Top P'), '0.85')
-    await user.click(screen.getByRole('button', { name: '保存' }))
+    await user.click(screen.getByRole('button', { name: '关闭' }))
 
     await user.click(screen.getByRole('button', { name: '开始' }))
     await user.type(
@@ -307,7 +340,7 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: '设置' }))
     await user.clear(screen.getByLabelText('最大回合数量'))
     await user.type(screen.getByLabelText('最大回合数量'), '2')
-    await user.click(screen.getByRole('button', { name: '保存' }))
+    await user.click(screen.getByRole('button', { name: '关闭' }))
 
     await user.click(screen.getByRole('button', { name: /模式3/ }))
     expect(
@@ -330,7 +363,7 @@ describe('App', () => {
     await user.click(
       screen.getByRole('button', { name: '对方点击开始后先由对方说第一句。' }),
     )
-    await user.click(screen.getByRole('button', { name: '保存' }))
+    await user.click(screen.getByRole('button', { name: '关闭' }))
 
     vi.useFakeTimers()
 
@@ -365,7 +398,7 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: '设置' }))
     await user.clear(screen.getByLabelText('最大回合数量'))
     await user.type(screen.getByLabelText('最大回合数量'), '1')
-    await user.click(screen.getByRole('button', { name: '保存' }))
+    await user.click(screen.getByRole('button', { name: '关闭' }))
 
     await user.click(screen.getByRole('button', { name: '开始' }))
     const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
@@ -387,8 +420,8 @@ describe('App', () => {
     await user.type(screen.getByLabelText('API Key'), 'custom-key')
     await user.clear(screen.getByLabelText('Model'))
     await user.type(screen.getByLabelText('Model'), 'custom-model')
-    await user.click(screen.getByRole('button', { name: '保存' }))
-    expect(screen.getByText('API 已接入')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '关闭' }))
+    expect(screen.getByText('已接入')).toBeInTheDocument()
 
     expect(
       window.localStorage.getItem('cocreation.runtime_llm_config'),
@@ -450,7 +483,7 @@ describe('App', () => {
 
     await user.click(screen.getByRole('button', { name: '设置' }))
     await user.click(screen.getByRole('button', { name: '清空 API 配置' }))
-    await user.click(screen.getByRole('button', { name: '保存' }))
+    await user.click(screen.getByRole('button', { name: '关闭' }))
 
     expect(window.localStorage.getItem('cocreation.runtime_llm_config')).toContain(
       '"model":"saved-model"',
@@ -508,7 +541,7 @@ describe('App', () => {
     expect(await screen.findByRole('option', { name: 'model-a' })).toBeInTheDocument()
 
     await user.selectOptions(screen.getByLabelText('候选模型'), 'model-b')
-    await user.click(screen.getByRole('button', { name: '保存' }))
+    await user.click(screen.getByRole('button', { name: '关闭' }))
     await user.click(screen.getByRole('button', { name: '开始' }))
     await user.type(
       screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点'),
@@ -574,7 +607,7 @@ describe('App', () => {
     fireEvent.change(screen.getByLabelText('回复延迟倍率'), {
       target: { value: '3' },
     })
-    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+    fireEvent.click(screen.getByRole('button', { name: '关闭' }))
 
     fireEvent.click(screen.getByRole('button', { name: '开始' }))
     const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
@@ -731,7 +764,7 @@ describe('App', () => {
     fireEvent.change(screen.getByLabelText('最大回合数量'), {
       target: { value: '1' },
     })
-    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+    fireEvent.click(screen.getByRole('button', { name: '关闭' }))
 
     fireEvent.click(screen.getByRole('button', { name: '开始实验' }))
     fireEvent.click(screen.getByRole('button', { name: /模式2.*开始任务/ }))
@@ -765,6 +798,14 @@ describe('App', () => {
       }
 
       expect(screen.getByText('全部题目已完成')).toBeInTheDocument()
+      expect(
+        screen.getByText(/感谢您已完成了实验部分，但请您先不要离开/),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', {
+          name: 'https://www.credamo.com/s/zuER3eano/',
+        }),
+      ).toHaveAttribute('href', 'https://www.credamo.com/s/zuER3eano/')
 
     fireEvent.click(screen.getByRole('button', { name: '导出 JSON' }))
 

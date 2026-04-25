@@ -48,6 +48,7 @@ export function useStorySession({
     if (stored) {
       return {
         ...stored,
+        openingLineShownAt: stored.openingLineShownAt ?? stored.sessionStartedAt,
         humanLikeSettings: stored.humanLikeSettings ?? {
           delayMultiplier: initialHumanLikeSettings.delayMultiplier,
         },
@@ -171,7 +172,7 @@ export function useStorySession({
   }
 
   function setValidatedDraft(value: string) {
-    if (state.sessionStartedAt === null) {
+    if (state.sessionStartedAt === null || state.openingLineShownAt === null) {
       return
     }
 
@@ -216,7 +217,9 @@ export function useStorySession({
       .reverse()
       .find((message) => message.role === 'assistant')
     const reactionReferenceAt =
-      previousAssistantMessage?.interaction?.aiEndedAt ?? state.sessionStartedAt
+      previousAssistantMessage?.interaction?.aiEndedAt ??
+      state.openingLineShownAt ??
+      state.sessionStartedAt
     const reactionTimeMs = Math.max(
       0,
       new Date(inputStartedAt).getTime() - new Date(reactionReferenceAt).getTime(),
@@ -447,17 +450,70 @@ export function useStorySession({
   }
 
   function startSession(forcedStartingRoundSpeaker?: MessageRole) {
+    return startSessionWithOptions({
+      forcedStartingRoundSpeaker,
+      shouldWaitForPartnerBeforeOpening: false,
+    })
+  }
+
+  function startSessionWithPartnerReadyWait(
+    forcedStartingRoundSpeaker?: MessageRole,
+  ) {
+    return startSessionWithOptions({
+      forcedStartingRoundSpeaker,
+      shouldWaitForPartnerBeforeOpening: true,
+    })
+  }
+
+  function startSessionWithOptions({
+    forcedStartingRoundSpeaker,
+    shouldWaitForPartnerBeforeOpening,
+  }: {
+    forcedStartingRoundSpeaker?: MessageRole
+    shouldWaitForPartnerBeforeOpening: boolean
+  }) {
     setDraftError(null)
     const startingRoundSpeaker =
       forcedStartingRoundSpeaker ?? resolveStartingSpeaker(state.startingRoundMode)
     const activeSessionId = state.sessionId
+    const startedAt = new Date().toISOString()
     setState((current) =>
       advanceStorySession(current, {
         type: 'START_SESSION',
-        startedAt: new Date().toISOString(),
+        startedAt,
         startingRoundSpeaker,
+        openingLineShownAt: shouldWaitForPartnerBeforeOpening ? null : startedAt,
       }),
     )
+
+    if (shouldWaitForPartnerBeforeOpening) {
+      setState((current) =>
+        current.sessionId !== activeSessionId
+          ? current
+          : advanceStorySession(current, { type: 'PARTNER_READY_WAIT_START' }),
+      )
+      void (async () => {
+        await waitForDelay(computePartnerReadyDelay())
+        const shownAt = new Date().toISOString()
+        setState((current) =>
+          current.sessionId !== activeSessionId
+            ? current
+            : advanceStorySession(current, {
+                type: 'SHOW_OPENING_LINE',
+                shownAt,
+                status:
+                  startingRoundSpeaker === 'assistant'
+                    ? current.status
+                    : 'ready',
+              }),
+        )
+
+        if (startingRoundSpeaker === 'assistant') {
+          await requestGeneratedLine(state.messages, activeSessionId)
+        }
+      })()
+      return
+    }
 
     if (startingRoundSpeaker === 'assistant') {
       if (conversationMode === 'human_like') {
@@ -493,6 +549,7 @@ export function useStorySession({
     clearError,
     incrementBackspaceCount,
     startSession,
+    startSessionWithPartnerReadyWait,
     updatePromptSettings,
     applyPromptSettings,
   }

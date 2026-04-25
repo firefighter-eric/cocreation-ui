@@ -25,6 +25,7 @@ export function createStorySession(
   return {
     sessionId: createSessionId(),
     sessionStartedAt: null,
+    openingLineShownAt: null,
     systemPrompt: input.systemPrompt,
     modelSettings: input.modelSettings,
     humanLikeSettings: input.humanLikeSettings,
@@ -61,6 +62,8 @@ export function advanceStorySession(
       return {
         ...state,
         sessionStartedAt: state.sessionStartedAt ?? event.startedAt,
+        openingLineShownAt:
+          state.openingLineShownAt ?? event.openingLineShownAt ?? event.startedAt,
         startingRoundSpeaker: state.startingRoundSpeaker ?? event.startingRoundSpeaker,
         error: null,
       }
@@ -68,6 +71,13 @@ export function advanceStorySession(
       return {
         ...state,
         status: 'waiting_for_partner_ready',
+        error: null,
+      }
+    case 'SHOW_OPENING_LINE':
+      return {
+        ...state,
+        openingLineShownAt: state.openingLineShownAt ?? event.shownAt,
+        status: event.status ?? state.status,
         error: null,
       }
     case 'APPEND_MESSAGE':
@@ -142,6 +152,7 @@ export function advanceStorySession(
       return {
         sessionId: createSessionId(),
         sessionStartedAt: null,
+        openingLineShownAt: null,
         systemPrompt: event.systemPrompt ?? state.systemPrompt,
         modelSettings: event.modelSettings ?? state.modelSettings,
         humanLikeSettings: event.humanLikeSettings ?? state.humanLikeSettings,

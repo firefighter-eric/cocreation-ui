@@ -6,6 +6,10 @@ import type {
 } from '../../entities/story-session/types'
 import type { StoryMode } from '../../shared/config/story'
 import {
+  defaultMaxRoundCount,
+  defaultModeLabelDisplay,
+  defaultStartingRoundMode,
+  defaultStoryStyle,
   defaultHumanLikeDelayMultiplier,
   humanLikeDelayMultiplierRange,
   modeLabelDisplayOptions,
@@ -99,6 +103,89 @@ export function SettingsDrawer({
   const [apiKey, setApiKey] = useState(initialApiConfig?.apiKey ?? '')
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false)
 
+  function saveSettings(
+    overrides: Partial<{
+      apiKey: string
+      baseUrl: string
+      delayMultiplierDraft: string
+      draft: string
+      maxRoundCountDraft: string
+      modeLabelDisplay: ModeLabelDisplay
+      model: string
+      selectedStyle: StoryStyle
+      startingRoundMode: StartingRoundMode
+      temperature: number
+      topP: number
+    }> = {},
+  ) {
+    const nextApiKey = overrides.apiKey ?? apiKey
+    const nextBaseUrl = overrides.baseUrl ?? baseUrl
+    const nextDelayMultiplierDraft =
+      overrides.delayMultiplierDraft ?? delayMultiplierDraft
+    const nextDraft = overrides.draft ?? draft
+    const nextMaxRoundCountDraft = overrides.maxRoundCountDraft ?? maxRoundCountDraft
+    const nextModeLabelDisplay = overrides.modeLabelDisplay ?? modeLabelDisplay
+    const nextModel = overrides.model ?? model
+    const nextSelectedStyle = overrides.selectedStyle ?? selectedStyle
+    const nextStartingRoundMode = overrides.startingRoundMode ?? startingRoundMode
+    const nextTemperature = overrides.temperature ?? temperature
+    const nextTopP = overrides.topP ?? topP
+    const normalizedModel = nextModel.trim() || initialModelSettings.model
+
+    onSave({
+      apiConfig: {
+        apiKey: nextApiKey,
+        baseUrl: nextBaseUrl,
+        model: normalizedModel,
+      },
+      style: nextSelectedStyle,
+      systemPrompt: nextDraft,
+      maxRoundCount: normalizeMaxRoundCount(nextMaxRoundCountDraft),
+      startingRoundMode: nextStartingRoundMode,
+      humanLikeSettings: {
+        delayMultiplier: normalizeDelayMultiplier(nextDelayMultiplierDraft),
+      },
+      modelSettings: {
+        model: normalizedModel,
+        temperature: nextTemperature,
+        topP: nextTopP,
+      },
+      modeLabelDisplay: nextModeLabelDisplay,
+    })
+  }
+
+  function restoreDefaults() {
+    const nextStyle = defaultStoryStyle
+    const nextPrompt = buildDefaultSystemPrompt({
+      conversationMode,
+      rules,
+      style: nextStyle,
+    })
+    const nextMaxRoundCountDraft = String(defaultMaxRoundCount)
+    const nextDelayMultiplierDraft = String(defaultHumanLikeDelayMultiplier)
+
+    setDraft(nextPrompt)
+    setSelectedStyle(nextStyle)
+    setModel(defaultLLMModel)
+    setTemperature(1.5)
+    setTopP(1)
+    setMaxRoundCountDraft(nextMaxRoundCountDraft)
+    setDelayMultiplierDraft(nextDelayMultiplierDraft)
+    setStartingRoundMode(defaultStartingRoundMode)
+    setModeLabelDisplay(defaultModeLabelDisplay)
+    saveSettings({
+      delayMultiplierDraft: nextDelayMultiplierDraft,
+      draft: nextPrompt,
+      maxRoundCountDraft: nextMaxRoundCountDraft,
+      modeLabelDisplay: defaultModeLabelDisplay,
+      model: defaultLLMModel,
+      selectedStyle: nextStyle,
+      startingRoundMode: defaultStartingRoundMode,
+      temperature: 1.5,
+      topP: 1,
+    })
+  }
+
   function normalizeMaxRoundCount(value: string) {
     const parsed = Number(value)
 
@@ -156,7 +243,10 @@ export function SettingsDrawer({
             placeholder="输入额外的 system prompt，例如：让故事更克制，减少奇幻元素。"
             rows={10}
             value={draft}
-            onChange={(event) => setDraft(event.target.value)}
+            onChange={(event) => {
+              setDraft(event.target.value)
+              saveSettings({ draft: event.target.value })
+            }}
           />
         </label>
 
@@ -175,7 +265,10 @@ export function SettingsDrawer({
                     : 'option-card'
                 }
                 type="button"
-                onClick={() => setModeLabelDisplay(option.value)}
+                onClick={() => {
+                  setModeLabelDisplay(option.value)
+                  saveSettings({ modeLabelDisplay: option.value })
+                }}
               >
                 <strong>{option.label}</strong>
                 <span>{option.description}</span>
@@ -200,14 +293,17 @@ export function SettingsDrawer({
                 }
                 type="button"
                 onClick={() => {
+                  const nextPrompt = buildDefaultSystemPrompt({
+                    conversationMode,
+                    rules,
+                    style: option.value,
+                  })
                   setSelectedStyle(option.value)
-                  setDraft(
-                    buildDefaultSystemPrompt({
-                      conversationMode,
-                      rules,
-                      style: option.value,
-                    }),
-                  )
+                  setDraft(nextPrompt)
+                  saveSettings({
+                    draft: nextPrompt,
+                    selectedStyle: option.value,
+                  })
                 }}
               >
                 <strong>{option.label}</strong>
@@ -232,11 +328,18 @@ export function SettingsDrawer({
               type="text"
               value={maxRoundCountDraft}
               onBlur={(event) =>
-                setMaxRoundCountDraft(
-                  String(normalizeMaxRoundCount(event.target.value)),
-                )
+                {
+                  const normalized = String(
+                    normalizeMaxRoundCount(event.target.value),
+                  )
+                  setMaxRoundCountDraft(normalized)
+                  saveSettings({ maxRoundCountDraft: normalized })
+                }
               }
-              onChange={(event) => setMaxRoundCountDraft(event.target.value)}
+              onChange={(event) => {
+                setMaxRoundCountDraft(event.target.value)
+                saveSettings({ maxRoundCountDraft: event.target.value })
+              }}
             />
           </label>
           <p className="settings-drawer__hint">
@@ -253,7 +356,10 @@ export function SettingsDrawer({
                       : 'option-card'
                   }
                   type="button"
-                  onClick={() => setStartingRoundMode(option.value)}
+                  onClick={() => {
+                    setStartingRoundMode(option.value)
+                    saveSettings({ startingRoundMode: option.value })
+                  }}
                 >
                   <strong>{option.label}</strong>
                   <span>{option.description}</span>
@@ -274,7 +380,10 @@ export function SettingsDrawer({
               type="text"
               placeholder={defaultLLMModel}
               value={model}
-              onChange={(event) => setModel(event.target.value)}
+              onChange={(event) => {
+                setModel(event.target.value)
+                saveSettings({ model: event.target.value })
+              }}
             />
           </label>
           <div className="settings-drawer__inline-actions">
@@ -291,6 +400,7 @@ export function SettingsDrawer({
 
                 if (models.length > 0 && model.trim().length === 0) {
                   setModel(models[0])
+                  saveSettings({ model: models[0] })
                 }
               }}
             >
@@ -302,7 +412,10 @@ export function SettingsDrawer({
               <span>候选模型</span>
               <select
                 value={availableModels.includes(model) ? model : ''}
-                onChange={(event) => setModel(event.target.value)}
+                onChange={(event) => {
+                  setModel(event.target.value)
+                  saveSettings({ model: event.target.value })
+                }}
               >
                 <option value="">选择一个候选模型</option>
                 {availableModels.map((option) => (
@@ -325,7 +438,11 @@ export function SettingsDrawer({
                 max="2"
                 step="0.1"
                 value={temperature}
-                onChange={(event) => setTemperature(Number(event.target.value))}
+                onChange={(event) => {
+                  const nextTemperature = Number(event.target.value)
+                  setTemperature(nextTemperature)
+                  saveSettings({ temperature: nextTemperature })
+                }}
               />
             </label>
             <label className="settings-drawer__field">
@@ -336,7 +453,11 @@ export function SettingsDrawer({
                 max="1"
                 step="0.05"
                 value={topP}
-                onChange={(event) => setTopP(Number(event.target.value))}
+                onChange={(event) => {
+                  const nextTopP = Number(event.target.value)
+                  setTopP(nextTopP)
+                  saveSettings({ topP: nextTopP })
+                }}
               />
             </label>
           </div>
@@ -353,12 +474,17 @@ export function SettingsDrawer({
               inputMode="decimal"
               type="text"
               value={delayMultiplierDraft}
-              onBlur={(event) =>
-                setDelayMultiplierDraft(
-                  String(normalizeDelayMultiplier(event.target.value)),
+              onBlur={(event) => {
+                const normalized = String(
+                  normalizeDelayMultiplier(event.target.value),
                 )
-              }
-              onChange={(event) => setDelayMultiplierDraft(event.target.value)}
+                setDelayMultiplierDraft(normalized)
+                saveSettings({ delayMultiplierDraft: normalized })
+              }}
+              onChange={(event) => {
+                setDelayMultiplierDraft(event.target.value)
+                saveSettings({ delayMultiplierDraft: event.target.value })
+              }}
             />
           </label>
           <p className="settings-drawer__hint">
@@ -385,7 +511,10 @@ export function SettingsDrawer({
               type="text"
               placeholder="https://api.openai.com/v1"
               value={baseUrl}
-              onChange={(event) => setBaseUrl(event.target.value)}
+              onChange={(event) => {
+                setBaseUrl(event.target.value)
+                saveSettings({ baseUrl: event.target.value })
+              }}
             />
           </label>
           <label className="settings-drawer__field">
@@ -395,7 +524,10 @@ export function SettingsDrawer({
                 type={isApiKeyVisible ? 'text' : 'password'}
                 placeholder="输入你自己的 API Key"
                 value={apiKey}
-                onChange={(event) => setApiKey(event.target.value)}
+                onChange={(event) => {
+                  setApiKey(event.target.value)
+                  saveSettings({ apiKey: event.target.value })
+                }}
               />
               <button
                 type="button"
@@ -415,6 +547,10 @@ export function SettingsDrawer({
               onClick={() => {
                 setBaseUrl('')
                 setApiKey('')
+                saveSettings({
+                  apiKey: '',
+                  baseUrl: '',
+                })
               }}
             >
               清空 API 配置
@@ -431,40 +567,9 @@ export function SettingsDrawer({
           <button
             type="button"
             className="settings-drawer__ghost"
-            onClick={() => setDraft('')}
+            onClick={restoreDefaults}
           >
-            清空
-          </button>
-          <button
-            type="button"
-            className="settings-drawer__primary"
-            onClick={() => {
-              const normalizedModel = model.trim() || initialModelSettings.model
-
-              onSave({
-                apiConfig: {
-                  apiKey,
-                  baseUrl,
-                  model: normalizedModel,
-                },
-                style: selectedStyle,
-                systemPrompt: draft,
-                maxRoundCount: normalizeMaxRoundCount(maxRoundCountDraft),
-                startingRoundMode,
-                humanLikeSettings: {
-                  delayMultiplier: normalizeDelayMultiplier(delayMultiplierDraft),
-                },
-                modelSettings: {
-                  model: normalizedModel,
-                  temperature,
-                  topP,
-                },
-                modeLabelDisplay,
-              })
-              onClose()
-            }}
-          >
-            保存
+            还原默认
           </button>
         </div>
       </aside>

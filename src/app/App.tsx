@@ -28,6 +28,8 @@ import { resolveLLMConfig } from '../shared/lib/llm/runtimeConfig'
 import { createRuntimeLLMConfigStore } from '../shared/lib/storage/runtimeLlmConfigStore'
 import { appEnv } from '../shared/config/env'
 
+const followUpSurveyUrl = 'https://www.credamo.com/s/zuER3eano/'
+
 export function App() {
   const [conversationMode, setConversationMode] = useState<StoryMode>(
     defaultStoryMode,
@@ -56,7 +58,7 @@ export function App() {
     () => createStoryProvider(resolvedConfig),
     [resolvedConfig],
   )
-  const providerStatusLabel = resolvedConfig ? 'API 已接入' : '本地 Mock'
+  const providerStatusLabel = resolvedConfig ? '已接入' : '本地 Mock'
   const providerStatusTone = resolvedConfig ? 'connected' : 'mock'
 
   const playgroundSession = useStorySession({
@@ -414,6 +416,9 @@ export function App() {
         <MessageList
           conversationMode={activeConversationMode}
           error={activeSession.state.error}
+          hideOpeningLine={
+            isExperimentWorkspace && activeSession.state.openingLineShownAt === null
+          }
           messages={activeSession.state.messages}
           onDismissError={activeSession.clearError}
           openingLine={activeSession.state.seed.openingLine}
@@ -429,7 +434,15 @@ export function App() {
                 <p className="eyebrow">实验完成</p>
                 <h2>全部题目已完成</h2>
                 <p>
-                  当前可从右上角导出结果 JSON，也可以退出当前任务。
+                  感谢您已完成了实验部分，但请您先不要离开，完成追踪问卷后，即可联系主试领取被试费。点击以下链接进入问卷，链接为：
+                  <a
+                    className="experiment-summary__link"
+                    href={followUpSurveyUrl}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {followUpSurveyUrl}
+                  </a>
                 </p>
               </div>
             </section>
@@ -461,7 +474,7 @@ export function App() {
               onChange={experimentSession.setDraft}
               onStartSession={() =>
                 currentExperimentItem &&
-                experimentSession.startSession(
+                experimentSession.startSessionWithPartnerReadyWait(
                   currentExperimentItem.startingRoundSpeaker,
                 )
               }
@@ -500,7 +513,7 @@ export function App() {
       </main>
 
       <SettingsDrawer
-        key={`${isSettingsOpen ? 'open' : 'closed'}-${activeSession.state.systemPrompt}-${activeSession.state.style}-${activeSession.state.maxRoundCount}-${activeSession.state.modelSettings.model}-${activeSession.state.modelSettings.temperature}-${activeSession.state.modelSettings.topP}-${activeSession.state.humanLikeSettings.delayMultiplier}-${runtimeConfig?.baseUrl ?? ''}-${runtimeConfig?.apiKey ?? ''}-${runtimeConfig?.model ?? ''}-${activeConversationMode}-${modeLabelDisplay}`}
+        key={`${isSettingsOpen ? 'open' : 'closed'}-${activeConversationMode}`}
         availableModels={availableModels}
         conversationMode={activeConversationMode}
         currentStyle={activeSession.state.style}

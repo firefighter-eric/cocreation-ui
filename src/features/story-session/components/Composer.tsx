@@ -46,10 +46,10 @@ export function Composer({
   const buttonLabel = !hasStarted
     ? '开始'
     : isBusy
-      ? conversationMode === 'human_like'
-        ? status === 'waiting_for_partner_ready'
-          ? '等待对方就绪'
-          : '对方输入中'
+      ? status === 'waiting_for_partner_ready'
+        ? '等待对方进场'
+        : conversationMode === 'human_like'
+          ? '对方输入中'
         : '生成中'
       : '发送'
 

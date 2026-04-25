@@ -38,6 +38,7 @@ export type StorySessionStatus =
 export interface StorySessionState {
   sessionId: string
   sessionStartedAt: string | null
+  openingLineShownAt: string | null
   systemPrompt: string
   modelSettings: ModelSettings
   humanLikeSettings: HumanLikeSettings
@@ -58,8 +59,14 @@ export type StorySessionEvent =
       type: 'START_SESSION'
       startedAt: string
       startingRoundSpeaker: MessageRole
+      openingLineShownAt?: string | null
     }
   | { type: 'PARTNER_READY_WAIT_START' }
+  | {
+      type: 'SHOW_OPENING_LINE'
+      shownAt: string
+      status?: StorySessionStatus
+    }
   | { type: 'USER_SUBMIT'; message: Message }
   | {
       type: 'APPEND_MESSAGE'
