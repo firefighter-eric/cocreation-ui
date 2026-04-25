@@ -1,4 +1,11 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
@@ -112,7 +119,10 @@ describe('App', () => {
 
     await user.click(screen.getByRole('button', { name: '设置' }))
     await user.click(
-      screen.getByRole('button', { name: '用户由你先接上开场句。' }),
+      within(screen.getByRole('group', { name: '谁先开始' })).getByRole(
+        'button',
+        { name: '用户' },
+      ),
     )
     await user.click(screen.getByRole('button', { name: '关闭' }))
 
@@ -144,19 +154,34 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: /模式1/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /模式2/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /模式3/ })).toBeInTheDocument()
+    expect(screen.queryByText('进入模式1的手动接龙流程。')).not.toBeInTheDocument()
+    expect(screen.queryByText('进入模式2的手动接龙流程。')).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: '设置' }))
-    await user.click(screen.getByRole('button', { name: /显示模式名称/ }))
+    const codedLabelButton = screen.getByRole('button', { name: /显示模式编号/ })
+    const descriptiveLabelButton = screen.getByRole('button', {
+      name: /显示模式名称/,
+    })
+
+    expect(codedLabelButton).toHaveClass('option-card--active')
+    expect(descriptiveLabelButton).not.toHaveClass('option-card--active')
+
+    await user.click(descriptiveLabelButton)
     await user.click(screen.getByRole('button', { name: '关闭' }))
 
     expect(screen.getByRole('button', { name: /与人对话/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /与AI对话/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /AI自动对话/ })).toBeInTheDocument()
+    expect(screen.queryByText('与对话搭档轮流接龙。')).not.toBeInTheDocument()
+    expect(screen.queryByText('由你输入，AI 接着续写。')).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: '开始实验' }))
 
-    expect(screen.getByRole('button', { name: /和人开始/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /和AI开始/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '选择和人开始' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '选择和AI开始' })).toBeInTheDocument()
+    expect(screen.queryByText('请选择一个模式开始。')).not.toBeInTheDocument()
+    expect(screen.queryByText('进入正式实验，并以前台“对方”语义完成全部题目。')).not.toBeInTheDocument()
+    expect(screen.queryByText('进入正式实验，并以 AI 搭档模式完成全部题目。')).not.toBeInTheDocument()
   })
 
   it('auto-saves settings changes and can restore defaults', async () => {
@@ -361,7 +386,10 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: /模式1/ }))
     await user.click(screen.getByRole('button', { name: '设置' }))
     await user.click(
-      screen.getByRole('button', { name: '对方点击开始后先由对方说第一句。' }),
+      within(screen.getByRole('group', { name: '谁先开始' })).getByRole(
+        'button',
+        { name: '对方' },
+      ),
     )
     await user.click(screen.getByRole('button', { name: '关闭' }))
 
@@ -371,8 +399,8 @@ describe('App', () => {
       fireEvent.click(screen.getByRole('button', { name: '开始' }))
     })
 
-    expect(screen.getAllByText('等待对方就绪')).toHaveLength(2)
-    expect(screen.getByRole('button', { name: '等待对方就绪' })).toBeInTheDocument()
+    expect(screen.getAllByText('等待对方进场')).toHaveLength(2)
+    expect(screen.getByRole('button', { name: '等待对方进场' })).toBeInTheDocument()
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(computePartnerReadyDelay(0.1))
@@ -532,7 +560,10 @@ describe('App', () => {
 
     await user.click(screen.getByRole('button', { name: '设置' }))
     await user.click(
-      screen.getByRole('button', { name: '用户由你先接上开场句。' }),
+      within(screen.getByRole('group', { name: '谁先开始' })).getByRole(
+        'button',
+        { name: '用户' },
+      ),
     )
     await user.type(screen.getByLabelText('Base URL'), 'https://custom.example/v1')
     await user.type(screen.getByLabelText('API Key'), 'custom-key')
@@ -655,7 +686,7 @@ describe('App', () => {
     render(<App />)
 
     await user.click(screen.getByRole('button', { name: '开始实验' }))
-    await user.click(screen.getByRole('button', { name: /模式1.*开始任务/ }))
+    await user.click(screen.getByRole('button', { name: '选择模式1' }))
 
     expect(screen.getByText('正式实验')).toBeInTheDocument()
     expect(screen.getByText('第 1 / 6 题')).toBeInTheDocument()
@@ -675,6 +706,40 @@ describe('App', () => {
     expect(
       screen.queryByRole('button', { name: '重新开始当前故事' }),
     ).not.toBeInTheDocument()
+    expect(screen.queryByText('故事开场')).not.toBeInTheDocument()
+  })
+
+  it('delays the formal experiment opening line until both sides are ready', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2024-04-18T12:00:00.000Z'))
+
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '开始实验' }))
+    fireEvent.click(screen.getByRole('button', { name: '选择模式2' }))
+
+    expect(screen.queryByText('故事开场')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+
+    expect(screen.getAllByText('等待对方进场')).toHaveLength(2)
+    expect(screen.queryByText('故事开场')).not.toBeInTheDocument()
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(computePartnerReadyDelay(0.1) - 1)
+    })
+
+    expect(screen.queryByText('故事开场')).not.toBeInTheDocument()
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1)
+    })
+
+    expect(screen.getByText('故事开场')).toBeInTheDocument()
+    expect(screen.getByText('电视屏幕突然闪烁了一下')).toBeInTheDocument()
+    expect(
+      screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点'),
+    ).not.toBeDisabled()
   })
 
   it('requires settings to be configured before a formal experiment starts', async () => {
@@ -687,7 +752,7 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: '关闭' }))
 
     await user.click(screen.getByRole('button', { name: '开始实验' }))
-    await user.click(screen.getByRole('button', { name: /模式2.*开始任务/ }))
+    await user.click(screen.getByRole('button', { name: '选择模式2' }))
 
     expect(
       screen.queryByRole('button', { name: '设置' }),
@@ -703,7 +768,7 @@ describe('App', () => {
     render(<App />)
 
     await user.click(screen.getByRole('button', { name: '开始实验' }))
-    await user.click(screen.getByRole('button', { name: /模式2.*开始任务/ }))
+    await user.click(screen.getByRole('button', { name: '选择模式2' }))
     await user.click(screen.getByRole('button', { name: '退出正式实验' }))
 
     expect(screen.getByRole('button', { name: '收起左侧栏' })).toBeInTheDocument()
@@ -767,7 +832,7 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: '关闭' }))
 
     fireEvent.click(screen.getByRole('button', { name: '开始实验' }))
-    fireEvent.click(screen.getByRole('button', { name: /模式2.*开始任务/ }))
+    fireEvent.click(screen.getByRole('button', { name: '选择模式2' }))
 
       for (let index = 1; index <= 6; index += 1) {
         expect(screen.getByText(`第 ${index} / 6 题`)).toBeInTheDocument()
@@ -777,9 +842,25 @@ describe('App', () => {
         })
 
         const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
+        const wasWaitingForPartner = input.hasAttribute('disabled')
 
-        if (input.hasAttribute('disabled')) {
-          expect(await screen.findByText('窗外的雨开始倒着落下')).toBeInTheDocument()
+        if (wasWaitingForPartner) {
+          expect(screen.getByRole('button', { name: '等待对方进场' })).toBeInTheDocument()
+          await act(async () => {
+            await vi.advanceTimersByTimeAsync(computePartnerReadyDelay(0.1))
+            await Promise.resolve()
+          })
+
+          const assistantStartedFirst = screen.queryByRole('button', {
+            name: '对方输入中',
+          }) ?? screen.queryByRole('button', { name: '生成中' })
+
+          if (assistantStartedFirst) {
+            await act(async () => {
+              await vi.runOnlyPendingTimersAsync()
+            })
+            expect(screen.getByText('窗外的雨开始倒着落下')).toBeInTheDocument()
+          }
           expect(input).not.toBeDisabled()
         }
 
@@ -822,6 +903,20 @@ describe('App', () => {
     expect(exported.sessions).toHaveLength(6)
     expect(exported.sessions[0].conversation[0].is_opening).toBe(true)
     expect(exported.sessions[0].prompt_index).toBe(1)
+    const userStartedSession = exported.sessions.find(
+      (session: { starting_round_speaker: string }) =>
+        session.starting_round_speaker === 'user',
+    )
+    expect(
+      new Date(
+        userStartedSession.conversation[1].interaction.reaction_reference_at,
+      ).getTime(),
+    ).toBeGreaterThan(
+      new Date(userStartedSession.session_started_at).getTime(),
+    )
+    expect(
+      userStartedSession.conversation[1].interaction.reaction_reference_at,
+    ).not.toBe(userStartedSession.session_started_at)
 
       createElementSpy.mockRestore()
       globalThis.Blob = originalBlob

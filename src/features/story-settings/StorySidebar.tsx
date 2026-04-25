@@ -60,6 +60,13 @@ export function StorySidebar({
       ? humanLikeExperimentCopy.selectedLabel
       : manualExperimentCopy.selectedLabel
   const storyModeOptions = getStoryModeOptions(modeLabelDisplay)
+  const experimentCardCopy = isExperimentActive
+    ? `正在进行 ${selectedExperimentLabel}，当前题目会自动推进。`
+    : isExperimentFinished
+      ? `已完成 ${selectedExperimentLabel} 的全部题目，可导出结果。`
+      : isExperimentPickerOpen
+        ? null
+        : '请选择一个模式开始。'
 
   return (
     <div className="sidebar-panel">
@@ -80,30 +87,26 @@ export function StorySidebar({
           </span>
         </div>
         <div className="experiment-card">
-          <p className="experiment-card__copy">
-            {isExperimentActive
-              ? `正在进行 ${selectedExperimentLabel}，当前题目会自动推进。`
-              : isExperimentFinished
-                ? `已完成 ${selectedExperimentLabel} 的全部题目，可导出结果。`
-                : '请选择一个模式开始。'}
-          </p>
+          {experimentCardCopy ? (
+            <p className="experiment-card__copy">{experimentCardCopy}</p>
+          ) : null}
           {isExperimentPickerOpen ? (
             <div className="option-grid">
               <button
-                className="option-card"
+                aria-label={`选择${humanLikeExperimentCopy.label}`}
+                className="option-card option-card--title-only"
                 type="button"
                 onClick={() => onExperimentModePick('human_like')}
               >
                 <strong>{humanLikeExperimentCopy.label}</strong>
-                <span>{humanLikeExperimentCopy.description}</span>
               </button>
               <button
-                className="option-card"
+                aria-label={`选择${manualExperimentCopy.label}`}
+                className="option-card option-card--title-only"
                 type="button"
                 onClick={() => onExperimentModePick('manual')}
               >
                 <strong>{manualExperimentCopy.label}</strong>
-                <span>{manualExperimentCopy.description}</span>
               </button>
             </div>
           ) : (
@@ -139,15 +142,14 @@ export function StorySidebar({
               key={option.value}
               className={
                 option.value === selectedMode
-                  ? 'option-card option-card--active'
-                  : 'option-card'
+                  ? 'option-card option-card--title-only option-card--active'
+                  : 'option-card option-card--title-only'
               }
               disabled={isExperimentActive}
               type="button"
               onClick={() => onModeChange(option.value)}
             >
               <strong>{option.label}</strong>
-              <span>{option.description}</span>
             </button>
           ))}
         </div>

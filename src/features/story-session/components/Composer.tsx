@@ -124,7 +124,7 @@ export function Composer({
             (!hasStarted
               ? startingRoundMode === 'assistant'
                 ? conversationMode === 'human_like'
-                  ? '点击开始后会先等待对方就绪，再进入对方输入状态。'
+                  ? '点击开始后会先等待对方进场，再进入对方输入状态。'
                   : '点击开始后先由对方说第一句，系统会记录你的思考时间。'
                 : startingRoundMode === 'random'
                   ? '点击开始后会随机决定谁先说第一句。'

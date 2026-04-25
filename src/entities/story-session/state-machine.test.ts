@@ -67,6 +67,49 @@ describe('story session state machine', () => {
     expect(afterAssistant.messages).toHaveLength(2)
   })
 
+  it('can delay opening line visibility after session start', () => {
+    const session = advanceStorySession(
+      createStorySession({
+        modelSettings: {
+          model: 'gpt-test',
+          temperature: 1.0,
+          topP: 1,
+        },
+        humanLikeSettings: {
+          delayMultiplier: defaultHumanLikeDelayMultiplier,
+        },
+        maxRoundCount: defaultMaxRoundCount,
+        startingRoundMode: defaultStartingRoundMode,
+        seed: storySeeds[0],
+        systemPrompt: '',
+        style: 'creative',
+        rules: defaultStoryRules,
+      }),
+      { type: 'BOOT' },
+    )
+
+    const started = advanceStorySession(session, {
+      type: 'START_SESSION',
+      startedAt: '2026-03-28T10:00:00.000Z',
+      startingRoundSpeaker: 'user',
+      openingLineShownAt: null,
+    })
+    const waiting = advanceStorySession(started, {
+      type: 'PARTNER_READY_WAIT_START',
+    })
+    const visible = advanceStorySession(waiting, {
+      type: 'SHOW_OPENING_LINE',
+      shownAt: '2026-03-28T10:00:02.000Z',
+      status: 'ready',
+    })
+
+    expect(started.sessionStartedAt).toBe('2026-03-28T10:00:00.000Z')
+    expect(started.openingLineShownAt).toBeNull()
+    expect(waiting.status).toBe('waiting_for_partner_ready')
+    expect(visible.openingLineShownAt).toBe('2026-03-28T10:00:02.000Z')
+    expect(visible.status).toBe('ready')
+  })
+
   it('resets with a new seed', () => {
     const session = advanceStorySession(
       createStorySession({

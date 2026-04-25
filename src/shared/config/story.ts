@@ -25,22 +25,18 @@ export const roundCountRange = {
 export const startingRoundOptions: Array<{
   value: StartingRoundMode
   label: string
-  description: string
 }> = [
   {
     value: 'user',
     label: '用户',
-    description: '由你先接上开场句。',
   },
   {
     value: 'assistant',
     label: '对方',
-    description: '点击开始后先由对方说第一句。',
   },
   {
     value: 'random',
     label: '随机',
-    description: '每次新会话随机决定谁先开始。',
   },
 ]
 

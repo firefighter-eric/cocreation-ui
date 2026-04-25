@@ -62,8 +62,11 @@ export function advanceStorySession(
       return {
         ...state,
         sessionStartedAt: state.sessionStartedAt ?? event.startedAt,
-        openingLineShownAt:
-          state.openingLineShownAt ?? event.openingLineShownAt ?? event.startedAt,
+        openingLineShownAt: state.openingLineShownAt ?? (
+          Object.prototype.hasOwnProperty.call(event, 'openingLineShownAt')
+            ? event.openingLineShownAt ?? null
+            : event.startedAt
+        ),
         startingRoundSpeaker: state.startingRoundSpeaker ?? event.startingRoundSpeaker,
         error: null,
       }

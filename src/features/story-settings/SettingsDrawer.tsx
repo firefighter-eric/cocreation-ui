@@ -346,26 +346,28 @@ export function SettingsDrawer({
             默认 5 回合，范围 1-10。1 回合表示 1 组“用户一句 + 对方一句”。
           </p>
           {hideStartingRoundSettings ? null : (
-            <div className="option-grid option-grid--starting-round">
-              {startingRoundOptions.map((option) => (
-                <button
-                  key={option.value}
-                  className={
-                    option.value === startingRoundMode
-                      ? 'option-card option-card--active'
-                      : 'option-card'
-                  }
-                  type="button"
-                  onClick={() => {
-                    setStartingRoundMode(option.value)
-                    saveSettings({ startingRoundMode: option.value })
-                  }}
-                >
-                  <strong>{option.label}</strong>
-                  <span>{option.description}</span>
-                </button>
-              ))}
-            </div>
+            <fieldset className="settings-drawer__choice-group">
+              <legend>谁先开始</legend>
+              <div className="option-grid option-grid--starting-round">
+                {startingRoundOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    className={
+                      option.value === startingRoundMode
+                        ? 'option-card option-card--active option-card--title-only'
+                        : 'option-card option-card--title-only'
+                    }
+                    type="button"
+                    onClick={() => {
+                      setStartingRoundMode(option.value)
+                      saveSettings({ startingRoundMode: option.value })
+                    }}
+                  >
+                    <strong>{option.label}</strong>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
           )}
         </section>
 

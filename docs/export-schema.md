@@ -125,7 +125,7 @@
 
 反应时规则：
 
-- 第一轮用户输入：从 `session_started_at` 计算到 `input_started_at`
+- 第一轮用户输入：从故事开场句实际显示时间计算到 `input_started_at`
 - 后续用户输入：从上一条 AI 消息的 `ai_ended_at` 计算到 `input_started_at`
 
 ### 助手消息

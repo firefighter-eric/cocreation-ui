@@ -290,6 +290,10 @@ button {
   font-size: 14px;
 }
 
+.option-card--title-only strong {
+  margin-bottom: 0;
+}
+
 .seed-card p,
 .seed-card span,
 .option-card span,
@@ -540,6 +544,22 @@ button {
 .settings-drawer__field {
   display: grid;
   gap: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.settings-drawer__choice-group {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.settings-drawer__choice-group legend {
+  padding: 0;
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
