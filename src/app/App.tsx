@@ -9,6 +9,9 @@ import { useExperimentSession } from '../features/story-session/model/useExperim
 import { useStorySession } from '../features/story-session/model/useStorySession'
 import {
   defaultHumanLikeDelayMultiplier,
+  defaultModelMaxTokens,
+  defaultModelTemperature,
+  defaultModelTopP,
   defaultModeLabelDisplay,
   defaultStoryMode,
   storySeeds,
@@ -67,8 +70,9 @@ export function App() {
     store: playgroundStore,
     initialModelSettings: {
       model: runtimeConfig?.model || appEnv.model || 'none',
-      temperature: 1.5,
-      topP: 1,
+      temperature: defaultModelTemperature,
+      topP: defaultModelTopP,
+      maxTokens: defaultModelMaxTokens,
     },
     initialHumanLikeSettings: {
       delayMultiplier: defaultHumanLikeDelayMultiplier,
@@ -87,8 +91,9 @@ export function App() {
     store: experimentSessionStore,
     initialModelSettings: {
       model: runtimeConfig?.model || appEnv.model || 'none',
-      temperature: 1.5,
-      topP: 1,
+      temperature: defaultModelTemperature,
+      topP: defaultModelTopP,
+      maxTokens: defaultModelMaxTokens,
     },
     initialHumanLikeSettings: {
       delayMultiplier: defaultHumanLikeDelayMultiplier,

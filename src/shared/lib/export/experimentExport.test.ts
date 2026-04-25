@@ -14,6 +14,7 @@ describe('buildExperimentJson', () => {
         model: 'story-model',
         temperature: 1,
         topP: 0.9,
+        maxTokens: 8000,
       },
       humanLikeSettings: {
         delayMultiplier: defaultHumanLikeDelayMultiplier,

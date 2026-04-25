@@ -21,7 +21,8 @@
   "model_settings": {
     "model": "deepseek-v4-flash",
     "temperature": 1.5,
-    "top_p": 1.0
+    "top_p": 1.0,
+    "max_tokens": 8000
   },
   "human_like_settings": {
     "delay_multiplier": 2
@@ -54,6 +55,7 @@
 - `system_prompt` 是导出时当前生效的完整系统提示
 - `model_settings` 记录请求参数中的当前模型设置
 - `model_settings.model` 记录本次请求使用的模型名
+- `model_settings.max_tokens` 记录本次请求使用的最大生成 token 数
 - `human_like_settings.delay_multiplier` 记录“与人对话”前台延迟展示使用的倍率
 - `max_round_count` 记录当前会话允许的最大回合数
 - `starting_round_mode` 记录当前会话采用的开始回合策略；playground 中来自设置选择，正式实验中为实验计划锁定后的值
@@ -217,7 +219,8 @@
   "model_settings": {
     "model": "deepseek-v4-flash",
     "temperature": 1.5,
-    "top_p": 1.0
+    "top_p": 1.0,
+    "max_tokens": 8000
   },
   "human_like_settings": {
     "delay_multiplier": 2

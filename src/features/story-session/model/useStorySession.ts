@@ -107,6 +107,7 @@ export function useStorySession({
         systemPrompt: state.systemPrompt,
         temperature: state.modelSettings.temperature,
         topP: state.modelSettings.topP,
+        maxTokens: state.modelSettings.maxTokens,
       })
 
       if (conversationMode === 'human_like') {
@@ -298,6 +299,7 @@ export function useStorySession({
           systemPrompt: state.systemPrompt,
           temperature: state.modelSettings.temperature,
           topP: state.modelSettings.topP,
+          maxTokens: state.modelSettings.maxTokens,
         })
         const message = createMessage(speaker, content)
         history = [...history, message]

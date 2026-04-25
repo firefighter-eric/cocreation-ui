@@ -36,6 +36,7 @@ export interface StoryExportPayload {
     model: string
     temperature: number
     top_p: number
+    max_tokens: number
   }
   human_like_settings: {
     delay_multiplier: number
@@ -92,6 +93,7 @@ export function buildStoryExportPayload(
       model: input.modelSettings.model,
       temperature: input.modelSettings.temperature,
       top_p: input.modelSettings.topP,
+      max_tokens: input.modelSettings.maxTokens,
     },
     human_like_settings: {
       delay_multiplier: input.humanLikeSettings.delayMultiplier,

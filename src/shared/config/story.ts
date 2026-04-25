@@ -14,6 +14,9 @@ export const defaultModeLabelDisplay: ModeLabelDisplay = 'anonymized'
 export const defaultMaxRoundCount = 5
 export const defaultStartingRoundMode: StartingRoundMode = 'random'
 export const defaultHumanLikeDelayMultiplier = 2
+export const defaultModelTemperature = 1.5
+export const defaultModelTopP = 1
+export const defaultModelMaxTokens = 8000
 export const humanLikeDelayMultiplierRange = {
   min: 0.5,
   max: 5,

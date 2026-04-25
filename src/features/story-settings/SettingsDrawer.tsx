@@ -7,6 +7,9 @@ import type {
 import type { StoryMode } from '../../shared/config/story'
 import {
   defaultMaxRoundCount,
+  defaultModelMaxTokens,
+  defaultModelTemperature,
+  defaultModelTopP,
   defaultModeLabelDisplay,
   defaultStartingRoundMode,
   defaultStoryStyle,
@@ -31,6 +34,7 @@ interface SettingsDrawerProps {
     model: string
     temperature: number
     topP: number
+    maxTokens: number
   }
   initialMaxRoundCount: number
   initialStartingRoundMode: StartingRoundMode
@@ -58,6 +62,7 @@ interface SettingsDrawerProps {
       model: string
       temperature: number
       topP: number
+      maxTokens: number
     }
     modeLabelDisplay: ModeLabelDisplay
   }) => void
@@ -91,6 +96,9 @@ export function SettingsDrawer({
   const [model, setModel] = useState(initialModelSettings.model)
   const [temperature, setTemperature] = useState(initialModelSettings.temperature)
   const [topP, setTopP] = useState(initialModelSettings.topP)
+  const [maxTokensDraft, setMaxTokensDraft] = useState(
+    String(initialModelSettings.maxTokens),
+  )
   const [maxRoundCountDraft, setMaxRoundCountDraft] = useState(
     String(initialMaxRoundCount),
   )
@@ -112,6 +120,7 @@ export function SettingsDrawer({
       maxRoundCountDraft: string
       modeLabelDisplay: ModeLabelDisplay
       model: string
+      maxTokensDraft: string
       selectedStyle: StoryStyle
       startingRoundMode: StartingRoundMode
       temperature: number
@@ -124,6 +133,7 @@ export function SettingsDrawer({
       overrides.delayMultiplierDraft ?? delayMultiplierDraft
     const nextDraft = overrides.draft ?? draft
     const nextMaxRoundCountDraft = overrides.maxRoundCountDraft ?? maxRoundCountDraft
+    const nextMaxTokensDraft = overrides.maxTokensDraft ?? maxTokensDraft
     const nextModeLabelDisplay = overrides.modeLabelDisplay ?? modeLabelDisplay
     const nextModel = overrides.model ?? model
     const nextSelectedStyle = overrides.selectedStyle ?? selectedStyle
@@ -149,6 +159,7 @@ export function SettingsDrawer({
         model: normalizedModel,
         temperature: nextTemperature,
         topP: nextTopP,
+        maxTokens: normalizeMaxTokens(nextMaxTokensDraft),
       },
       modeLabelDisplay: nextModeLabelDisplay,
     })
@@ -167,8 +178,9 @@ export function SettingsDrawer({
     setDraft(nextPrompt)
     setSelectedStyle(nextStyle)
     setModel(defaultLLMModel)
-    setTemperature(1.5)
-    setTopP(1)
+    setTemperature(defaultModelTemperature)
+    setTopP(defaultModelTopP)
+    setMaxTokensDraft(String(defaultModelMaxTokens))
     setMaxRoundCountDraft(nextMaxRoundCountDraft)
     setDelayMultiplierDraft(nextDelayMultiplierDraft)
     setStartingRoundMode(defaultStartingRoundMode)
@@ -181,8 +193,9 @@ export function SettingsDrawer({
       model: defaultLLMModel,
       selectedStyle: nextStyle,
       startingRoundMode: defaultStartingRoundMode,
-      temperature: 1.5,
-      topP: 1,
+      temperature: defaultModelTemperature,
+      topP: defaultModelTopP,
+      maxTokensDraft: String(defaultModelMaxTokens),
     })
   }
 
@@ -214,6 +227,16 @@ export function SettingsDrawer({
       humanLikeDelayMultiplierRange.max,
       Math.max(humanLikeDelayMultiplierRange.min, parsed),
     )
+  }
+
+  function normalizeMaxTokens(value: string) {
+    const parsed = Number(value)
+
+    if (!Number.isFinite(parsed) || parsed < 1) {
+      return initialModelSettings.maxTokens || defaultModelMaxTokens
+    }
+
+    return Math.trunc(parsed)
   }
 
   if (!isOpen) {
@@ -459,6 +482,25 @@ export function SettingsDrawer({
                   const nextTopP = Number(event.target.value)
                   setTopP(nextTopP)
                   saveSettings({ topP: nextTopP })
+                }}
+              />
+            </label>
+            <label className="settings-drawer__field">
+              <span>Max Tokens</span>
+              <input
+                inputMode="numeric"
+                min="1"
+                pattern="[0-9]*"
+                type="text"
+                value={maxTokensDraft}
+                onBlur={(event) => {
+                  const normalized = String(normalizeMaxTokens(event.target.value))
+                  setMaxTokensDraft(normalized)
+                  saveSettings({ maxTokensDraft: normalized })
+                }}
+                onChange={(event) => {
+                  setMaxTokensDraft(event.target.value)
+                  saveSettings({ maxTokensDraft: event.target.value })
                 }}
               />
             </label>

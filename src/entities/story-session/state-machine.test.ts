@@ -15,6 +15,7 @@ describe('story session state machine', () => {
         model: 'gpt-test',
         temperature: 1.0,
         topP: 1,
+        maxTokens: 8000,
       },
       humanLikeSettings: {
         delayMultiplier: defaultHumanLikeDelayMultiplier,
@@ -39,6 +40,7 @@ describe('story session state machine', () => {
           model: 'gpt-test',
           temperature: 1.0,
           topP: 1,
+          maxTokens: 8000,
         },
         humanLikeSettings: {
           delayMultiplier: defaultHumanLikeDelayMultiplier,
@@ -74,6 +76,7 @@ describe('story session state machine', () => {
           model: 'gpt-test',
           temperature: 1.0,
           topP: 1,
+          maxTokens: 8000,
         },
         humanLikeSettings: {
           delayMultiplier: defaultHumanLikeDelayMultiplier,
@@ -117,6 +120,7 @@ describe('story session state machine', () => {
           model: 'gpt-test',
           temperature: 1.0,
           topP: 1,
+          maxTokens: 8000,
         },
         humanLikeSettings: {
           delayMultiplier: defaultHumanLikeDelayMultiplier,
@@ -144,6 +148,7 @@ describe('story session state machine', () => {
       model: 'gpt-test',
       temperature: 1.0,
       topP: 1,
+      maxTokens: 8000,
     })
     expect(reset.humanLikeSettings).toEqual({
       delayMultiplier: defaultHumanLikeDelayMultiplier,

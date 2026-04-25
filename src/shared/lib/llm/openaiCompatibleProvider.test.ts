@@ -74,6 +74,8 @@ describe('OpenAICompatibleProvider', () => {
         body: expect.stringContaining('"model":"story-model"'),
       }),
     )
+    const request = vi.mocked(fetch).mock.calls[0]?.[1] as RequestInit
+    expect(String(request.body)).toContain('"max_tokens":8000')
   })
 
   const liveTest = appEnv.baseUrl && appEnv.apiKey ? it : it.skip
@@ -95,7 +97,7 @@ describe('OpenAICompatibleProvider', () => {
         model: input.model,
         temperature: input.temperature,
         top_p: input.topP,
-        max_tokens: 800,
+        max_tokens: input.maxTokens,
         messages: [
           {
             role: 'system',
@@ -148,6 +150,7 @@ function createInput(
     systemPrompt: '请自然接龙',
     temperature: 1,
     topP: 1,
+    maxTokens: 8000,
     ...overrides,
   }
 }

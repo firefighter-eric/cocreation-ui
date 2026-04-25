@@ -200,6 +200,8 @@ describe('App', () => {
     await user.type(screen.getByLabelText('最大回合数量'), '2')
     await user.clear(screen.getByLabelText('Model'))
     await user.type(screen.getByLabelText('Model'), 'custom-model')
+    await user.clear(screen.getByLabelText('Max Tokens'))
+    await user.type(screen.getByLabelText('Max Tokens'), '4096')
     await user.click(screen.getByRole('button', { name: '关闭' }))
 
     expect(screen.getByRole('button', { name: /与人对话/ })).toBeInTheDocument()
@@ -207,11 +209,13 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: '设置' }))
     expect(screen.getByLabelText('最大回合数量')).toHaveValue('2')
     expect(screen.getByLabelText('Model')).toHaveValue('custom-model')
+    expect(screen.getByLabelText('Max Tokens')).toHaveValue('4096')
 
     await user.click(screen.getByRole('button', { name: '还原默认' }))
 
     expect(screen.getByLabelText('最大回合数量')).toHaveValue('5')
     expect(screen.getByLabelText('Model')).toHaveValue('deepseek-v4-flash')
+    expect(screen.getByLabelText('Max Tokens')).toHaveValue('8000')
 
     await user.click(screen.getByRole('button', { name: '关闭' }))
     expect(screen.getByRole('button', { name: /模式1/ })).toBeInTheDocument()
@@ -290,6 +294,7 @@ describe('App', () => {
     expect(exported.session_started_at).toEqual(expect.any(String))
     expect(exported.system_prompt).toContain('让画面更安静')
     expect(exported.model_settings.model).toBe(appEnv.model)
+    expect(exported.model_settings.max_tokens).toBe(8000)
     expect(exported.human_like_settings.delay_multiplier).toBe(2)
     expect(exported.max_round_count).toBe(5)
     expect(exported).not.toHaveProperty('base_url')
@@ -334,6 +339,8 @@ describe('App', () => {
     await user.type(screen.getByLabelText('Temperature'), '0.7')
     await user.clear(screen.getByLabelText('Top P'))
     await user.type(screen.getByLabelText('Top P'), '0.85')
+    await user.clear(screen.getByLabelText('Max Tokens'))
+    await user.type(screen.getByLabelText('Max Tokens'), '6000')
     await user.click(screen.getByRole('button', { name: '关闭' }))
 
     await user.click(screen.getByRole('button', { name: '开始' }))
@@ -355,6 +362,7 @@ describe('App', () => {
     expect(payload.model).toBe('story-model')
     expect(payload.temperature).toBe(0.7)
     expect(payload.top_p).toBe(0.85)
+    expect(payload.max_tokens).toBe(6000)
   })
 
   it('uses max round count from settings for auto mode', async () => {

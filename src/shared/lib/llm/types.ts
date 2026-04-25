@@ -18,6 +18,7 @@ export interface GenerateNextLineInput {
   systemPrompt: string
   temperature: number
   topP: number
+  maxTokens: number
 }
 
 export interface LLMProvider {

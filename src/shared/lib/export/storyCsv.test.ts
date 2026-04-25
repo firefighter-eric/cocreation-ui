@@ -57,6 +57,7 @@ const exportInput = {
     model: 'story-model',
     temperature: 0.9,
     topP: 0.8,
+    maxTokens: 6000,
   },
 }
 
@@ -72,6 +73,7 @@ describe('storyCsv', () => {
       model: 'story-model',
       temperature: 0.9,
       top_p: 0.8,
+      max_tokens: 6000,
     })
     expect(parsed.human_like_settings).toEqual({
       delay_multiplier: 2,

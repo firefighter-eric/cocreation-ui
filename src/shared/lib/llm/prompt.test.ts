@@ -11,6 +11,7 @@ describe('buildStoryPrompt', () => {
     model: 'gpt-test',
     temperature: 1.0,
     topP: 1,
+    maxTokens: 8000,
   }
 
   it('contains creative guidance', () => {

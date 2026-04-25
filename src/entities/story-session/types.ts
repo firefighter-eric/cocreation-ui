@@ -20,6 +20,7 @@ export interface ModelSettings {
   model: string
   temperature: number
   topP: number
+  maxTokens: number
 }
 
 export interface HumanLikeSettings {
