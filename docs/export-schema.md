@@ -19,7 +19,7 @@
   "session_started_at": "string | null",
   "system_prompt": "string",
   "model_settings": {
-    "model": "gpt-4.1-mini",
+    "model": "deepseek-v4-pro",
     "temperature": 1.5,
     "top_p": 1.0
   },
@@ -215,7 +215,7 @@
   "session_started_at": "string | null",
   "system_prompt": "string",
   "model_settings": {
-    "model": "gpt-4.1-mini",
+    "model": "deepseek-v4-pro",
     "temperature": 1.5,
     "top_p": 1.0
   },

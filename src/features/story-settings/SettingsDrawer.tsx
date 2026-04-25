@@ -15,6 +15,7 @@ import {
   type ModeLabelDisplay,
 } from '../../shared/config/story'
 import { buildDefaultSystemPrompt } from '../../shared/lib/llm/prompt'
+import { defaultLLMModel } from '../../shared/config/env'
 import type { RuntimeLLMConfig } from '../../shared/lib/llm/runtimeConfig'
 
 interface SettingsDrawerProps {
@@ -271,7 +272,7 @@ export function SettingsDrawer({
             <span>Model</span>
             <input
               type="text"
-              placeholder="gpt-4.1-mini"
+              placeholder={defaultLLMModel}
               value={model}
               onChange={(event) => setModel(event.target.value)}
             />
