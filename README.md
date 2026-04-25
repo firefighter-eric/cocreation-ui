@@ -44,7 +44,7 @@
 ```bash
 VITE_LLM_BASE_URL=https://api.openai.com/v1
 VITE_LLM_API_KEY=your_api_key_here
-VITE_LLM_MODEL=deepseek-v4-pro
+VITE_LLM_MODEL=deepseek-v4-flash
 ```
 
 环境变量是默认远端配置。

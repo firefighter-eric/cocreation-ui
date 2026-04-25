@@ -8,6 +8,7 @@ import type {
 } from './types'
 
 const REQUEST_TIMEOUT_MS = 20000
+const MAX_COMPLETION_TOKENS = 800
 
 export class OpenAICompatibleProvider implements LLMProvider {
   private readonly config: ResolvedLLMConfig
@@ -38,7 +39,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
           model: input.model,
           temperature: input.temperature,
           top_p: input.topP,
-          max_tokens: 80,
+          max_tokens: MAX_COMPLETION_TOKENS,
           messages: [
             {
               role: 'system',

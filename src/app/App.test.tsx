@@ -211,7 +211,7 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: '还原默认' }))
 
     expect(screen.getByLabelText('最大回合数量')).toHaveValue('5')
-    expect(screen.getByLabelText('Model')).toHaveValue('deepseek-v4-pro')
+    expect(screen.getByLabelText('Model')).toHaveValue('deepseek-v4-flash')
 
     await user.click(screen.getByRole('button', { name: '关闭' }))
     expect(screen.getByRole('button', { name: /模式1/ })).toBeInTheDocument()

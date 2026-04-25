@@ -95,7 +95,7 @@ describe('OpenAICompatibleProvider', () => {
         model: input.model,
         temperature: input.temperature,
         top_p: input.topP,
-        max_tokens: 80,
+        max_tokens: 800,
         messages: [
           {
             role: 'system',

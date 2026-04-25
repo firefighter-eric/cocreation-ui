@@ -335,7 +335,7 @@ playground 右上角提供一个“设置”按钮，点击后从右侧弹出设
 - 开场句不写入 system prompt，而是作为请求中的第一条 user message
 - 默认规则仍然保留，不允许被 UI 层删除
 - 默认模型参数为 `temperature = 1.5`、`top_p = 1.0`
-- 默认模型名取环境变量中的 `VITE_LLM_MODEL`，未配置时使用 `deepseek-v4-pro`
+- 默认模型名取环境变量中的 `VITE_LLM_MODEL`，未配置时使用 `deepseek-v4-flash`
 - 用户可在设置抽屉里填写自己的 `base URL` 和 `API key`
 - 这份 API 配置保存在浏览器本地 `localStorage`，用于避免反复填写
 - 设置抽屉中的 `model` 也保存在浏览器本地，避免重复填写
