@@ -535,7 +535,7 @@ export function SettingsDrawer({
             公式：
             <code>(基础等待 + 字数等待 + 随机波动) × 倍率</code>
             。当前基础等待是 1400ms，每个字额外增加 280ms，随机波动范围是
-            0-900ms。
+            0-1800ms。
           </p>
           <p className="settings-drawer__hint">
             这个倍率只影响前台“对方正在输入”的展示节奏，不影响模型真实请求，

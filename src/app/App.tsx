@@ -509,9 +509,13 @@ export function App() {
               onChange={experimentSession.setDraft}
               onStartSession={() =>
                 currentExperimentItem &&
-                experimentSession.startSessionWithPartnerReadyWait(
-                  currentExperimentItem.startingRoundSpeaker,
-                )
+                (experimentConversationMode === 'human_like'
+                  ? experimentSession.startSessionWithPartnerReadyWait(
+                      currentExperimentItem.startingRoundSpeaker,
+                    )
+                  : experimentSession.startSession(
+                      currentExperimentItem.startingRoundSpeaker,
+                    ))
               }
               onSubmit={experimentSession.submitDraft}
             />

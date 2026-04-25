@@ -45,7 +45,9 @@ describe('buildExperimentJson', () => {
     expect(parsed.prompt_count).toBe(1)
     expect(parsed.sessions[0].prompt_index).toBe(1)
     expect(parsed.sessions[0].seed.id).toBe(storySeeds[0].id)
-    expect(parsed.sessions[0].human_like_settings.delay_multiplier).toBe(2)
+    expect(parsed.sessions[0].human_like_settings.delay_multiplier).toBe(
+      defaultHumanLikeDelayMultiplier,
+    )
     expect(parsed.sessions[0].conversation[0]).toEqual({
       content: storySeeds[0].openingLine,
       is_opening: true,

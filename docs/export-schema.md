@@ -25,7 +25,7 @@
     "max_tokens": 8000
   },
   "human_like_settings": {
-    "delay_multiplier": 2
+    "delay_multiplier": 4
   },
   "max_round_count": 5,
   "starting_round_mode": "user | assistant | random",
@@ -223,7 +223,7 @@
     "max_tokens": 8000
   },
   "human_like_settings": {
-    "delay_multiplier": 2
+    "delay_multiplier": 4
   },
   "max_round_count": 5,
   "starting_round_mode": "user | assistant",

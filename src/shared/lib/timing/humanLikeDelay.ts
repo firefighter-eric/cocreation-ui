@@ -1,8 +1,8 @@
 const baseDelayMs = 1400
 const perCharDelayMs = 280
-const maxJitterMs = 900
-const minPartnerReadyDelayMs = 1000
-const partnerReadyDelayRangeMs = 4000
+const maxJitterMs = 1800
+const minPartnerReadyDelayMs = 5000
+const partnerReadyDelayRangeMs = 5000
 
 export function computeHumanLikeDelay(
   content: string,

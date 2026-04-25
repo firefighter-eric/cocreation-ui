@@ -295,7 +295,7 @@ describe('App', () => {
     expect(exported.system_prompt).toContain('让画面更安静')
     expect(exported.model_settings.model).toBe(appEnv.model)
     expect(exported.model_settings.max_tokens).toBe(8000)
-    expect(exported.human_like_settings.delay_multiplier).toBe(2)
+    expect(exported.human_like_settings.delay_multiplier).toBe(4)
     expect(exported.max_round_count).toBe(5)
     expect(exported).not.toHaveProperty('base_url')
     expect(exported).not.toHaveProperty('api_key')
@@ -717,7 +717,7 @@ describe('App', () => {
     expect(screen.queryByText('故事开场')).not.toBeInTheDocument()
   })
 
-  it('delays the formal experiment opening line until both sides are ready', async () => {
+  it('does not delay the formal experiment opening line in AI mode', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2024-04-18T12:00:00.000Z'))
 
@@ -725,6 +725,24 @@ describe('App', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '开始实验' }))
     fireEvent.click(screen.getByRole('button', { name: '选择模式2' }))
+
+    expect(screen.queryByText('故事开场')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+
+    expect(screen.queryByRole('button', { name: '等待对方进场' })).not.toBeInTheDocument()
+    expect(screen.getByText('故事开场')).toBeInTheDocument()
+    expect(screen.getByText('电视屏幕突然闪烁了一下')).toBeInTheDocument()
+  })
+
+  it('delays the formal experiment opening line in human-like mode', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2024-04-18T12:00:00.000Z'))
+
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '开始实验' }))
+    fireEvent.click(screen.getByRole('button', { name: '选择模式1' }))
 
     expect(screen.queryByText('故事开场')).not.toBeInTheDocument()
 
@@ -917,12 +935,12 @@ describe('App', () => {
       new Date(
         userStartedSession.conversation[1].interaction.reaction_reference_at,
       ).getTime(),
-    ).toBeGreaterThan(
+    ).toBe(
       new Date(userStartedSession.session_started_at).getTime(),
     )
     expect(
       userStartedSession.conversation[1].interaction.reaction_reference_at,
-    ).not.toBe(userStartedSession.session_started_at)
+    ).toBe(userStartedSession.session_started_at)
 
       createElementSpy.mockRestore()
       globalThis.Blob = originalBlob

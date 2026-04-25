@@ -17,13 +17,13 @@ describe('computeHumanLikeDelay', () => {
     const minDelay = computeHumanLikeDelay('测试', 0, 2)
     const maxDelay = computeHumanLikeDelay('测试', 1, 2)
 
-    expect(maxDelay - minDelay).toBeLessThanOrEqual(1800)
+    expect(maxDelay - minDelay).toBeLessThanOrEqual(3600)
   })
 })
 
 describe('computePartnerReadyDelay', () => {
-  it('stays within the expected 1-5 second range', () => {
-    expect(computePartnerReadyDelay(0)).toBe(1000)
-    expect(computePartnerReadyDelay(1)).toBe(5000)
+  it('stays within the expected 5-10 second range', () => {
+    expect(computePartnerReadyDelay(0)).toBe(5000)
+    expect(computePartnerReadyDelay(1)).toBe(10000)
   })
 })
