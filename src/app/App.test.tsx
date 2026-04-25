@@ -130,10 +130,33 @@ describe('App', () => {
 
     render(<App />)
 
-    await user.click(screen.getByRole('button', { name: /AI自动对话/ }))
+    await user.click(screen.getByRole('button', { name: /模式3/ }))
     await user.click(screen.getByRole('button', { name: '自动生成 1 例对话' }))
 
     await waitFor(() => expect(window.fetch).toHaveBeenCalledTimes(10))
+  })
+
+  it('can switch between coded and descriptive mode labels from settings', async () => {
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    expect(screen.getByRole('button', { name: /模式1/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /模式2/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /模式3/ })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    await user.click(screen.getByRole('button', { name: /显示模式名称/ }))
+    await user.click(screen.getByRole('button', { name: '保存' }))
+
+    expect(screen.getByRole('button', { name: /与人对话/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /与AI对话/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /AI自动对话/ })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '开始实验' }))
+
+    expect(screen.getByRole('button', { name: /和人开始/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /和AI开始/ })).toBeInTheDocument()
   })
 
   it('exports the current conversation as json', async () => {
@@ -286,7 +309,7 @@ describe('App', () => {
     await user.type(screen.getByLabelText('最大回合数量'), '2')
     await user.click(screen.getByRole('button', { name: '保存' }))
 
-    await user.click(screen.getByRole('button', { name: /AI自动对话/ }))
+    await user.click(screen.getByRole('button', { name: /模式3/ }))
     expect(
       screen.getByText(
         '当前最大回合数为 2，开始回合为随机。每 1 回合代表 1 组“用户一句 + 对方一句”，可在右上角设置中修改。',
@@ -302,7 +325,7 @@ describe('App', () => {
 
     render(<App />)
 
-    await user.click(screen.getByRole('button', { name: /与人对话/ }))
+    await user.click(screen.getByRole('button', { name: /模式1/ }))
     await user.click(screen.getByRole('button', { name: '设置' }))
     await user.click(
       screen.getByRole('button', { name: '对方点击开始后先由对方说第一句。' }),
@@ -520,7 +543,7 @@ describe('App', () => {
 
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: /与人对话/ }))
+    fireEvent.click(screen.getByRole('button', { name: /模式1/ }))
 
     fireEvent.click(screen.getByRole('button', { name: '开始' }))
     const input = screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点')
@@ -543,12 +566,12 @@ describe('App', () => {
 
     render(<App />)
 
-    fireEvent.click(screen.getByRole('button', { name: /与人对话/ }))
+    fireEvent.click(screen.getByRole('button', { name: /模式1/ }))
     fireEvent.click(screen.getByRole('button', { name: '设置' }))
     expect(
       screen.getByText('(基础等待 + 字数等待 + 随机波动) × 倍率'),
     ).toBeInTheDocument()
-    fireEvent.change(screen.getByLabelText('人类回复延迟倍率'), {
+    fireEvent.change(screen.getByLabelText('回复延迟倍率'), {
       target: { value: '3' },
     })
     fireEvent.click(screen.getByRole('button', { name: '保存' }))
@@ -599,7 +622,7 @@ describe('App', () => {
     render(<App />)
 
     await user.click(screen.getByRole('button', { name: '开始实验' }))
-    await user.click(screen.getByRole('button', { name: /和人开始/ }))
+    await user.click(screen.getByRole('button', { name: /模式1.*开始任务/ }))
 
     expect(screen.getByText('正式实验')).toBeInTheDocument()
     expect(screen.getByText('第 1 / 6 题')).toBeInTheDocument()
@@ -611,7 +634,7 @@ describe('App', () => {
       screen.queryByRole('button', { name: '设置' }),
     ).not.toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: /AI自动对话/ }),
+      screen.queryByRole('button', { name: /模式3/ }),
     ).not.toBeInTheDocument()
     expect(
       screen.queryByRole('button', { name: '一辆出租车停在路边' }),
@@ -631,7 +654,7 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: '关闭' }))
 
     await user.click(screen.getByRole('button', { name: '开始实验' }))
-    await user.click(screen.getByRole('button', { name: /和AI开始/ }))
+    await user.click(screen.getByRole('button', { name: /模式2.*开始任务/ }))
 
     expect(
       screen.queryByRole('button', { name: '设置' }),
@@ -647,12 +670,12 @@ describe('App', () => {
     render(<App />)
 
     await user.click(screen.getByRole('button', { name: '开始实验' }))
-    await user.click(screen.getByRole('button', { name: /和AI开始/ }))
+    await user.click(screen.getByRole('button', { name: /模式2.*开始任务/ }))
     await user.click(screen.getByRole('button', { name: '退出正式实验' }))
 
     expect(screen.getByRole('button', { name: '收起左侧栏' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '设置' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /AI自动对话/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /模式3/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '开始实验' })).toBeInTheDocument()
   })
 
@@ -711,7 +734,7 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: '保存' }))
 
     fireEvent.click(screen.getByRole('button', { name: '开始实验' }))
-    fireEvent.click(screen.getByRole('button', { name: /和AI开始/ }))
+    fireEvent.click(screen.getByRole('button', { name: /模式2.*开始任务/ }))
 
       for (let index = 1; index <= 6; index += 1) {
         expect(screen.getByText(`第 ${index} / 6 题`)).toBeInTheDocument()
@@ -741,7 +764,7 @@ describe('App', () => {
         }
       }
 
-      expect(screen.getByText('6 个 prompt 已全部完成')).toBeInTheDocument()
+      expect(screen.getByText('全部题目已完成')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: '导出 JSON' }))
 

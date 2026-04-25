@@ -8,9 +8,11 @@ import type { StoryMode } from '../../shared/config/story'
 import {
   defaultHumanLikeDelayMultiplier,
   humanLikeDelayMultiplierRange,
+  modeLabelDisplayOptions,
   roundCountRange,
   startingRoundOptions,
   styleOptions,
+  type ModeLabelDisplay,
 } from '../../shared/config/story'
 import { buildDefaultSystemPrompt } from '../../shared/lib/llm/prompt'
 import type { RuntimeLLMConfig } from '../../shared/lib/llm/runtimeConfig'
@@ -31,6 +33,7 @@ interface SettingsDrawerProps {
   initialHumanLikeSettings: {
     delayMultiplier: number
   }
+  initialModeLabelDisplay: ModeLabelDisplay
   isFetchingModels: boolean
   initialPrompt: string
   isOpen: boolean
@@ -51,6 +54,7 @@ interface SettingsDrawerProps {
       temperature: number
       topP: number
     }
+    modeLabelDisplay: ModeLabelDisplay
   }) => void
   providerLabel: string
   rules: StoryRules
@@ -64,6 +68,7 @@ export function SettingsDrawer({
   initialApiConfig,
   initialHumanLikeSettings,
   initialMaxRoundCount,
+  initialModeLabelDisplay,
   initialStartingRoundMode,
   initialModelSettings,
   isFetchingModels,
@@ -88,6 +93,7 @@ export function SettingsDrawer({
     String(initialHumanLikeSettings.delayMultiplier),
   )
   const [startingRoundMode, setStartingRoundMode] = useState(initialStartingRoundMode)
+  const [modeLabelDisplay, setModeLabelDisplay] = useState(initialModeLabelDisplay)
   const [baseUrl, setBaseUrl] = useState(initialApiConfig?.baseUrl ?? '')
   const [apiKey, setApiKey] = useState(initialApiConfig?.apiKey ?? '')
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false)
@@ -155,10 +161,34 @@ export function SettingsDrawer({
 
         <section className="settings-drawer__section">
           <div className="section-heading">
+            <h2>显示设置</h2>
+            <span>前台模式名称</span>
+          </div>
+          <div className="option-grid option-grid--display-mode">
+            {modeLabelDisplayOptions.map((option) => (
+              <button
+                key={option.value}
+                className={
+                  option.value === modeLabelDisplay
+                    ? 'option-card option-card--active'
+                    : 'option-card'
+                }
+                type="button"
+                onClick={() => setModeLabelDisplay(option.value)}
+              >
+                <strong>{option.label}</strong>
+                <span>{option.description}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="settings-drawer__section">
+          <div className="section-heading">
             <h2>创作风格</h2>
             <span>{providerLabel}</span>
           </div>
-          <div className="option-grid">
+          <div className="option-grid option-grid--style">
             {styleOptions.map((option) => (
               <button
                 key={option.value}
@@ -313,11 +343,11 @@ export function SettingsDrawer({
 
         <section className="settings-drawer__section">
           <div className="section-heading">
-            <h2>与人对话节奏</h2>
-            <span>仅与人对话生效</span>
+            <h2>模式1节奏</h2>
+            <span>仅模式1生效</span>
           </div>
           <label className="settings-drawer__field">
-            <span>人类回复延迟倍率</span>
+            <span>回复延迟倍率</span>
             <input
               inputMode="decimal"
               type="text"
@@ -428,6 +458,7 @@ export function SettingsDrawer({
                   temperature,
                   topP,
                 },
+                modeLabelDisplay,
               })
               onClose()
             }}

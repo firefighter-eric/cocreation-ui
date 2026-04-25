@@ -1,7 +1,12 @@
 import type {
   StorySeed,
 } from '../../entities/story-session/types'
-import { storyModeOptions, type StoryMode } from '../../shared/config/story'
+import {
+  getExperimentModeCopy,
+  getStoryModeOptions,
+  type ModeLabelDisplay,
+  type StoryMode,
+} from '../../shared/config/story'
 import type { ExperimentMode } from '../../entities/experiment/types'
 import type { ExperimentStatus } from '../../entities/experiment/types'
 
@@ -10,6 +15,7 @@ interface StorySidebarProps {
   experimentPromptCount: number
   experimentStatus: ExperimentStatus
   isExperimentPickerOpen: boolean
+  modeLabelDisplay: ModeLabelDisplay
   playgroundLabel: string
   seeds: StorySeed[]
   selectedMode: StoryMode
@@ -28,6 +34,7 @@ export function StorySidebar({
   experimentPromptCount,
   experimentStatus,
   isExperimentPickerOpen,
+  modeLabelDisplay,
   playgroundLabel,
   seeds,
   selectedMode,
@@ -43,8 +50,16 @@ export function StorySidebar({
   const isExperimentActive =
     experimentStatus === 'running' || experimentStatus === 'advancing'
   const isExperimentFinished = experimentStatus === 'completed'
+  const humanLikeExperimentCopy = getExperimentModeCopy(
+    'human_like',
+    modeLabelDisplay,
+  )
+  const manualExperimentCopy = getExperimentModeCopy('manual', modeLabelDisplay)
   const selectedExperimentLabel =
-    selectedExperimentMode === 'human_like' ? '与人开始' : '与AI开始'
+    selectedExperimentMode === 'human_like'
+      ? humanLikeExperimentCopy.selectedLabel
+      : manualExperimentCopy.selectedLabel
+  const storyModeOptions = getStoryModeOptions(modeLabelDisplay)
 
   return (
     <div className="sidebar-panel">
@@ -67,10 +82,10 @@ export function StorySidebar({
         <div className="experiment-card">
           <p className="experiment-card__copy">
             {isExperimentActive
-              ? `正在进行 ${selectedExperimentLabel} 的正式实验，当前题目会按随机顺序自动推进。`
+              ? `正在进行 ${selectedExperimentLabel}，当前题目会自动推进。`
               : isExperimentFinished
-                ? `已完成 ${selectedExperimentLabel} 的 6 个 prompt，可导出整次实验结果。`
-                : '正式实验会一次完成全部 6 个 prompt，并把起手方严格平衡为 3 比 3。'}
+                ? `已完成 ${selectedExperimentLabel} 的全部题目，可导出结果。`
+                : '请选择一个模式开始。'}
           </p>
           {isExperimentPickerOpen ? (
             <div className="option-grid">
@@ -79,16 +94,16 @@ export function StorySidebar({
                 type="button"
                 onClick={() => onExperimentModePick('human_like')}
               >
-                <strong>和人开始</strong>
-                <span>进入正式实验，并以前台“对方”语义完成 6 题。</span>
+                <strong>{humanLikeExperimentCopy.label}</strong>
+                <span>{humanLikeExperimentCopy.description}</span>
               </button>
               <button
                 className="option-card"
                 type="button"
                 onClick={() => onExperimentModePick('manual')}
               >
-                <strong>和AI开始</strong>
-                <span>进入正式实验，并以 AI 搭档模式连续完成 6 题。</span>
+                <strong>{manualExperimentCopy.label}</strong>
+                <span>{manualExperimentCopy.description}</span>
               </button>
             </div>
           ) : (

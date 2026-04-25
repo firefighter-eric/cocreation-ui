@@ -9,8 +9,10 @@ import { useExperimentSession } from '../features/story-session/model/useExperim
 import { useStorySession } from '../features/story-session/model/useStorySession'
 import {
   defaultHumanLikeDelayMultiplier,
+  defaultModeLabelDisplay,
   defaultStoryMode,
   storySeeds,
+  type ModeLabelDisplay,
   type StoryMode,
 } from '../shared/config/story'
 import { buildDefaultSystemPrompt } from '../shared/lib/llm/prompt'
@@ -29,6 +31,9 @@ import { appEnv } from '../shared/config/env'
 export function App() {
   const [conversationMode, setConversationMode] = useState<StoryMode>(
     defaultStoryMode,
+  )
+  const [modeLabelDisplay, setModeLabelDisplay] = useState<ModeLabelDisplay>(
+    defaultModeLabelDisplay,
   )
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -239,8 +244,7 @@ export function App() {
     ? experiment.state.status === 'completed'
       ? {
           badge: '实验完成',
-          subtitle:
-            '本次正式实验的 6 个 prompt 已全部完成，可直接导出整次实验 JSON。',
+          subtitle: '全部题目已完成，可直接导出结果 JSON。',
           title: '正式实验',
         }
       : experiment.state.status === 'advancing'
@@ -251,10 +255,7 @@ export function App() {
           }
       : {
           badge: `第 ${experiment.completedCount + 1} / ${experiment.state.items.length} 题`,
-          subtitle:
-            activeConversationMode === 'human_like'
-              ? '当前是正式实验，题目顺序和起手方已经锁定，完成当前题后会自动进入下一题。'
-              : '当前是正式实验，AI 搭档模式、题目顺序和起手方已经锁定，完成当前题后会自动进入下一题。',
+          subtitle: '请完成当前题目，完成后会自动进入下一题。',
           title: '正式实验',
       }
     : {
@@ -296,6 +297,7 @@ export function App() {
             experimentPromptCount={storySeeds.length}
             experimentStatus={experiment.state.status}
             isExperimentPickerOpen={isExperimentPickerOpen}
+            modeLabelDisplay={modeLabelDisplay}
             playgroundLabel="临时对话"
             seeds={storySeeds}
             selectedExperimentMode={experiment.state.mode}
@@ -425,10 +427,9 @@ export function App() {
             <section className="experiment-summary">
               <div className="experiment-summary__inner">
                 <p className="eyebrow">实验完成</p>
-                <h2>6 个 prompt 已全部完成</h2>
+                <h2>全部题目已完成</h2>
                 <p>
-                  当前可从右上角导出整次实验的 JSON，也可以退出正式实验回到
-                  playground。
+                  当前可从右上角导出结果 JSON，也可以退出当前任务。
                 </p>
               </div>
             </section>
@@ -499,7 +500,7 @@ export function App() {
       </main>
 
       <SettingsDrawer
-        key={`${isSettingsOpen ? 'open' : 'closed'}-${activeSession.state.systemPrompt}-${activeSession.state.style}-${activeSession.state.maxRoundCount}-${activeSession.state.modelSettings.model}-${activeSession.state.modelSettings.temperature}-${activeSession.state.modelSettings.topP}-${activeSession.state.humanLikeSettings.delayMultiplier}-${runtimeConfig?.baseUrl ?? ''}-${runtimeConfig?.apiKey ?? ''}-${runtimeConfig?.model ?? ''}-${activeConversationMode}`}
+        key={`${isSettingsOpen ? 'open' : 'closed'}-${activeSession.state.systemPrompt}-${activeSession.state.style}-${activeSession.state.maxRoundCount}-${activeSession.state.modelSettings.model}-${activeSession.state.modelSettings.temperature}-${activeSession.state.modelSettings.topP}-${activeSession.state.humanLikeSettings.delayMultiplier}-${runtimeConfig?.baseUrl ?? ''}-${runtimeConfig?.apiKey ?? ''}-${runtimeConfig?.model ?? ''}-${activeConversationMode}-${modeLabelDisplay}`}
         availableModels={availableModels}
         conversationMode={activeConversationMode}
         currentStyle={activeSession.state.style}
@@ -507,6 +508,7 @@ export function App() {
         initialApiConfig={runtimeConfig}
         initialHumanLikeSettings={activeSession.state.humanLikeSettings}
         initialMaxRoundCount={activeSession.state.maxRoundCount}
+        initialModeLabelDisplay={modeLabelDisplay}
         initialStartingRoundMode={activeSession.state.startingRoundMode}
         initialModelSettings={activeSession.state.modelSettings}
         isFetchingModels={isFetchingModels}
@@ -520,6 +522,7 @@ export function App() {
           humanLikeSettings,
           maxRoundCount,
           modelSettings,
+          modeLabelDisplay: nextModeLabelDisplay,
           startingRoundMode,
           style,
           systemPrompt,
@@ -546,6 +549,7 @@ export function App() {
           const normalized = normalizeRuntimeLLMConfig(apiConfig)
           runtimeConfigStore.save(normalized)
           setRuntimeConfig(runtimeConfigStore.load())
+          setModeLabelDisplay(nextModeLabelDisplay)
         }}
         providerLabel={activeSession.providerLabel}
         rules={activeSession.state.rules}

@@ -6,9 +6,11 @@ import type {
 } from '../../entities/story-session/types'
 
 export type StoryMode = 'manual' | 'human_like' | 'auto'
+export type ModeLabelDisplay = 'anonymized' | 'descriptive'
 
 export const defaultStoryStyle: StoryStyle = 'creative'
 export const defaultStoryMode: StoryMode = 'manual'
+export const defaultModeLabelDisplay: ModeLabelDisplay = 'anonymized'
 export const defaultMaxRoundCount = 5
 export const defaultStartingRoundMode: StartingRoundMode = 'random'
 export const defaultHumanLikeDelayMultiplier = 2
@@ -42,20 +44,59 @@ export const startingRoundOptions: Array<{
   },
 ]
 
-export const storyModeOptions: Array<{
+export const modeLabelDisplayOptions: Array<{
+  value: ModeLabelDisplay
+  label: string
+  description: string
+}> = [
+  {
+    value: 'anonymized',
+    label: '显示模式编号',
+    description: '前台显示模式1、模式2、模式3。',
+  },
+  {
+    value: 'descriptive',
+    label: '显示模式名称',
+    description: '前台显示与人对话、与AI对话等名称。',
+  },
+]
+
+const anonymizedStoryModeOptions: Array<{
   value: StoryMode
   label: string
   description: string
 }> = [
   {
-    value: 'manual',
-    label: '与AI对话',
-    description: '由你输入，AI 接着续写。',
+    value: 'human_like',
+    label: '模式1',
+    description: '进入模式1的手动接龙流程。',
   },
+  {
+    value: 'manual',
+    label: '模式2',
+    description: '进入模式2的手动接龙流程。',
+  },
+  {
+    value: 'auto',
+    label: '模式3',
+    description: '自动生成一组示例对话。',
+  },
+]
+
+const descriptiveStoryModeOptions: Array<{
+  value: StoryMode
+  label: string
+  description: string
+}> = [
   {
     value: 'human_like',
     label: '与人对话',
     description: '与对话搭档轮流接龙。',
+  },
+  {
+    value: 'manual',
+    label: '与AI对话',
+    description: '由你输入，AI 接着续写。',
   },
   {
     value: 'auto',
@@ -63,6 +104,43 @@ export const storyModeOptions: Array<{
     description: '自动生成一组示例对话。',
   },
 ]
+
+export function getStoryModeOptions(modeLabelDisplay: ModeLabelDisplay) {
+  return modeLabelDisplay === 'descriptive'
+    ? descriptiveStoryModeOptions
+    : anonymizedStoryModeOptions
+}
+
+export function getExperimentModeCopy(
+  mode: Extract<StoryMode, 'human_like' | 'manual'>,
+  modeLabelDisplay: ModeLabelDisplay,
+) {
+  if (modeLabelDisplay === 'descriptive') {
+    return mode === 'human_like'
+      ? {
+          description: '进入正式实验，并以前台“对方”语义完成全部题目。',
+          label: '和人开始',
+          selectedLabel: '与人对话',
+        }
+      : {
+          description: '进入正式实验，并以 AI 搭档模式完成全部题目。',
+          label: '和AI开始',
+          selectedLabel: '与AI对话',
+        }
+  }
+
+  return mode === 'human_like'
+    ? {
+        description: '进入模式1，并开始任务。',
+        label: '模式1',
+        selectedLabel: '模式1',
+      }
+    : {
+        description: '进入模式2，并开始任务。',
+        label: '模式2',
+        selectedLabel: '模式2',
+      }
+}
 
 export const defaultStoryRules: StoryRules = {
   maxChars: 20,
