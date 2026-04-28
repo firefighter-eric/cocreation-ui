@@ -405,7 +405,8 @@ playground 右上角提供一个“设置”按钮，点击后从右侧弹出设
 
 OpenAI-compatible provider 使用 `/chat/completions`：
 
-- 请求超时时间为 `20s`
+- 请求超时时间为 `60s`
+- 失败后最多自动重试 `1` 次，覆盖所有 API 错误类型（含超时、网络异常、非 2xx 状态与响应解析异常）
 - 请求体包含 `model`、`temperature`、`top_p`、`max_tokens` 和 `messages`
 - `messages` 由当前完整 system prompt、开场句和历史消息组成
 - 超时错误文案为“请求超时，请重试。”

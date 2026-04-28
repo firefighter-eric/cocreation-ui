@@ -7,7 +7,8 @@ import type {
   LLMProvider,
 } from './types'
 
-const REQUEST_TIMEOUT_MS = 20000
+const REQUEST_TIMEOUT_MS = 60000
+const MAX_RETRY_COUNT = 1
 
 export class OpenAICompatibleProvider implements LLMProvider {
   private readonly config: ResolvedLLMConfig
@@ -22,61 +23,72 @@ export class OpenAICompatibleProvider implements LLMProvider {
   }
 
   async generateNextLine(input: GenerateNextLineInput) {
-    const controller = new AbortController()
-    const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
-    let response: Response
+    let lastError: Error | null = null
 
-    try {
-      response = await fetch(`${this.config.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.config.apiKey}`,
-        },
-        signal: controller.signal,
-        body: JSON.stringify({
-          model: input.model,
-          temperature: input.temperature,
-          top_p: input.topP,
-          max_tokens: input.maxTokens,
-          messages: [
-            {
-              role: 'system',
-              content: buildStoryPrompt(input),
-            },
-            {
-              role: 'user',
-              content: input.seed.openingLine,
-            },
-            ...input.history.map((message) => ({
-              role: message.role,
-              content: message.content,
-            })),
-          ],
-        }),
-      })
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        throw new Error('请求超时，请重试。')
+    for (let attempt = 0; attempt <= MAX_RETRY_COUNT; attempt += 1) {
+      const controller = new AbortController()
+      const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+
+      try {
+        const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.config.apiKey}`,
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model: input.model,
+            temperature: input.temperature,
+            top_p: input.topP,
+            max_tokens: input.maxTokens,
+            messages: [
+              {
+                role: 'system',
+                content: buildStoryPrompt(input),
+              },
+              {
+                role: 'user',
+                content: input.seed.openingLine,
+              },
+              ...input.history.map((message) => ({
+                role: message.role,
+                content: message.content,
+              })),
+            ],
+          }),
+        })
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(errorText || `请求失败，状态码 ${response.status}`)
+        }
+
+        const data = (await response.json()) as LLMChatCompletionResponse
+        const content = data.choices?.[0]?.message?.content?.trim()
+
+        if (!content) {
+          throw new Error('模型没有返回可用内容。')
+        }
+
+        return sanitizeAssistantLine(content, input.rules)
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          lastError = new Error('请求超时，请重试。')
+        } else if (error instanceof Error) {
+          lastError = error
+        } else {
+          lastError = new Error('模型返回异常，请稍后再试。')
+        }
+
+        if (attempt >= MAX_RETRY_COUNT) {
+          throw lastError
+        }
+      } finally {
+        window.clearTimeout(timeoutId)
       }
-
-      throw error
-    } finally {
-      window.clearTimeout(timeoutId)
     }
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(errorText || `请求失败，状态码 ${response.status}`)
-    }
-
-    const data = (await response.json()) as LLMChatCompletionResponse
-    const content = data.choices?.[0]?.message?.content?.trim()
-
-    if (!content) {
-      throw new Error('模型没有返回可用内容。')
-    }
-
-    return sanitizeAssistantLine(content, input.rules)
+    throw lastError ?? new Error('模型返回异常，请稍后再试。')
   }
 }

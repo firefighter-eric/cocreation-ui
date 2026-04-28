@@ -33,10 +33,69 @@ describe('OpenAICompatibleProvider', () => {
     const promise = provider.generateNextLine(createInput())
     const expectation = expect(promise).rejects.toThrow('请求超时，请重试。')
 
-    await vi.advanceTimersByTimeAsync(20000)
+    await vi.advanceTimersByTimeAsync(120000)
 
     await expectation
+    expect(fetch).toHaveBeenCalledTimes(2)
     vi.useRealTimers()
+  })
+
+  it('retries once for api errors and succeeds on second request', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          text: async () => '服务暂时不可用',
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            choices: [
+              {
+                message: {
+                  content: '风把路牌吹成了问号',
+                },
+              },
+            ],
+          }),
+        }),
+    )
+
+    const provider = new OpenAICompatibleProvider({
+      apiKey: 'test-key',
+      baseUrl: 'https://example.com/v1',
+      model: 'gpt-test',
+      source: 'env',
+    })
+
+    const content = await provider.generateNextLine(createInput())
+
+    expect(content).toBe('风把路牌吹成了问号')
+    expect(fetch).toHaveBeenCalledTimes(2)
+  })
+
+  it('retries once for api errors and surfaces the final error when both attempts fail', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        text: async () => '服务暂时不可用',
+      }),
+    )
+
+    const provider = new OpenAICompatibleProvider({
+      apiKey: 'test-key',
+      baseUrl: 'https://example.com/v1',
+      model: 'gpt-test',
+      source: 'env',
+    })
+
+    await expect(provider.generateNextLine(createInput())).rejects.toThrow('服务暂时不可用')
+    expect(fetch).toHaveBeenCalledTimes(2)
   })
 
   it('uses resolved runtime config for request url and auth header', async () => {
