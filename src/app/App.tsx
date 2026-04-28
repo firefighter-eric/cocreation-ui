@@ -488,7 +488,7 @@ export function App() {
                 <p className="eyebrow">实验完成</p>
                 <h2>全部题目已完成</h2>
                 <p>
-                  感谢您已完成了实验部分，但请您先不要离开，完成追踪问卷后，即可联系主试领取被试费。点击以下链接进入问卷，链接为：
+                  感谢您已完成了实验部分，但请您先不要离开，请不要关闭浏览器，完成追踪问卷后，即可联系主试领取被试费。点击以下链接进入问卷，链接为：
                   <a
                     className="experiment-summary__link"
                     href={followUpSurveyUrl}

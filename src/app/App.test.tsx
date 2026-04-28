@@ -948,7 +948,7 @@ describe('App', () => {
 
       expect(screen.getByText('全部题目已完成')).toBeInTheDocument()
       expect(
-        screen.getByText(/感谢您已完成了实验部分，但请您先不要离开/),
+        screen.getByText(/感谢您已完成了实验部分，但请您先不要离开，请不要关闭浏览器/),
       ).toBeInTheDocument()
       expect(
         screen.getByRole('link', {
