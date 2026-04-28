@@ -23,4 +23,14 @@ describe('story line validation', () => {
 
     expect(result).toBe('窗外的雨开始倒着落下')
   })
+
+  it('allows model output truncation to be more tolerant than user input rules', () => {
+    const result = sanitizeAssistantLine(
+      '这是一个略微超过二十字但会被保留到三十字的模型回复继续向前走',
+      defaultStoryRules,
+      30,
+    )
+
+    expect(Array.from(result)).toHaveLength(30)
+  })
 })

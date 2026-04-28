@@ -210,6 +210,7 @@ function createInput(
     temperature: 1,
     topP: 1,
     maxTokens: 8000,
+    outputMaxChars: 30,
     ...overrides,
   }
 }

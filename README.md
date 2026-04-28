@@ -17,12 +17,13 @@
 - 支持正式实验入口，可选择 `模式1` 或 `模式2`，连续完成全部题目
 - 左侧栏用于切换模式、选择开场句、重新开始
 - 右侧以聊天式故事流展示当前共创过程
-- 右上角支持打开设置抽屉，修改完整 `system prompt`、创作风格、`model`、`temperature`、`top_p`、`max_tokens` 和模式1回复延迟倍率；这些普通设置会保存在浏览器 `localStorage` 的 `cocreation.story_settings`
+- 右上角支持打开设置抽屉，修改完整 `system prompt`、创作风格、`model`、`temperature`、`top_p`、`max_tokens`、回复截断字数和模式1回复延迟倍率；这些普通设置会保存在浏览器 `localStorage` 的 `cocreation.story_settings`
 - 设置抽屉中的修改会立即应用到后续会话，底部提供“还原默认”按钮
 - 设置抽屉支持切换前台模式名称显示方式：默认 `模式1/模式2/模式3`，也可显示为描述性名称
 - 设置抽屉支持填写自定义 `base URL` 和 `API key`，并保存在浏览器本地
 - 设置抽屉支持从当前接口拉取候选模型，也支持手动填写模型名
 - 严格短句规则：默认 `20` 字内、禁止标点、禁止空输入
+- 模型回复默认按 `30` 字安全截断；prompt 仍保持 `20` 字短句要求
 - 支持导出完整会话 JSON
 - 支持 OpenAI-compatible 接口
 - 没有配置远程模型时自动降级到本地 mock
@@ -35,7 +36,7 @@
 - 默认最大回合数：`5`，范围 `1-10`
 - 默认起手方：`random`，每次新会话开始时解析为 `user` 或 `assistant`
 - 默认模式1回复延迟倍率：`2`，范围 `0.5-5`
-- 默认模型参数：`temperature = 1.5`、`top_p = 1.0`、`max_tokens = 8000`
+- 默认模型参数：`temperature = 1.5`、`top_p = 1.0`、`max_tokens = 8000`、`output_max_chars = 30`
 - 默认模型名：环境变量 `VITE_LLM_MODEL`，未配置时为 `deepseek-v4-flash`
 - 远端聊天请求超时：`60s`，失败后最多自动重试 `1` 次（覆盖所有 API 错误类型）
 - 候选模型列表请求超时：`10s`，最多展示 `12` 个模型

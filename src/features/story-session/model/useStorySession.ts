@@ -10,6 +10,7 @@ import type {
 } from '../../../entities/story-session/types'
 import {
   defaultMaxRoundCount,
+  defaultModelOutputMaxChars,
   defaultStartingRoundMode,
   defaultStoryRules,
   defaultStoryStyle,
@@ -59,6 +60,11 @@ export function useStorySession({
         openingLineShownAt: stored.openingLineShownAt ?? stored.sessionStartedAt,
         humanLikeSettings: stored.humanLikeSettings ?? {
           delayMultiplier: initialHumanLikeSettings.delayMultiplier,
+        },
+        modelSettings: {
+          ...stored.modelSettings,
+          outputMaxChars:
+            stored.modelSettings.outputMaxChars ?? defaultModelOutputMaxChars,
         },
       }
     }
@@ -118,6 +124,7 @@ export function useStorySession({
         temperature: state.modelSettings.temperature,
         topP: state.modelSettings.topP,
         maxTokens: state.modelSettings.maxTokens,
+        outputMaxChars: state.modelSettings.outputMaxChars,
       })
 
       if (conversationMode === 'human_like') {
@@ -310,6 +317,7 @@ export function useStorySession({
           temperature: state.modelSettings.temperature,
           topP: state.modelSettings.topP,
           maxTokens: state.modelSettings.maxTokens,
+          outputMaxChars: state.modelSettings.outputMaxChars,
         })
         const message = createMessage(speaker, content)
         history = [...history, message]

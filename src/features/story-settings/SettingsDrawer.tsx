@@ -15,6 +15,8 @@ import {
   defaultStoryStyle,
   defaultHumanLikeDelayMultiplier,
   humanLikeDelayMultiplierRange,
+  defaultModelOutputMaxChars,
+  modelOutputMaxCharsRange,
   modeLabelDisplayOptions,
   roundCountRange,
   startingRoundOptions,
@@ -35,6 +37,7 @@ interface SettingsDrawerProps {
     temperature: number
     topP: number
     maxTokens: number
+    outputMaxChars: number
   }
   initialMaxRoundCount: number
   initialStartingRoundMode: StartingRoundMode
@@ -63,6 +66,7 @@ interface SettingsDrawerProps {
       temperature: number
       topP: number
       maxTokens: number
+      outputMaxChars: number
     }
     modeLabelDisplay: ModeLabelDisplay
   }) => void
@@ -99,6 +103,9 @@ export function SettingsDrawer({
   const [maxTokensDraft, setMaxTokensDraft] = useState(
     String(initialModelSettings.maxTokens),
   )
+  const [outputMaxCharsDraft, setOutputMaxCharsDraft] = useState(
+    String(initialModelSettings.outputMaxChars),
+  )
   const [maxRoundCountDraft, setMaxRoundCountDraft] = useState(
     String(initialMaxRoundCount),
   )
@@ -121,6 +128,7 @@ export function SettingsDrawer({
       modeLabelDisplay: ModeLabelDisplay
       model: string
       maxTokensDraft: string
+      outputMaxCharsDraft: string
       selectedStyle: StoryStyle
       startingRoundMode: StartingRoundMode
       temperature: number
@@ -134,6 +142,8 @@ export function SettingsDrawer({
     const nextDraft = overrides.draft ?? draft
     const nextMaxRoundCountDraft = overrides.maxRoundCountDraft ?? maxRoundCountDraft
     const nextMaxTokensDraft = overrides.maxTokensDraft ?? maxTokensDraft
+    const nextOutputMaxCharsDraft =
+      overrides.outputMaxCharsDraft ?? outputMaxCharsDraft
     const nextModeLabelDisplay = overrides.modeLabelDisplay ?? modeLabelDisplay
     const nextModel = overrides.model ?? model
     const nextSelectedStyle = overrides.selectedStyle ?? selectedStyle
@@ -160,6 +170,7 @@ export function SettingsDrawer({
         temperature: nextTemperature,
         topP: nextTopP,
         maxTokens: normalizeMaxTokens(nextMaxTokensDraft),
+        outputMaxChars: normalizeOutputMaxChars(nextOutputMaxCharsDraft),
       },
       modeLabelDisplay: nextModeLabelDisplay,
     })
@@ -181,6 +192,7 @@ export function SettingsDrawer({
     setTemperature(defaultModelTemperature)
     setTopP(defaultModelTopP)
     setMaxTokensDraft(String(defaultModelMaxTokens))
+    setOutputMaxCharsDraft(String(defaultModelOutputMaxChars))
     setMaxRoundCountDraft(nextMaxRoundCountDraft)
     setDelayMultiplierDraft(nextDelayMultiplierDraft)
     setStartingRoundMode(defaultStartingRoundMode)
@@ -196,6 +208,7 @@ export function SettingsDrawer({
       temperature: defaultModelTemperature,
       topP: defaultModelTopP,
       maxTokensDraft: String(defaultModelMaxTokens),
+      outputMaxCharsDraft: String(defaultModelOutputMaxChars),
     })
   }
 
@@ -237,6 +250,19 @@ export function SettingsDrawer({
     }
 
     return Math.trunc(parsed)
+  }
+
+  function normalizeOutputMaxChars(value: string) {
+    const parsed = Number(value)
+
+    if (!Number.isFinite(parsed)) {
+      return initialModelSettings.outputMaxChars || defaultModelOutputMaxChars
+    }
+
+    return Math.min(
+      modelOutputMaxCharsRange.max,
+      Math.max(modelOutputMaxCharsRange.min, Math.trunc(parsed)),
+    )
   }
 
   if (!isOpen) {
@@ -504,7 +530,34 @@ export function SettingsDrawer({
                 }}
               />
             </label>
+            <label className="settings-drawer__field">
+              <span>回复截断字数</span>
+              <input
+                inputMode="numeric"
+                min={modelOutputMaxCharsRange.min}
+                max={modelOutputMaxCharsRange.max}
+                pattern="[0-9]*"
+                type="text"
+                value={outputMaxCharsDraft}
+                onBlur={(event) => {
+                  const normalized = String(
+                    normalizeOutputMaxChars(event.target.value),
+                  )
+                  setOutputMaxCharsDraft(normalized)
+                  saveSettings({ outputMaxCharsDraft: normalized })
+                }}
+                onChange={(event) => {
+                  setOutputMaxCharsDraft(event.target.value)
+                  saveSettings({ outputMaxCharsDraft: event.target.value })
+                }}
+              />
+            </label>
           </div>
+          <p className="settings-drawer__hint">
+            Prompt 仍按 {rules.maxChars} 字要求模型写短；这里仅控制模型返回后的安全截断，默认
+            {defaultModelOutputMaxChars} 字，范围 {modelOutputMaxCharsRange.min}-
+            {modelOutputMaxCharsRange.max}。
+          </p>
         </section>
 
         <section className="settings-drawer__section">

@@ -36,7 +36,7 @@ export class MockProvider implements LLMProvider {
           : mockCoherentReplies
     const pick = pool[input.history.length % pool.length]
 
-    return sanitizeAssistantLine(pick, input.rules)
+    return sanitizeAssistantLine(pick, input.rules, input.outputMaxChars)
   }
 }
 

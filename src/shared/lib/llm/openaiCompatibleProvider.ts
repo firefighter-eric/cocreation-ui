@@ -71,7 +71,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
           throw new Error('模型没有返回可用内容。')
         }
 
-        return sanitizeAssistantLine(content, input.rules)
+        return sanitizeAssistantLine(content, input.rules, input.outputMaxChars)
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
           lastError = new Error('请求超时，请重试。')

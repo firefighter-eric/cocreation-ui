@@ -312,6 +312,7 @@ playground 右上角提供一个“设置”按钮，点击后从右侧弹出设
 - 一个可编辑的 system prompt 文本框
 - 最大回合数量输入
 - `temperature`、`top_p`、`max_tokens` 等模型参数输入
+- 模型回复截断字数输入
 - 模式1回复延迟倍率输入和公式说明
 - `model` 输入与候选模型选择
 - 还原默认按钮
@@ -350,10 +351,11 @@ playground 右上角提供一个“设置”按钮，点击后从右侧弹出设
 - 开场句不写入 system prompt，而是作为请求中的第一条 user message
 - 默认规则仍然保留，不允许被 UI 层删除
 - 默认模型参数为 `temperature = 1.5`、`top_p = 1.0`、`max_tokens = 8000`
+- 默认模型回复截断字数为 `30`，范围为 `1-60`；该设置只影响模型返回后的安全截断，不改写可见 `system prompt`，默认 prompt 仍要求 `20` 字内
 - 默认模型名取环境变量中的 `VITE_LLM_MODEL`，未配置时使用 `deepseek-v4-flash`
 - 用户可在设置抽屉里填写自己的 `base URL` 和 `API key`
 - 这份 API 配置保存在浏览器本地 `localStorage` 的 `cocreation.runtime_llm_config`，用于避免反复填写
-- 设置抽屉中的普通设置保存在浏览器本地 `localStorage` 的 `cocreation.story_settings`，包括完整 `system prompt`、创作风格、最大回合数量、起手方、模式名称显示、`temperature`、`top_p`、`max_tokens` 和模式1回复延迟倍率
+- 设置抽屉中的普通设置保存在浏览器本地 `localStorage` 的 `cocreation.story_settings`，包括完整 `system prompt`、创作风格、最大回合数量、起手方、模式名称显示、`temperature`、`top_p`、`max_tokens`、模型回复截断字数和模式1回复延迟倍率
 - 设置抽屉中的 `model` 同时随 API 配置和普通设置保存在浏览器本地，避免重复填写
 - 若用户配置完整，则优先覆盖环境变量
 - 若用户配置不完整，则忽略该配置并回退到环境变量

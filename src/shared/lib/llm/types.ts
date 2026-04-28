@@ -19,6 +19,7 @@ export interface GenerateNextLineInput {
   temperature: number
   topP: number
   maxTokens: number
+  outputMaxChars: number
 }
 
 export interface LLMProvider {

@@ -10,6 +10,7 @@ import { useStorySession } from '../features/story-session/model/useStorySession
 import {
   defaultHumanLikeDelayMultiplier,
   defaultModelMaxTokens,
+  defaultModelOutputMaxChars,
   defaultModelTemperature,
   defaultModelTopP,
   defaultModeLabelDisplay,
@@ -78,6 +79,9 @@ export function App() {
     topP: storedStorySettings?.modelSettings?.topP ?? defaultModelTopP,
     maxTokens:
       storedStorySettings?.modelSettings?.maxTokens ?? defaultModelMaxTokens,
+    outputMaxChars:
+      storedStorySettings?.modelSettings?.outputMaxChars ??
+      defaultModelOutputMaxChars,
   }
   const initialHumanLikeSettings = {
     delayMultiplier:

@@ -9,11 +9,13 @@ import {
   defaultMaxRoundCount,
   defaultModeLabelDisplay,
   defaultModelMaxTokens,
+  defaultModelOutputMaxChars,
   defaultModelTemperature,
   defaultModelTopP,
   defaultStartingRoundMode,
   defaultStoryStyle,
   humanLikeDelayMultiplierRange,
+  modelOutputMaxCharsRange,
   roundCountRange,
   type ModeLabelDisplay,
 } from '../../config/story'
@@ -96,6 +98,12 @@ function normalizeModelSettings(input: unknown): ModelSettings | undefined {
     ),
     topP: normalizeNumber(settings.topP, 0, 1, defaultModelTopP),
     maxTokens: normalizeInteger(settings.maxTokens, 1, 200000, defaultModelMaxTokens),
+    outputMaxChars: normalizeInteger(
+      settings.outputMaxChars,
+      modelOutputMaxCharsRange.min,
+      modelOutputMaxCharsRange.max,
+      defaultModelOutputMaxChars,
+    ),
   }
 }
 

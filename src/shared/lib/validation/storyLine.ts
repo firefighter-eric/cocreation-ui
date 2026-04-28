@@ -4,15 +4,19 @@ const punctuationPattern = /[，。！？；：“”‘’（）【】《》、
 const punctuationPatternGlobal =
   /[，。！？；：“”‘’（）【】《》、,.!?;:'"()[\]{}<>`~@#$%^&*_+=|\\/:-]/g
 
-export function validateStoryLine(text: string, rules: StoryRules) {
+export function validateStoryLine(
+  text: string,
+  rules: StoryRules,
+  maxChars = rules.maxChars,
+) {
   const trimmed = text.trim()
 
   if (!trimmed) {
     return { valid: false, error: '先写一句内容再发送。' }
   }
 
-  if (Array.from(trimmed).length > rules.maxChars) {
-    return { valid: false, error: `请控制在 ${rules.maxChars} 字内。` }
+  if (Array.from(trimmed).length > maxChars) {
+    return { valid: false, error: `请控制在 ${maxChars} 字内。` }
   }
 
   if (!rules.punctuationAllowed && punctuationPattern.test(trimmed)) {
@@ -22,13 +26,17 @@ export function validateStoryLine(text: string, rules: StoryRules) {
   return { valid: true, error: null }
 }
 
-export function sanitizeAssistantLine(text: string, rules: StoryRules) {
+export function sanitizeAssistantLine(
+  text: string,
+  rules: StoryRules,
+  maxChars = rules.maxChars,
+) {
   const compact = text.replace(/\s+/g, '')
   const stripped = rules.punctuationAllowed
     ? compact
     : compact.replace(punctuationPatternGlobal, '')
-  const normalized = Array.from(stripped).slice(0, rules.maxChars).join('')
-  const validation = validateStoryLine(normalized, rules)
+  const normalized = Array.from(stripped).slice(0, maxChars).join('')
+  const validation = validateStoryLine(normalized, rules, maxChars)
 
   if (!validation.valid) {
     throw new Error('模型返回的内容不符合短句规则。')

@@ -12,6 +12,7 @@ describe('buildStoryPrompt', () => {
     temperature: 1.0,
     topP: 1,
     maxTokens: 8000,
+    outputMaxChars: 30,
   }
 
   it('contains creative guidance', () => {

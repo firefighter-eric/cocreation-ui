@@ -336,6 +336,7 @@ describe('App', () => {
     expect(exported.system_prompt).toContain('让画面更安静')
     expect(exported.model_settings.model).toBe(appEnv.model)
     expect(exported.model_settings.max_tokens).toBe(8000)
+    expect(exported.model_settings.output_max_chars).toBe(30)
     expect(exported.human_like_settings.delay_multiplier).toBe(2)
     expect(exported.max_round_count).toBe(5)
     expect(exported).not.toHaveProperty('base_url')

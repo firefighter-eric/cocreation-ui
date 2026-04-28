@@ -17,6 +17,11 @@ export const defaultHumanLikeDelayMultiplier = 2
 export const defaultModelTemperature = 1.5
 export const defaultModelTopP = 1
 export const defaultModelMaxTokens = 8000
+export const defaultModelOutputMaxChars = 30
+export const modelOutputMaxCharsRange = {
+  min: 1,
+  max: 60,
+}
 export const humanLikeDelayMultiplierRange = {
   min: 0.5,
   max: 5,
