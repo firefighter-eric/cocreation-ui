@@ -952,9 +952,9 @@ describe('App', () => {
       ).toBeInTheDocument()
       expect(
         screen.getByRole('link', {
-          name: 'https://www.credamo.com/s/zuER3eano/',
+          name: 'https://www.credamo.com/s/mINBfuano/',
         }),
-      ).toHaveAttribute('href', 'https://www.credamo.com/s/zuER3eano/')
+      ).toHaveAttribute('href', 'https://www.credamo.com/s/mINBfuano/')
 
     expect(URL.createObjectURL).toHaveBeenCalled()
     expect(clickMock).toHaveBeenCalledTimes(1)

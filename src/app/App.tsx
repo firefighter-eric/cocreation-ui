@@ -33,7 +33,7 @@ import { createRuntimeLLMConfigStore } from '../shared/lib/storage/runtimeLlmCon
 import { createStorySettingsStore } from '../shared/lib/storage/storySettingsStore'
 import { appEnv } from '../shared/config/env'
 
-const followUpSurveyUrl = 'https://www.credamo.com/s/zuER3eano/'
+const followUpSurveyUrl = 'https://www.credamo.com/s/mINBfuano/'
 
 export function App() {
   const storySettingsStore = useMemo(() => createStorySettingsStore(), [])
