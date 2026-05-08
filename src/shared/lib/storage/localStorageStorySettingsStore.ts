@@ -10,12 +10,14 @@ import {
   defaultModeLabelDisplay,
   defaultModelMaxTokens,
   defaultModelOutputMaxChars,
+  defaultModelRetryCount,
   defaultModelTemperature,
   defaultModelTopP,
   defaultStartingRoundMode,
   defaultStoryStyle,
   humanLikeDelayMultiplierRange,
   modelOutputMaxCharsRange,
+  modelRetryCountRange,
   roundCountRange,
   type ModeLabelDisplay,
 } from '../../config/story'
@@ -103,6 +105,12 @@ function normalizeModelSettings(input: unknown): ModelSettings | undefined {
       modelOutputMaxCharsRange.min,
       modelOutputMaxCharsRange.max,
       defaultModelOutputMaxChars,
+    ),
+    retryCount: normalizeInteger(
+      settings.retryCount,
+      modelRetryCountRange.min,
+      modelRetryCountRange.max,
+      defaultModelRetryCount,
     ),
   }
 }

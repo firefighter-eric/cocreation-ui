@@ -11,6 +11,7 @@ import {
   defaultHumanLikeDelayMultiplier,
   defaultModelMaxTokens,
   defaultModelOutputMaxChars,
+  defaultModelRetryCount,
   defaultModelTemperature,
   defaultModelTopP,
   defaultModeLabelDisplay,
@@ -82,6 +83,8 @@ export function App() {
     outputMaxChars:
       storedStorySettings?.modelSettings?.outputMaxChars ??
       defaultModelOutputMaxChars,
+    retryCount:
+      storedStorySettings?.modelSettings?.retryCount ?? defaultModelRetryCount,
   }
   const initialHumanLikeSettings = {
     delayMultiplier:

@@ -30,7 +30,7 @@ describe('OpenAICompatibleProvider', () => {
       model: 'gpt-test',
       source: 'env',
     })
-    const promise = provider.generateNextLine(createInput())
+    const promise = provider.generateNextLine(createInput({ retryCount: 1 }))
     const expectation = expect(promise).rejects.toThrow('请求超时，请重试。')
 
     await vi.advanceTimersByTimeAsync(120000)
@@ -71,10 +71,49 @@ describe('OpenAICompatibleProvider', () => {
       source: 'env',
     })
 
-    const content = await provider.generateNextLine(createInput())
+    const content = await provider.generateNextLine(createInput({ retryCount: 1 }))
 
     expect(content).toBe('风把路牌吹成了问号')
     expect(fetch).toHaveBeenCalledTimes(2)
+  })
+
+  it('uses the configured retry count for api errors', async () => {
+    const fetchMock = vi.fn()
+
+    for (let index = 0; index < 5; index += 1) {
+      fetchMock.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: async () => '服务暂时不可用',
+      })
+    }
+
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              content: '第五次之后门开了',
+            },
+          },
+        ],
+      }),
+    })
+
+    vi.stubGlobal('fetch', fetchMock)
+
+    const provider = new OpenAICompatibleProvider({
+      apiKey: 'test-key',
+      baseUrl: 'https://example.com/v1',
+      model: 'gpt-test',
+      source: 'env',
+    })
+
+    const content = await provider.generateNextLine(createInput())
+
+    expect(content).toBe('第五次之后门开了')
+    expect(fetch).toHaveBeenCalledTimes(6)
   })
 
   it('retries once for api errors and surfaces the final error when both attempts fail', async () => {
@@ -94,7 +133,9 @@ describe('OpenAICompatibleProvider', () => {
       source: 'env',
     })
 
-    await expect(provider.generateNextLine(createInput())).rejects.toThrow('服务暂时不可用')
+    await expect(
+      provider.generateNextLine(createInput({ retryCount: 1 })),
+    ).rejects.toThrow('服务暂时不可用')
     expect(fetch).toHaveBeenCalledTimes(2)
   })
 
@@ -211,6 +252,7 @@ function createInput(
     topP: 1,
     maxTokens: 8000,
     outputMaxChars: 30,
+    retryCount: 5,
     ...overrides,
   }
 }

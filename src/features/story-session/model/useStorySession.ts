@@ -11,6 +11,7 @@ import type {
 import {
   defaultMaxRoundCount,
   defaultModelOutputMaxChars,
+  defaultModelRetryCount,
   defaultStartingRoundMode,
   defaultStoryRules,
   defaultStoryStyle,
@@ -65,6 +66,7 @@ export function useStorySession({
           ...stored.modelSettings,
           outputMaxChars:
             stored.modelSettings.outputMaxChars ?? defaultModelOutputMaxChars,
+          retryCount: stored.modelSettings.retryCount ?? defaultModelRetryCount,
         },
       }
     }
@@ -125,6 +127,7 @@ export function useStorySession({
         topP: state.modelSettings.topP,
         maxTokens: state.modelSettings.maxTokens,
         outputMaxChars: state.modelSettings.outputMaxChars,
+        retryCount: state.modelSettings.retryCount,
       })
 
       if (conversationMode === 'human_like') {
@@ -318,6 +321,7 @@ export function useStorySession({
           topP: state.modelSettings.topP,
           maxTokens: state.modelSettings.maxTokens,
           outputMaxChars: state.modelSettings.outputMaxChars,
+          retryCount: state.modelSettings.retryCount,
         })
         const message = createMessage(speaker, content)
         history = [...history, message]

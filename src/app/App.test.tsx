@@ -337,6 +337,7 @@ describe('App', () => {
     expect(exported.model_settings.model).toBe(appEnv.model)
     expect(exported.model_settings.max_tokens).toBe(8000)
     expect(exported.model_settings.output_max_chars).toBe(30)
+    expect(exported.model_settings.retry_count).toBe(5)
     expect(exported.human_like_settings.delay_multiplier).toBe(2)
     expect(exported.max_round_count).toBe(5)
     expect(exported).not.toHaveProperty('base_url')
@@ -383,7 +384,14 @@ describe('App', () => {
     await user.type(screen.getByLabelText('Top P'), '0.85')
     await user.clear(screen.getByLabelText('Max Tokens'))
     await user.type(screen.getByLabelText('Max Tokens'), '6000')
+    await user.clear(screen.getByLabelText('重试次数'))
+    await user.type(screen.getByLabelText('重试次数'), '2')
     await user.click(screen.getByRole('button', { name: '关闭' }))
+
+    expect(
+      JSON.parse(window.localStorage.getItem('cocreation.story_settings') ?? '{}')
+        .modelSettings.retryCount,
+    ).toBe(2)
 
     await user.click(screen.getByRole('button', { name: '开始' }))
     await user.type(
@@ -405,6 +413,50 @@ describe('App', () => {
     expect(payload.temperature).toBe(0.7)
     expect(payload.top_p).toBe(0.85)
     expect(payload.max_tokens).toBe(6000)
+  })
+
+  it('retries failed chat requests based on settings retry count', async () => {
+    const user = userEvent.setup()
+
+    vi.mocked(window.fetch)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: async () => '服务暂时不可用',
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: async () => '服务暂时不可用',
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: '窗外的雨开始倒着落下',
+              },
+            },
+          ],
+        }),
+      } as Response)
+
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: '设置' }))
+    await user.clear(screen.getByLabelText('重试次数'))
+    await user.type(screen.getByLabelText('重试次数'), '2')
+    await user.click(screen.getByRole('button', { name: '关闭' }))
+
+    await user.click(screen.getByRole('button', { name: '开始' }))
+    await user.type(
+      screen.getByPlaceholderText('输入下一句故事，20字内，不使用标点'),
+      '他把雨衣挂在门后{enter}',
+    )
+
+    expect(await screen.findByText('窗外的雨开始倒着落下')).toBeInTheDocument()
+    expect(window.fetch).toHaveBeenCalledTimes(3)
   })
 
   it('uses max round count from settings for auto mode', async () => {

@@ -10,6 +10,7 @@ import {
   defaultModelMaxTokens,
   defaultModelTemperature,
   defaultModelTopP,
+  defaultModelRetryCount,
   defaultModeLabelDisplay,
   defaultStartingRoundMode,
   defaultStoryStyle,
@@ -17,6 +18,7 @@ import {
   humanLikeDelayMultiplierRange,
   defaultModelOutputMaxChars,
   modelOutputMaxCharsRange,
+  modelRetryCountRange,
   modeLabelDisplayOptions,
   roundCountRange,
   startingRoundOptions,
@@ -38,6 +40,7 @@ interface SettingsDrawerProps {
     topP: number
     maxTokens: number
     outputMaxChars: number
+    retryCount: number
   }
   initialMaxRoundCount: number
   initialStartingRoundMode: StartingRoundMode
@@ -67,6 +70,7 @@ interface SettingsDrawerProps {
       topP: number
       maxTokens: number
       outputMaxChars: number
+      retryCount: number
     }
     modeLabelDisplay: ModeLabelDisplay
   }) => void
@@ -106,6 +110,9 @@ export function SettingsDrawer({
   const [outputMaxCharsDraft, setOutputMaxCharsDraft] = useState(
     String(initialModelSettings.outputMaxChars),
   )
+  const [retryCountDraft, setRetryCountDraft] = useState(
+    String(initialModelSettings.retryCount),
+  )
   const [maxRoundCountDraft, setMaxRoundCountDraft] = useState(
     String(initialMaxRoundCount),
   )
@@ -129,6 +136,7 @@ export function SettingsDrawer({
       model: string
       maxTokensDraft: string
       outputMaxCharsDraft: string
+      retryCountDraft: string
       selectedStyle: StoryStyle
       startingRoundMode: StartingRoundMode
       temperature: number
@@ -144,6 +152,7 @@ export function SettingsDrawer({
     const nextMaxTokensDraft = overrides.maxTokensDraft ?? maxTokensDraft
     const nextOutputMaxCharsDraft =
       overrides.outputMaxCharsDraft ?? outputMaxCharsDraft
+    const nextRetryCountDraft = overrides.retryCountDraft ?? retryCountDraft
     const nextModeLabelDisplay = overrides.modeLabelDisplay ?? modeLabelDisplay
     const nextModel = overrides.model ?? model
     const nextSelectedStyle = overrides.selectedStyle ?? selectedStyle
@@ -171,6 +180,7 @@ export function SettingsDrawer({
         topP: nextTopP,
         maxTokens: normalizeMaxTokens(nextMaxTokensDraft),
         outputMaxChars: normalizeOutputMaxChars(nextOutputMaxCharsDraft),
+        retryCount: normalizeRetryCount(nextRetryCountDraft),
       },
       modeLabelDisplay: nextModeLabelDisplay,
     })
@@ -193,6 +203,7 @@ export function SettingsDrawer({
     setTopP(defaultModelTopP)
     setMaxTokensDraft(String(defaultModelMaxTokens))
     setOutputMaxCharsDraft(String(defaultModelOutputMaxChars))
+    setRetryCountDraft(String(defaultModelRetryCount))
     setMaxRoundCountDraft(nextMaxRoundCountDraft)
     setDelayMultiplierDraft(nextDelayMultiplierDraft)
     setStartingRoundMode(defaultStartingRoundMode)
@@ -209,6 +220,7 @@ export function SettingsDrawer({
       topP: defaultModelTopP,
       maxTokensDraft: String(defaultModelMaxTokens),
       outputMaxCharsDraft: String(defaultModelOutputMaxChars),
+      retryCountDraft: String(defaultModelRetryCount),
     })
   }
 
@@ -262,6 +274,19 @@ export function SettingsDrawer({
     return Math.min(
       modelOutputMaxCharsRange.max,
       Math.max(modelOutputMaxCharsRange.min, Math.trunc(parsed)),
+    )
+  }
+
+  function normalizeRetryCount(value: string) {
+    const parsed = Number(value)
+
+    if (!Number.isFinite(parsed)) {
+      return initialModelSettings.retryCount ?? defaultModelRetryCount
+    }
+
+    return Math.min(
+      modelRetryCountRange.max,
+      Math.max(modelRetryCountRange.min, Math.trunc(parsed)),
     )
   }
 
@@ -552,11 +577,35 @@ export function SettingsDrawer({
                 }}
               />
             </label>
+            <label className="settings-drawer__field">
+              <span>重试次数</span>
+              <input
+                inputMode="numeric"
+                min={modelRetryCountRange.min}
+                max={modelRetryCountRange.max}
+                pattern="[0-9]*"
+                type="text"
+                value={retryCountDraft}
+                onBlur={(event) => {
+                  const normalized = String(normalizeRetryCount(event.target.value))
+                  setRetryCountDraft(normalized)
+                  saveSettings({ retryCountDraft: normalized })
+                }}
+                onChange={(event) => {
+                  setRetryCountDraft(event.target.value)
+                  saveSettings({ retryCountDraft: event.target.value })
+                }}
+              />
+            </label>
           </div>
           <p className="settings-drawer__hint">
             Prompt 仍按 {rules.maxChars} 字要求模型写短；这里仅控制模型返回后的安全截断，默认
             {defaultModelOutputMaxChars} 字，范围 {modelOutputMaxCharsRange.min}-
             {modelOutputMaxCharsRange.max}。
+          </p>
+          <p className="settings-drawer__hint">
+            请求失败后默认最多自动重试 {defaultModelRetryCount} 次，范围{' '}
+            {modelRetryCountRange.min}-{modelRetryCountRange.max}；0 表示不自动重试。
           </p>
         </section>
 

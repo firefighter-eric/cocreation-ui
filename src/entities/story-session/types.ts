@@ -22,6 +22,7 @@ export interface ModelSettings {
   topP: number
   maxTokens: number
   outputMaxChars: number
+  retryCount: number
 }
 
 export interface HumanLikeSettings {

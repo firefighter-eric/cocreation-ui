@@ -311,7 +311,7 @@ playground 右上角提供一个“设置”按钮，点击后从右侧弹出设
 - 模式名称显示选择，支持在“模式1/模式2/模式3”和“与人对话/与AI对话/AI自动对话”之间切换，默认显示模式编号
 - 一个可编辑的 system prompt 文本框
 - 最大回合数量输入
-- `temperature`、`top_p`、`max_tokens` 等模型参数输入
+- `temperature`、`top_p`、`max_tokens`、请求重试次数等模型参数输入
 - 模型回复截断字数输入
 - 模式1回复延迟倍率输入和公式说明
 - `model` 输入与候选模型选择
@@ -350,12 +350,12 @@ playground 右上角提供一个“设置”按钮，点击后从右侧弹出设
 - 风格切换会直接改写可见的 system prompt 文本
 - 开场句不写入 system prompt，而是作为请求中的第一条 user message
 - 默认规则仍然保留，不允许被 UI 层删除
-- 默认模型参数为 `temperature = 1.5`、`top_p = 1.0`、`max_tokens = 8000`
+- 默认模型参数为 `temperature = 1.5`、`top_p = 1.0`、`max_tokens = 8000`、请求重试次数 `5`
 - 默认模型回复截断字数为 `30`，范围为 `1-60`；该设置只影响模型返回后的安全截断，不改写可见 `system prompt`，默认 prompt 仍要求 `20` 字内
 - 默认模型名取环境变量中的 `VITE_LLM_MODEL`，未配置时使用 `deepseek-v4-flash`
 - 用户可在设置抽屉里填写自己的 `base URL` 和 `API key`
 - 这份 API 配置保存在浏览器本地 `localStorage` 的 `cocreation.runtime_llm_config`，用于避免反复填写
-- 设置抽屉中的普通设置保存在浏览器本地 `localStorage` 的 `cocreation.story_settings`，包括完整 `system prompt`、创作风格、最大回合数量、起手方、模式名称显示、`temperature`、`top_p`、`max_tokens`、模型回复截断字数和模式1回复延迟倍率
+- 设置抽屉中的普通设置保存在浏览器本地 `localStorage` 的 `cocreation.story_settings`，包括完整 `system prompt`、创作风格、最大回合数量、起手方、模式名称显示、`temperature`、`top_p`、`max_tokens`、模型回复截断字数、请求重试次数和模式1回复延迟倍率
 - 设置抽屉中的 `model` 同时随 API 配置和普通设置保存在浏览器本地，避免重复填写
 - 若用户配置完整，则优先覆盖环境变量
 - 若用户配置不完整，则忽略该配置并回退到环境变量
@@ -408,7 +408,8 @@ playground 右上角提供一个“设置”按钮，点击后从右侧弹出设
 OpenAI-compatible provider 使用 `/chat/completions`：
 
 - 请求超时时间为 `60s`
-- 失败后最多自动重试 `1` 次，覆盖所有 API 错误类型（含超时、网络异常、非 2xx 状态与响应解析异常）
+- 失败后默认最多自动重试 `5` 次，覆盖所有 API 错误类型（含超时、网络异常、非 2xx 状态与响应解析异常）
+- 请求重试次数可在设置抽屉中配置，范围为 `0-10`；`0` 表示不自动重试
 - 请求体包含 `model`、`temperature`、`top_p`、`max_tokens` 和 `messages`
 - `messages` 由当前完整 system prompt、开场句和历史消息组成
 - 超时错误文案为“请求超时，请重试。”

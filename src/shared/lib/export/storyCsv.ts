@@ -38,6 +38,7 @@ export interface StoryExportPayload {
     top_p: number
     max_tokens: number
     output_max_chars: number
+    retry_count: number
   }
   human_like_settings: {
     delay_multiplier: number
@@ -96,6 +97,7 @@ export function buildStoryExportPayload(
       top_p: input.modelSettings.topP,
       max_tokens: input.modelSettings.maxTokens,
       output_max_chars: input.modelSettings.outputMaxChars,
+      retry_count: input.modelSettings.retryCount,
     },
     human_like_settings: {
       delay_multiplier: input.humanLikeSettings.delayMultiplier,

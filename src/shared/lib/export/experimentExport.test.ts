@@ -16,6 +16,7 @@ describe('buildExperimentJson', () => {
         topP: 0.9,
         maxTokens: 8000,
         outputMaxChars: 30,
+        retryCount: 5,
       },
       humanLikeSettings: {
         delayMultiplier: defaultHumanLikeDelayMultiplier,

@@ -23,7 +23,8 @@
     "temperature": 1.5,
     "top_p": 1.0,
     "max_tokens": 8000,
-    "output_max_chars": 30
+    "output_max_chars": 30,
+    "retry_count": 5
   },
   "human_like_settings": {
     "delay_multiplier": 2
@@ -59,6 +60,7 @@
 - `model_settings.model` 记录本次请求使用的模型名
 - `model_settings.max_tokens` 记录本次请求使用的最大生成 token 数
 - `model_settings.output_max_chars` 记录模型返回内容清洗后的截断字数；它不改写 `system_prompt` 中的短句要求
+- `model_settings.retry_count` 记录本次请求失败后最多自动重试的次数
 - `human_like_settings.delay_multiplier` 记录“与人对话”前台延迟展示使用的倍率
 - `max_round_count` 记录当前会话允许的最大回合数
 - `starting_round_mode` 记录当前会话采用的开始回合策略；playground 中来自设置选择，正式实验中为实验计划锁定后的值
@@ -226,7 +228,8 @@
     "temperature": 1.5,
     "top_p": 1.0,
     "max_tokens": 8000,
-    "output_max_chars": 30
+    "output_max_chars": 30,
+    "retry_count": 5
   },
   "human_like_settings": {
     "delay_multiplier": 2

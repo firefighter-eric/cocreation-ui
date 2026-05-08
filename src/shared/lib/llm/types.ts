@@ -20,6 +20,7 @@ export interface GenerateNextLineInput {
   topP: number
   maxTokens: number
   outputMaxChars: number
+  retryCount: number
 }
 
 export interface LLMProvider {

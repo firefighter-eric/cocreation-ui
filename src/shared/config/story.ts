@@ -18,9 +18,14 @@ export const defaultModelTemperature = 1.5
 export const defaultModelTopP = 1
 export const defaultModelMaxTokens = 8000
 export const defaultModelOutputMaxChars = 30
+export const defaultModelRetryCount = 5
 export const modelOutputMaxCharsRange = {
   min: 1,
   max: 60,
+}
+export const modelRetryCountRange = {
+  min: 0,
+  max: 10,
 }
 export const humanLikeDelayMultiplierRange = {
   min: 0.5,

@@ -17,6 +17,7 @@ describe('story session state machine', () => {
         topP: 1,
         maxTokens: 8000,
         outputMaxChars: 30,
+        retryCount: 5,
       },
       humanLikeSettings: {
         delayMultiplier: defaultHumanLikeDelayMultiplier,
@@ -43,6 +44,7 @@ describe('story session state machine', () => {
           topP: 1,
           maxTokens: 8000,
           outputMaxChars: 30,
+          retryCount: 5,
         },
         humanLikeSettings: {
           delayMultiplier: defaultHumanLikeDelayMultiplier,
@@ -80,6 +82,7 @@ describe('story session state machine', () => {
           topP: 1,
           maxTokens: 8000,
           outputMaxChars: 30,
+          retryCount: 5,
         },
         humanLikeSettings: {
           delayMultiplier: defaultHumanLikeDelayMultiplier,
@@ -125,6 +128,7 @@ describe('story session state machine', () => {
           topP: 1,
           maxTokens: 8000,
           outputMaxChars: 30,
+          retryCount: 5,
         },
         humanLikeSettings: {
           delayMultiplier: defaultHumanLikeDelayMultiplier,
@@ -154,6 +158,7 @@ describe('story session state machine', () => {
       topP: 1,
       maxTokens: 8000,
       outputMaxChars: 30,
+      retryCount: 5,
     })
     expect(reset.humanLikeSettings).toEqual({
       delayMultiplier: defaultHumanLikeDelayMultiplier,

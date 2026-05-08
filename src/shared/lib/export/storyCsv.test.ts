@@ -59,6 +59,7 @@ const exportInput = {
     topP: 0.8,
     maxTokens: 6000,
     outputMaxChars: 30,
+    retryCount: 5,
   },
 }
 
@@ -76,6 +77,7 @@ describe('storyCsv', () => {
       top_p: 0.8,
       max_tokens: 6000,
       output_max_chars: 30,
+      retry_count: 5,
     })
     expect(parsed.human_like_settings).toEqual({
       delay_multiplier: 2,

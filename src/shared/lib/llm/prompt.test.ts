@@ -13,6 +13,7 @@ describe('buildStoryPrompt', () => {
     topP: 1,
     maxTokens: 8000,
     outputMaxChars: 30,
+    retryCount: 5,
   }
 
   it('contains creative guidance', () => {

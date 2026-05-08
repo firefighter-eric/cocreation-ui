@@ -1,4 +1,5 @@
 import { sanitizeAssistantLine } from '../validation/storyLine'
+import { modelRetryCountRange } from '../../config/story'
 import { buildStoryPrompt } from './prompt'
 import type { ResolvedLLMConfig } from './runtimeConfig'
 import type {
@@ -8,7 +9,6 @@ import type {
 } from './types'
 
 const REQUEST_TIMEOUT_MS = 60000
-const MAX_RETRY_COUNT = 1
 
 export class OpenAICompatibleProvider implements LLMProvider {
   private readonly config: ResolvedLLMConfig
@@ -24,8 +24,9 @@ export class OpenAICompatibleProvider implements LLMProvider {
 
   async generateNextLine(input: GenerateNextLineInput) {
     let lastError: Error | null = null
+    const retryCount = normalizeRetryCount(input.retryCount)
 
-    for (let attempt = 0; attempt <= MAX_RETRY_COUNT; attempt += 1) {
+    for (let attempt = 0; attempt <= retryCount; attempt += 1) {
       const controller = new AbortController()
       const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
@@ -81,7 +82,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
           lastError = new Error('模型返回异常，请稍后再试。')
         }
 
-        if (attempt >= MAX_RETRY_COUNT) {
+        if (attempt >= retryCount) {
           throw lastError
         }
       } finally {
@@ -91,4 +92,15 @@ export class OpenAICompatibleProvider implements LLMProvider {
 
     throw lastError ?? new Error('模型返回异常，请稍后再试。')
   }
+}
+
+function normalizeRetryCount(value: number) {
+  if (!Number.isFinite(value)) {
+    return modelRetryCountRange.min
+  }
+
+  return Math.min(
+    modelRetryCountRange.max,
+    Math.max(modelRetryCountRange.min, Math.trunc(value)),
+  )
 }
